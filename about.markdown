@@ -4,15 +4,20 @@ title: About
 permalink: /about/
 ---
 
-This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at [jekyllrb.com](https://jekyllrb.com/)
 
-You can find the source code for Minima at GitHub:
-[jekyll][jekyll-organization] /
-[minima](https://github.com/jekyll/minima)
+<p>The Critical Section is a blog where I intend to periodically post ideas and insights which I consider interesting, thought-provoking and useful to know.</p>
 
-You can find the source code for Jekyll at GitHub:
-[jekyll][jekyll-organization] /
-[jekyll](https://github.com/jekyll/jekyll)
+To get a feeling for what I'm all about, check out some of my favourite quotes:
+<ul>
 
+<li><em>Knowledge of some principles easily compensates the lack of knowledge of some facts.</em><br>
+- Claude Helvetius</li>
 
-[jekyll-organization]: https://github.com/jekyll
+<li><em>What can be asserted without evidence can also be dismissed without evidence.</em><br> - Christopher Hitchens</li>
+
+<li><em>I can calculate the motion of heavenly bodies, but not the madness of people.</em><br> - Isaac Newton</li>
+
+</ul>
+
+My interests lie in fields like machine learning, artificial intelligence, computer science, economics.
+
