@@ -1,37 +1,57 @@
-## Welcome to GitHub Pages
+This is the repository for **The Critical Section** blog.
 
-You can use the [editor on GitHub](https://github.com/aceofgreens/aceofgreens.github.io/edit/main/README.md) to maintain and preview the content for your website in Markdown files.
-
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+## Structure
+The repository is structured as follows:
+```
+.
+├── 404.html
+├── about.markdown
+├── assets
+│   ├── main.scss
+│   └── minima-social-icons.svg
+├── _config.yml
+├── _drafts
+├── Gemfile
+├── Gemfile.lock
+├── _includes
+│   ├── footer.html
+│   ├── header.html
+│   └── head.html
+├── index.md
+├── _layouts
+│   ├── default.html
+│   ├── home.html
+│   ├── page.html
+│   └── post.html
+├── _posts
+├── posts_page.md
+├── README.md
+├── _sass
+│   ├── minima
+│   │   ├── _base.scss
+│   │   ├── _layout.scss
+│   │   └── _syntax-highlighting.scss
+│   └── minima.scss
+└── tags_page.md
 ```
 
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
+The file `404.html` contains HTML code to handle HTTP 404 errors.
 
-### Jekyll Themes
+The file `about.markdown` represents the **About** page of the blog.
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/aceofgreens/aceofgreens.github.io/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+The file `index.md` represents the **Home** page of the blog.
 
-### Support or Contact
+The file `posts_page.md` represents the **Posts** page of the blog.
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+The file `tags_page.md` represents the **Tags** page of the blog.
+
+The directory `_includes` contains various HTML files for handling the structure and content of the footer, header, and head parts of the site.
+
+The directory `_layouts` contains HTML files defining the structure of posts and pages.
+
+The directories `_posts` and `_drafts` contain Markdown files for the individual posts (not listed in the directory tree).
+
+The directories `_sass` contains the CSS styles used throughout the blog.
+
+The file `_config.yml` contains the main configurations of the site.
+
