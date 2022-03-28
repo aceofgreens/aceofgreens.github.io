@@ -1,4 +1,5 @@
-This is the repository for **The Critical Section** blog.
+This is the repository for **The Critical Section** blog.  
+To see all the contents please switch to the `gh-pages` branch.
 
 ## Structure
 The repository is structured as follows:
