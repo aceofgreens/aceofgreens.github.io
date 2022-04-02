@@ -12,7 +12,7 @@ $base-line-height: 1.5 !default;
 
 $spacing-unit:     30px !default;
 
-$dark_theme: false;
+$dark_theme: true;
 
 // White theme colour palette
 $text-color:       #111111; //bbbbbb
@@ -23,6 +23,8 @@ $grey-color-light: #828282; //#bbbbbb
 $grey-color-dark:  #828282; //bbbbbb)
 $hyperlink-color: #888888;
 $site-title-color: #141618; //d2d5d8
+$highlight-background-color: rgb(119, 16, 16); //fff
+$highlight-rouge-background-color: $background-color; //eef
 
 // Dark theme colour palette
 @if $dark_theme {
@@ -34,6 +36,8 @@ $site-title-color: #141618; //d2d5d8
   $grey-color-dark:  #bbbbbb;
   $hyperlink-color: #888888;
   $site-title-color: #d2d5d8;
+  $highlight-background-color: rgb(119, 16, 16); //fff
+  $highlight-rouge-background-color: $background-color; //eef 
 }
 
 

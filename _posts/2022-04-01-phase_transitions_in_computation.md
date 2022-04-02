@@ -16,14 +16,22 @@ Here however, we'll be concerned with computational problems and our phase trans
 
 We begin by defining a uniform distribution over 3-SAT formulas with $n$ variables and $m$ clauses. There are $M = 2^3 {n \choose 3}$ possible clauses because out of $n$ variables we need to choose 3, and each one of these can be negated. To generate a random formula we sample uniformly *with replacement* $m$ clauses out of the possible ones. The parameter governing the solvability of the sampled formula is the density of clauses to variables $\alpha = \frac{m}{n}$.
 
-For solving NP-complete problems like 3-SAT we can use a backtracking algorithm. Specifically, for 3-SAT we can use the `DPLL` algorithm:
+For solving NP-complete problems like 3-SAT we can use a backtracking algorithm. Specifically, for 3-SAT we can use the `DPLL` algorithm (which stands for Davis, Putnam, Logemann, Loveland):
 
-{% highlight python linenos %}
-  puts 'foo'
-{% endhighlight %}
+```
+DPLL
+  input: a SAT formula S
+  output: is S satisfiable?
+  begin
+    if S is empty, return true;
+    if S contains an empty clause, return false;
+    select an unset variable x;
+    if DPLL(S[x = true]) = true, return true;
+    if DPLL(S[x = false]) = true, return true;
+    return false;
+  end
+```
 
 
-aawdawds asd wa ds 
-awdad
 
 
