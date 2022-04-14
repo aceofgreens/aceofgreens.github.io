@@ -41,7 +41,6 @@ ul, ol, dl, figure,
 }
 
 
-
 /**
  * `main` element
  */
@@ -50,16 +49,14 @@ main {
 }
 
 
-
 /**
  * Images
  */
 img {
   max-width: 100%;
   vertical-align: middle;
-  border-radius: 5%
+  border-radius: 2%
 }
-
 
 
 /**
@@ -96,6 +93,15 @@ li {
  */
 h1, h2, h3, h4, h5, h6 {
   font-weight: $base-font-weight;
+}
+
+.btn {
+  background-color: $background-color; /* Blue background */
+  border: none; /* Remove borders */
+  color: $text-color; /* White text */
+  // padding: 12px 16px; /* Some padding */
+  font-size: 16px; /* Set a font size */
+  cursor: pointer; /* Mouse pointer on hover */
 }
 
 
@@ -191,6 +197,7 @@ code {
 
 code {
   padding: 1px 5px;
+  font-family: $code-font-family;
 }
 
 pre {

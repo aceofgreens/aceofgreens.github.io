@@ -131,8 +131,8 @@ Thus, we form a system of difference equations:
 
 $$
 \begin{align}
-E[\Delta S_3] &= - \frac{3 S_3}{n - T} \\
-E[\Delta S_2] &= \frac{3 S_3}{2 (n - T)} - \frac{2 S_2}{n - T}. \\
+\mathbb{E}[\Delta S_3] &= - \frac{3 S_3}{n - T} \\
+\mathbb{E}[\Delta S_2] &= \frac{3 S_3}{2 (n - T)} - \frac{2 S_2}{n - T}. \\
 \end{align}
 $$
 
@@ -144,5 +144,39 @@ $$
 \frac{d s_2}{dt} &= \frac{3 s_3}{2 (1 - t)} - \frac{2 s_2}{1 - t}. \\
 \end{align}
 $$
+
+The initial conditions are $S_3(0) = m$ and $S_2(0) = 0$ which after rescaling become $s_3(0) = \alpha$, and $s_2(0) = 0$. The solution to the system is
+
+$$
+
+\begin{align}
+s_3(t) &= \alpha (1 - t)^3 \\
+s_2(t) &= \frac{3}{2} \alpha t (1 - t)^2. \\
+\end{align}
+
+$$
+
+The number of 2 and 3-clauses S_2 and S_3 scale as $\Theta(n)$ - at any point in the algorithm they scale linearly in the number of variables. However, their expected changes are $O(1)$ which makes them change relatively slow compared to their size. This makes them amenable to this differential equation approach. $S_1$, on the other hand, is $O(1)$ and changes as $O(1)$, which forces us to model it with a discrete branching process.
+
+A variable $x_i$ appears on average in $\frac{2 S_2}{n - T}$ clauses and half of them will be turned into unit-clauses when setting $x_i$. Therefore the number of unit clauses we create at each step is
+
+$$ \lambda = \frac{1}{2} \frac{2 S_2}{n - T} = \frac{s_2}{1 - t} = \frac{3}{2} \alpha t(1-t).$$
+
+Now, the operation of the UC algorithm creates "cascades". If there are no unit clauses, suppose we randomly choose to set $x_i$. This creates $\lambda$ new unit clauses. On the next step we are forced to set a variable that will satisfy any of these unit clauses. This, however, still creates $\lambda$ unit clauses on average, and so on. The expected number of steps needed to satisfy all the eventual resulting unit clauses, including the first step that set the cascade off, is
+
+$$ 1 + \lambda + \lambda^2 + \lambda^3 + ... $$
+
+If $\lambda > 1$, then the unit-clauses proliferate exponentially and as soon as we enounter a contradiction where two of them demand different values for the same variable, UC fails. This occurs with constant probability when the number of unit clauses reaches $\Theta(\sqrt{n})$ (due to the birthday paradox).
+
+If $\lambda < 1$, the total number of unit clauses converges to $\frac{1}{1 - \lambda}$. The UC algorithm manages to satisfy all unit clauses, after which it again gets to select a random variable and set it to a random value. Thus, for UC to succeed on average, we need $\lambda < 1$. After maximizing over $t$, $\frac{3}{2} \alpha t(1-t)$ is less than 1 if $\alpha < \frac{8}{3}$. The probability that UC fails when the branching process is subcritical is still a positive constant, because the probability that two unit clauses contradict each other is $\Theta(\frac{1}{n})$ and there are $\Theta(n)$ steps in the algorithm. However, the positive probability of succeeding is enough to use the above corrolary to say that the formula is satisfiable with high probability when $\alpha < \frac{8}{3}$. In these cases there is also positive probability that UC finds a solution with no backtracking, which becomes exponentially difficult when $\alpha > \frac{8}{3}$.
+
+To recap, when $\alpha < \frac{8}{3}$, the probability of UC failing is $\mathcal{O}(1)$ - bounded from above - which means that the probability of UC succeeding is positive. The corollary stated above then implies that
+
+
+$$
+\lim_{n \rightarrow \infty} P( F_k(n, m=\alpha n) \text{ is solvable}) = 1, \ \forall \alpha < \frac{8}{3}.
+$$
+
+And therefore $\alpha_c \ge \frac{8}{3}$. More sophisticated variants of DPLL yield better bounds, closer to the presumably true critical point value of approximately $4.267$. These constructive proofs fail, though, when backtracking becomes necessary. Other bounds can be obtained using non-constructive proofs which are a different approach altogether.
 
 
