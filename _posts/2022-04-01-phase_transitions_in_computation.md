@@ -68,7 +68,15 @@ The figure below shows how the probability of a random 3-SAT formula depends on 
 - The higher $\alpha$ is, the less likely it is that the formula will be solvable. This is because with more clauses per variable, it becomes more likely that some of the clauses contain variables with opposite polarity which prevents the formula from being satisfied.
 - The more variables there are, the sharper is the decrease in the solvability as $\alpha$ increases. Formulas with $n=30$ variables become more rapidly unsolvable compared to formulas with $n=5$ variables. One can verify numerically that the corresponding graphs when $n=100$ or $n=200$ will be even steeper - for a large $n$ and up to some specific $\alpha_c$, the formulas will be solvable with high probability and above that $\alpha_c$ they will be unsolvable with high probability.
 
-![graph](/resources/solvable5.png)
+
+
+<figure>
+    <img src="/resources/solvable5.png" alt="Probability of being solvable" width="1000">
+    <figcaption>Figure 1: The relationship between the clause-to-variable density and the probability of being solvable.</figcaption>
+</figure>
+
+
+<!-- ![graph](/resources/solvable5.png) -->
 
 If we consider what happens when $n=\infty$, we expect to find one critical value of the clause-to-variable ratio $\alpha_c$ below which a formula is almost surely solvable while above it, it is almost surely unsolvable. This value $\alpha_c$ would be a critical point and the 3-SAT problem would undergo a qualitative change as it transitions from low to high $\alpha$.
 
@@ -112,7 +120,14 @@ The above result means that when $n \rightarrow \infty$, if a random formula is 
 
 
 Before the actual analysis, it's useful to get a feel for how the runtime depends on the clause-to-variable density. The figure below shows how the number of DPLL calls scales as $\alpha$ increases.
-![graph](/resources/n_calls5.png)
+
+<figure>
+    <img src="/resources/n_calls5.png" alt="Probability of being solvable" width="1000">
+    <figcaption>Figure 2: The relationship between the clause-to-variable density and the total number of DPLL calls.</figcaption>
+</figure>
+
+<!-- ![graph](/resources/n_calls5.png) -->
+
 Importantly, for small $\alpha$, it is very easy to find a satisfying assignment because the clauses are few and most of the variables are not conflicting. The number of recursive calls is linear in the number of variables and the search process essentially comes down to evaluating a single branch of the resulting decision tree. 
 
 On the other extreme, for large $\alpha$ there are so many clauses per variable that many of them are conflicting each other and the formula is unsatisfiable. However, the more clauses there are, the earlier that contradictions appear in the search process - that is why the runtime eventually starts decreasing as $\alpha$ increases too much. With too many clauses, the contradictions are so many that the DPLL algorithm starts seeing unsatisfiable subproblems very learning in the search process, resulting in fewer recursive calls.
