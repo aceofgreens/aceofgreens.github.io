@@ -80,7 +80,7 @@ In conclusion, IMOL 2022 was a ton of fun. I met some very smart and interesting
 [9] Riedmiller, M. et al. [Collect & Infer - a fresh look at data-efficient Reinforcement Learning](https://openreview.net/forum?id=qscEfLT5VJK) Conference on Robot Learning (2021).  
 [10] Abdolmaleki, A. et al. [A Distributional View on Multi-Objective Policy Optimization](https://arxiv.org/abs/2005.07513) arXiv preprint arXiv:2005.07513 (2020).  
 [11] Abdolmaleki, A. et al. [On Multi-objective Policy Optimization as a Tool for Reinforcement Learning](https://arxiv.org/abs/2106.08199) arXiv preprint arXiv:2106.08199 (2021).  
-[12] Lambert, N. et al. [The Challenges of Exploration for Offline Reinforcement Learning](https://arxiv.org/abs/2201.11861) arXiv preprint arXiv:2201.11861 (2022). 
+[12] Lambert, N. et al. [The Challenges of Exploration for Offline Reinforcement Learning](https://arxiv.org/abs/2201.11861) arXiv preprint arXiv:2201.11861 (2022).  
 [13] Whitney, W. et al. [Decoupled Exploration and Exploitation Policies for Sample-Efficient Reinforcement Learning](https://arxiv.org/abs/2101.09458) arXiv preprint arXiv:2101.09458 (2021).  
 [14] Riedmiller, M. et al. [Learning by Playing - Solving Sparse Reward Tasks from Scratch](https://arxiv.org/abs/1802.10567) arXiv preprint arXiv:1802.10567 (2018).  
 [15] Hertweck, T. et al. [Simple Sensor Intentions for Exploration](https://arxiv.org/abs/2005.07541) arXiv preprint	arXiv:2005.07541 (2020).  
