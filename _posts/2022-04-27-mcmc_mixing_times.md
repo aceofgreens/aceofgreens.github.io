@@ -21,22 +21,51 @@ $$
 0 \le {\lVert P - Q \rVert}_{\text{tv}} = \frac{1}{2}\sum_{x}|P(x) - Q(x)| \le 1
 $$
 
-For example, the stochastic matrix
-$$\small
+Consider this example, we have a Markov chain with two states. From state 1 we always transition to state 2, while in state 2 we move to state 1 with 50% probability and remain in state 2 with 50% probability. Then the stochastic matrix corresponding to this Markov chain is
+$$\small M = 
 \begin{pmatrix}
 0 & 1/2 \\
 1 & 1/2
 \end{pmatrix}
-$$ has eigenvalues $-\frac{1}{2}$ and $1$, and corresponding eigenvectors
-$$ \small c_1 .
-\begin{pmatrix}
--1 \\
-1
-\end{pmatrix}
-$$ and 
-$$ \small c_2 .
+$$. Its eigenvalues are $1$ and $\lambda = -\frac{1}{2}$, and the corresponding eigenvectors are
+$$ \small P_{eq} = 
 \begin{pmatrix}
 1 \\
 2
 \end{pmatrix}
 $$ 
+and 
+$$ \small v = 
+\begin{pmatrix}
+1 \\
+-1
+\end{pmatrix}
+$$.
+The eigenvectors form a basis and therefore any distribution over the states at $t=0$, for example
+$$
+\small P_0 = 
+\begin{pmatrix}
+1 \\
+0
+\end{pmatrix}$$, can be represented as a combination of the equilibrium distribution $P_{eq}$ and the other eigenvector $v$:
+$$
+P_0 = P_{eq} + \frac{2}{3}v
+$$. The distribution after $t$ steps is then
+
+$$
+P_t = M^t (P_{eq} + \frac{2}{3}v) =  P_{eq} + \frac{2}{3} \lambda^t v = P_{eq} + (-1)^t 2^{-t} \small\begin{pmatrix}
+2 \\ -3 \end{pmatrix}.
+$$
+
+
+Importantly, as $t \rightarrow \infty$, the memory of the initial state decays exponentially fast as $\|\lambda \|^t = 2^{-t}$ and as a result the total variation decays similarly 
+
+$${\lVert P_t - P_{eq} \rVert}_{\text{tv}} = \frac{2}{3} \left| \lambda \right|^t = \frac{2}{3}2^{-t}.$$
+
+The number of steps needed to reach a small distance $\epsilon$ from $P_{eq}$ is given by $t = \log_2 \frac{2}{3\epsilon} = O(\log \epsilon^{-1})$, which motivates the definition of *mixing time* - a "loose" measure of the runtime, or computational complexity of that Markov chain. The $\epsilon$-mixing time is the smallest $t$ such that irrespective of the starting distribution, at time $t$ the total variation between $P_t$ and $P_{eq}$ is at most $\epsilon$:
+
+$$
+\tau_\epsilon = \min \big\{ t \ | \max_{P_0} {\lVert P_t - P_{eq} \rVert}_{\text{tv}} \le \epsilon \big\}.
+$$
+
+In reality, what we are interested in is how the mixing time depends on $n$ - the system size, not $\epsilon$ per se, because this allows us to understand how the mixing time scales with larger and larger problem instances. The total number of possible states $N$ could be exponentially large in $n$ (as in Ising models or graph coloring problems) and to be able to sample from such large spaces we'll need polynomial mixing times in $n$, i.e. $\tau = O(\text{poly}(n))$. An optimal mixing time which we call *rapid mixing* is when $\tau$ scales as $O(n \log n)$.
