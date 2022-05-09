@@ -25,6 +25,6 @@ Recent posts:
 
 
 <figure>
-    <img src = "margulis_graph3.svg" alt="Expander Graph" width="1000">
+    <img src = "/resources/margulis_graph.svg" alt="Expander Graph" width="1000">
     <figcaption>Figure 1: An expander - a most curious sparse graph with strong connectivity properties.<br>Every subset of less than half the total number of vertices has a proportionally large boundary of edges.</figcaption>
 </figure>
