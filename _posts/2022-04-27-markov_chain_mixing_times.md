@@ -90,7 +90,7 @@ Speaking of bounds on the mixing time, thinking in terms of spectral gap provide
 **Theorem**: *Let $M$ be an ergodic, symmetric Markov chain, obeying the detail balance condition. Also let $M$ have $N$ states and a spectral gap $\delta$. Then, for sufficiently small $\epsilon$ the mixing time is bounded by*
 
 $$
-\frac{\ln (2\epsilon)^{-1}}{2\delta} \le \tau_\epsilon \le \frac{\ln N \epsilon^{-1}}{\delta}.
+\frac{\ln (2\epsilon)^{-1}}{2\delta} \le \tau_\epsilon \le \frac{\ln (N \epsilon^{-1})}{\delta}.
 $$
 
 If we set $\epsilon$ to some small value, we get $\frac{1}{\delta} \lesssim \tau \lesssim \frac{\ln N}{\delta}$ or in other words $\tau = \Omega(\frac{1}{\delta})$ and $\tau = O(\frac{\ln N}{\delta})$. Note that if the spectral gap is polynomial in $n$, then the mixing time is polynomial. If the spectral gap is exponential in $n$, then the mixing time is also exponential, although the above relationship does not show the exact exponent.
@@ -185,7 +185,7 @@ Note that the *expansion* $\mu$ is also equal to the conductance of a random wal
 
 In reality, any graph is an expander for some $\mu$. To be useful to solve problems of varying sizes however, we would like to have a family of graphs $G_N$ - one or more graphs for every possible number of nodes $N$ - such that the expansion $\mu$ is constant as $N$ increases. If this were not the case, we could imagine a scenario where for some problem of size $25$, we use an expander with expansion $3$, but for a problem instance of size $26$, we have access to a graph with expansion $1$. This just overcomplicates things, which is one reason we want constant expansion as $N$ increases. If such an infinite family $\{G_N\}$ of $d$-regular graphs exist, then the following are equivalent:
 - For some $\mu > 0$, $G_N$ is an expander with expansion at least $\mu$;
-- For some $\Phi > 0$, the lazy walk (the modified transition probability $M' = (M + I)/2$ on $G_N$ has conductance at least $\Phi$;
+- For some $\Phi > 0$, the lazy walk on $G_N$ with a modified transition probability $M' = (M + I)/2$, has conductance at least $\Phi$;
 - For some $\delta > 0$, the lazy walk on $G_N$ has a spectral gap at least $\delta$.
 
 It turns out, such families of graphs are very common and can be generated using random algorithms. Most random $d$-regular graphs are expanders. Few deterministic algorithms for generating expanders exist as of today (see [Cayley graphs](https://en.wikipedia.org/wiki/Cayley_graph) and the [Zig Zag product](https://en.wikipedia.org/wiki/Zig-zag_product)).
