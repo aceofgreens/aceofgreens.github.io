@@ -54,13 +54,24 @@ main {
  */
 img {
   max-width: 100%;
+  // display: block;
   vertical-align: middle;
+  text-align: center;
   border-radius: 2%;
   
   &.big_img {
     margin-left:-10%; 
     margin-right:0%;
     max-width: 120%;
+    display: block;
+    // vertical-align: middle;
+    border-radius: 2%;
+  }
+
+  &.extra_big_img {
+    margin-left:-30%; 
+    margin-right:0%;
+    max-width: 160%;
     display: block;
     // vertical-align: middle;
     border-radius: 2%;
