@@ -9,7 +9,7 @@ The Ising model is a curious little toy model for ferromagnetism in the field of
 
 ### Introduction
 
-The Ising model consists of a grid of $n$ sites, where each site $s_i$ can have a positive spin or negative spin, i.e. $s_i \in \{+1, -1 \}$. Let's call $n$ the size of the system. Then just based on that, we can say that the system has $N = 2^n$ possible states, where each state consists of the actual spins for all sites. 
+The Ising model consists of a grid of $n$ sites, where each site $s_i$ can have a positive spin or negative spin, i.e. $s_i \in  \\{+1, -1\\}$. Let's call $n$ the size of the system. Then just based on that, we can say that the system has $N = 2^n$ possible states, where each state consists of the actual spins for all sites. 
 
 The energy of each spin depends also on the spins of the neighboring sites and in a $2$-dimensional Ising model these neighbors are the sites to the north, south, east and west. The interaction between two neighboring states $s_i$ and $s_j$ is modeled with the term $-s_i s_j$ which suggests a ferromagnetic relationship where this quantity is $1$ if $s_i$ and $s_j$ have different spins and $-1$ otherwise. The state of the system, consisting of all spins $s_i$, has overall energy $E(s) = -\sum_i \sum_j s_i s_j $. Since physical systems generally try to be in a state that minimizes their energy, we have it that the system will be in a minimum-energy state if the spins at all sites are the same (which is what keeps the system magnetized).
 
@@ -46,7 +46,7 @@ $$
 p(\text{flip}) = 
 \begin{cases}
 1 & \text{ if } \Delta E < 0\\
-\mathrm{e}^{-\frac{1}{T} \Delta_E} & \text{ otherwise.}
+\mathrm{e}^{-\frac{1}{T} \Delta E} & \text{ otherwise.}
 \end{cases}
 \end{equation}
 $$
