@@ -108,7 +108,7 @@ Solving the Ising model analytically roughly means obtaining expressions for the
 
 The partition function is important because many quantities of interest can be expressed as a function of it. For example, the mean energy at equilibrium is given by $\mathbb{E}[E] = -\frac{\partial}{\partial \beta}\ln Z$, the variance by
 $\text{Var}(E) = \frac{\partial^2}{\partial \beta^2}\ln Z$, and the heat capacity by 
-$\text{Var}(E) = \frac{\partial }{\partial T} \mathbb{E}[E]$. The quantity that appears most in these expressions is $\ln Z$ and typically we call $\lim_{n \rightarrow \infty} \frac{\ln Z}{n}$ the *free energy per site* of the system. The goal is, therefore, to calculate this quantity as all other interesting variables are just functions of it.
+$\frac{\partial }{\partial T} \mathbb{E}[E]$. The quantity that appears most in these expressions is $\ln Z$ and typically we call $\lim_{n \rightarrow \infty} \frac{\ln Z}{n}$ the *free energy per site* of the system. The goal is, therefore, to calculate this quantity as all other interesting variables are just functions of it.
 
 The partition function for a one-dimensional Ising chain is 
 
