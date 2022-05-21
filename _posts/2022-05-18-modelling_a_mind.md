@@ -36,13 +36,13 @@ Based on all of these components, a simplified control loop for the mind is:
 1. Process the sensory inputs, recognize any known patterns;
 2. Propose new patterns for storing as concepts;
 3. Integrate the proposals into the concept buffer, removing or updating other concepts if necessary;
-4. Predict the next state based on hypothetical actions
+4. Predict the next state based on hypothetical actions (imagination)
 5. Focus attention on sensory inputs or known concepts.
 6. Produce an action.
 
 Note that with just a processor and a policy, you get a primitive *reptilian brain* based on instincts. By adding a dynamics predictor and the difference between the current state and its expectation, you get a *limbic brain*. Finally, with the addition of concepts and attention you get a *neocortex*, capable of reasoning.
 
-Regarding the practical implementation of this mind, I think the processor, dynamics predictor, and policy can be built using artificial neural networks. The attention model can be an [attention layer](https://en.wikipedia.org/wiki/Attention_(machine_learning). The concept buffer is tricky because it would involve having a storage component for patterns (e.g. vectors) that is updated in a learnable way and is outside of the networks. Perhaps a stateful component like a batch norm could be built? I'll have to think about it.
+Regarding the practical implementation of this mind, I think the processor, dynamics predictor, and policy can be built using artificial neural networks. The attention model can be an [attention layer](https://en.wikipedia.org/wiki/Attention_(machine_learning)). The concept buffer is tricky because it would involve having a storage component for patterns (e.g. vectors) that is updated in a learnable way and is outside of the networks. Perhaps a stateful component that is continuously updated can be used.
 
 It might be necessary that all components are capable of handling time-series. In that case, a deep learning approach will require LSTMs, GRUs, or temporal transformers. It is also likely that the agent should have a model-based mind that can plan ahead and choose its actions accordingly.
 
