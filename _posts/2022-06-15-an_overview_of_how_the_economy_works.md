@@ -18,9 +18,13 @@ When determining the relationships between output, unemployment, and inflation, 
 - the *medium-run*, when sufficient time has passed that those previous constant variables can be adjusted, resulting in different equilibrium configurations;
 - the *long-run*, a time horizon so long that all transitory economic effects from the medium run are dwarfed by time. Here only factors which determine long-term growth matter.
 
-The distinction between short, medium, and long-run is naturally fuzzy. If we are at time $t$, we may consider $t+1$ as the short run and $t+30$ as the long-run. But if we are at $t+29$, then $t+30$, from our new perspective, becomes the short-run. This perspective change is similar to a Markov chain converging to an equilibrium distribution - it's not that it actually converges step-by-step, it's that the distribution many steps from now converges.
+The distinction between short, medium, and long-run is naturally fuzzy. If we are at time $t$, we may consider $t+1$ as the short run and $t+30$ as the long-run. But if we are at $t+29$, then $t+30$ from our new perspective becomes the short-run. This perspective change is similar to a Markov chain converging to an equilibrium distribution - it's not that it actually converges step-by-step, it's that the distribution many steps from now converges.
 
-The concept of equilibrium permeates economics.
+The concept of equilibrium permeates economics. A market for a given product is said to be in equilibrium if the supply and demand for that product are equal. The **supply** is a function representing the price at which a seller is willing to supply an additional unit of the good. This can also be interpreted as how much quantity is supplied at any given price. Similarly, **demand** is a function representing the maximum price a customer is willing to pay for an additional unit of the good. This is, likewise, interpeted as the total quantity demanded at any given price.
+
+Let's look at the goods market first. We can represet
+
+
 
 
 
