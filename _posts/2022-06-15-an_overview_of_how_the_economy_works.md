@@ -72,6 +72,84 @@ Figure 2 shows the money supply as a constant value determined by the central ba
 
 Controlling the money supply and hence the interest rate determines the *monetary policy* of the central bank. It is common during recessions for the central bank to perform monetary expansion, where the money supply is increased, the interest rate is lowered, and as a result the consumption and investment components of output are increased. This influx of money stimulates more spending, which can be beneficial during a recession. On the other hand, in situations where excessive spending causes prolonged inflation, the central bank can engage in contractionary monetary policy, where the effects on the economy will be exactly the opposite as described above.
 
+### The Labour Market
+The labour market consists of workers willing to work in exchange for monetary compensation. The workers represent the supply of labour and the employers - the demand for labour. A central quantity of interest that determines how easy it is for a worker to find a job is the *unemployment rate* - it is the proportion of all people in the labour force who want to work, but are currently unemployed. The unemployment rate represents (roughly) the quantity of labour supplied at any given wage.
+
+Before stating equilibrium conditions, we first explore how are wages determined. In general, two regularities can be observed:
+- The wages paid to workers typically exceed the worker's *reservation wage*, which is the wage that makes them indifferent to being employed or not. In that sense, continuing to stay employed is a purposeful "action" for the worker and the [efficiency wage](https://en.wikipedia.org/wiki/Efficiency_wage) is a factor in the worker's decision.
+- Wages typically depend on current market conditions like the unemployment rate, and the price level. Most wages are therefore correlated to the general availability of workers and the expectations for future key economic variables.
+
+Ultimately, wages are determined by the bargaining power of workers and employers. A worker has more bargaining power if it is easy for him to find a different job of sufficient quality, and if it is difficult and costly for the firm to find different workers.
+
+We can describe how the wages depend using the equation
+
+$$
+W = P^e F(u, z),
+$$
+
+where $W$ is the nominal wage, $P^e$ is the expected price level for the future, and $F(u, z)$ is a function decreasing in the unemployment rate $u$ and increasing in the catch-all variable $z$, which can represent any other factors like unemployment insurance, or employment protection. This shows that wages are higher if:
+- unemployment is low, as there is less workers available
+- expected prices are higher, as wage contracts are typically set in advance, and in nominal terms. If workers are expecting higher prices, and firms are expecting to sell their products at a higher price, it is logical that wages will also increase proportionally.
+
+In terms of production, firms use both labour and capital in order to produce goods. However, in the short run, it may be easier for the firm to change the labour configuration rather than the capital configuration. If this is the case, we can model the ouput simply as 
+
+$$ Y = AN, $$
+
+where $A$ is the labour productivity rate and $N$ is the number of workers per unit of time. Even simpler, we can renormalize the units of output so that one worker produces one unit of ouput, leaving just $Y = N$. What is the cost of producing one more unit of ouput? Well, it's the cost of hiring one more worker - their wage $W$. Now, microeconomics tells us that in perfect competition the price set by firms is equal to their marginal cost. Here, however, since not all markets are perfectly competitive, we let the price be proportional to a *markup* factor $\mu$, indicating how far we are from perfect competition,
+
+$$ P = (1 + \mu)W
+$$
+
+This equation suggests that the price set by firms is proportional to the wages paid to workers, and the markup amount, showing how much the firm can charge above perfect equilibrium prices. In reality, the markup amount depends on factors like antitrust regulation, or barriers of entry.
+
+Figure 3 shows the equilibrium in the labour market, resulting from the wage-setting relation from the bargaining power of workers and the price-setting relation from the labour productivity. Importantly, increases in the markup reduce the equilibrium real wages and increase the unemployment rate. An increase in the unemployment benefits increases the wage-setting relation through $z$, and as a result, equilibrium unemployment increases.
+<figure>
+    <img class='small_img' src="/labour_market.svg" alt="The labour market equilibrium" width="1000">
+    <figcaption>Figure 3: The equilibrium in the labour market, for fixed markup, and expected price levels.</figcaption>
+</figure>
+
+We see that, ceteris paribus, the equilibrium in the labour market determines the unemployment rate and the general wage levels. Importantly, in the special case where current price levels $P$ are equal to the the expected price levels $P^e$, the resulting unemployment rate is called the **natural rate of unemployment**, or the **structural rate of unemployment**. The requirement that $P = P^e$ means that the current prices have stabilized towards the expectated ones and the economy has reached a "stationary" state in terms of expectations. In other words, the effects of any shocks have passed and the prices have adjusted (or equivalently, expectations have adjusted to current prices).
+
+The wage-setting and price-setting relations can be used to derive a relationship between actual and future expected inflation, this being the famous [Phillips curve](https://en.wikipedia.org/wiki/Phillips_curve). Since $W = P^e F(u, z)$ and $P = (1 + \mu)W$, we can substitute one in the other to get
+
+$$
+P = P^e (1 + \mu) F(u, z).
+$$
+
+This is already pretty close to the desired result because it relates current and future expected prices. What is typically done next is to assume a linear relationship for $F(u, z)$, for example $F(u, z) = 1 - \alpha u + z$, and modify the above equation to yield the following approximation for the inflation $\pi$
+
+$$ \pi = \pi^e + (\mu + z) - \alpha u $$
+
+or even better
+
+$$ \pi_t = \pi_t^e + (\mu + z) - \alpha u_t .$$
+
+This equation is called the Phillips curve and suggests that the actual inflation in period $t$ depends on the expected inflation for period $t$. This happens because a higher expected price level $P^e$ leads to higher current prices $P$, which compared a given value of past prices, is inflation. Similarly, an increase in the markup or a decrease in the unemployment rate also lead to higher inflation.
+
+The Phillips curve represents a fairly complicated process governing the inflation rate, mainly due to the different possibilities for the formation of the expectation $\pi_t^e$. Before 1970, it was believed that the expectation was constant $\pi_t^e = \bar{\pi}$, but after that models were adapted to handle autoregressive expectations like $\pi_t^e = \theta \bar{\pi} + (1 - \theta) \pi_{t-1}$. The accuracy of the Phillips curve now depends on the accuracy of the expectation model for $\pi_t^e$ and care should be taken when choosing its functional form in order to keep the process stationary (unless one wants to model rare scenarios like hyperinflation).
+
+In light of the Phillips curve, the natural rate of unemployment has a new meaning. Since it is equal to the unemployment at equilibrium when the expected price level is equal to the actual one, the above relations suggest that this is equivalent to the unemployment at equilibrium when the expected inflation equals the actual one. That is, if $\pi_t = \pi_t^e$, then
+
+$$
+0 = (\mu + z) - \alpha u_n \Rightarrow u_n = \frac{\mu + z}{\alpha}.
+$$
+
+After that, it is easy to see that
+
+$$
+\pi_t - \pi_t^e = -\alpha (u_t - u_n).
+$$
+
+This is, again, a very important relationship. It shows that if the actual unemployment $u_t$ is greater than the natural one $u_n$, then the actual inflation $\pi_t$ will be smaller than the expected one. Likewise, if the actual unemployment is less than the natural one, the actual inflation will be greater than the expected one. 
+
+A common autoregreesive model for $\pi_t^e$ is just the previous value $\pi_{t - 1}$. This gives a model relating the changes in inflation with whether the unemployment rate is above or below its natural level:
+
+$$
+\pi_t - \pi_{t - 1} = -\alpha (u_t - u_n).
+$$
+
+If expectations are autoregressive, as they are here, then the natural rate of unemployment is the rate that keeps the inflation constant.
+
 
 <!-- In principle, the macroeconomic aggregates 
 
