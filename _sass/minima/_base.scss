@@ -216,34 +216,67 @@ blockquote {
 }
 
 
+// /**
+//  * Old Code formatting
+//  */
+// pre,
+// code {
+//   @include relative-font-size(0.9375);
+//   border: 1px solid $grey-color-light;
+//   border-radius: 1px;
+//   background-color: $background-color;
+// }
+
+// code {
+//   padding: 1px 5px;
+//   font-family: $code-font-family;
+// }
+
+// pre {
+//   padding: 8px 12px;
+//   overflow-x: auto;
+
+//    // ```... ``` fenced code blocks
+//   //  are styled here
+//   > code {
+//     border: 0;
+//     padding-right: 0;
+//     padding-left: 0;
+//   }
+// }
+
 
 /**
  * Code formatting
  */
-pre,
 code {
-  @include relative-font-size(0.9375);
-  border: 1px solid $grey-color-light;
-  border-radius: 1px;
-  background-color: $background-color;
-}
-
-code {
-  padding: 1px 5px;
+  // @include relative-font-size(0.9375);
+  background-color: rgb(45, 45, 45); //rgb(151, 149, 149)
+  color: rgb(210, 210, 210); // rgb(47, 51, 55)
+  overflow-x: auto;
   font-family: $code-font-family;
+  padding-left: 2px;
+  padding-right: 3px;
+  border-radius: 8%
 }
 
 pre {
+  @include relative-font-size(0.9375);
+  border: 1px solid $grey-color-light;
+  border-radius: 0.5%;
   padding: 8px 12px;
   overflow-x: auto;
 
+  // ```... ``` fenced code blocks
+  //  are styled here
   > code {
-    border: 0;
-    padding-right: 0;
-    padding-left: 0;
+  border-radius: 1px;
+  background-color: $background-color;
+  border: 0;
+  padding-right: 0;
+  padding-left: 0;
   }
 }
-
 
 
 /**
