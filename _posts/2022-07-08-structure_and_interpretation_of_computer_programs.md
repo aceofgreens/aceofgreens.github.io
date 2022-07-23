@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Structure and Interpretation of Computer Programs
+title: Abstraction and State
 date: 2022-07-08 16:00:00 +0200
 tags: [cs]
 ---
@@ -16,15 +16,15 @@ Programming is about decomposing problems into smaller more manageable subproble
 
 The primitive expressions consist of primitive values and their types - integers, strings, floats - as well as any built-in operators. The means of combination are for example generic types like tuple and list, and the means of abstraction are features like being able to write custom procedures, classes, iterators, context managerts, and so on.
 
-These 3 mechanisms are conceptual, they define how the language will work in principle. But to actually implement a program and run it, an interpreter is needed. An interpreter is a program that carries out the computational processes defined in a given programming language. A program without an interpreter is just a mathematical description of objects and relationships. An interpreter allows us to evaluate this description to produce results.
+These 3 mechanisms are conceptual, they define how the language will work in principle. But to actually implement a program and run it, an **interpreter** is needed. An interpreter is a program that carries out the computational processes defined in a given programming language. A program without an interpreter is just a mathematical description of objects and relationships. An interpreter allows us to evaluate this description to produce results.
 
-Central to composition is the ability to name objects, which greatly facilitates programming and is a handy tool in managing the complexity of programs. Naming is simply a mapping between names as keys, and objects as values. This association requires the interpreter to have an **environment** - a memory storing these mappings. Whenever an expression is evaluated, its variables are replaced with their values using the current name-to-value mapping.
+Central to composition is the ability to name objects, which greatly facilitates programming and is a handy tool in managing the complexity of programs. Naming is simply a binding between names as keys, and objects as values. This association requires the interpreter to have an **environment** - a memory storing these bindings. Whenever an expression is evaluated, its variables are replaced with their values using the current name-to-value mapping.
 
-Along with naming, procedures are the basis of abstraction. They allow us to name a set of statements, possibly depending on any arguments, and execute them repeatedly. If a procedure does not have assignment statements, it can be evaluated easily using a substitution model, either *normal order* (fully expand and then reduce) or *applicative order* (evaluate the arguments and then apply). Procedures with assignment statements cannot be handled using simple substitution and require the more powerful *environment* model.
+Along with naming, procedures are the basis of abstraction. They allow us to name a set of statements and execute them repeatedly. If a procedure does not have assignment statements, it can be evaluated easily using a substitution model, either *normal order* (fully expand and then reduce) or *applicative order* (evaluate the arguments and then apply). Procedures with assignment statements cannot be handled using simple substitution and require the more powerful *environment* model.
 
 *Higher order procedures* are those procedures that take in or output other procedures. Some use-cases are:
 - In mathematics, to implement partial application, composition, fixed point finders, root finders, iterative improvement solvers,
-- In decorators, to modify an input procedure by adjusting its input or output before or after its execution,
+- with decorators, to modify an input procedure by adjusting its input or output before or after its execution,
 - In currying, to convert a function taking multiple arguments into a sequence of functions each taking one argument.
 
 We can implement currying in Python 3 as follows:
@@ -94,7 +94,7 @@ def create_pair(x, y) -> Callable:
             return y
     return get
 ```
-The code above uses an inner procedure to create the pair type. Similarly, one can use nested pairs where the second element points to another pair, to represent sequences - any compound data type supporting length and item selection functionality. 
+The code above uses an inner procedure to create the pair type. Similarly, one can use nested pairs where the second element points to another pair. It is precisely this closure property, pairs of pointers being able to point to other pairs of pointers, which allows us to use pairs as building blocks in other compound data structures such as sequences - any compound data type supporting length and item selection functionality. 
 
 Working with sequences is one of the most common cases exhibiting *conventional interfaces* - a design principle encouraging data formats shared across many modular components, which can be combined, composed, or otherwise mixed, in a succinct and natural way. For example, if we are working with sequences, a common interface for many of our functions might be that they take in a sequence and output a sequence. Since this format is shared among the various functions, they can be composed arbitrarily, much like in a pipeline. This is the main idea behind the `map`/`filter`/`reduce` higher-order procedures - starting with a sequence, we can apply various selection and transformation operations to process the lists.
 
@@ -134,8 +134,36 @@ def make_dict() -> Callable:
 ```
 The function `dispatch` goes through each possible message to see which procedure to call. With many available procedures (imagine in the order of 100s), this may become unnecessarily slow. In that case, **data-directed programming** can be used. In a more general case where also the input type is variable, if we have $n$ procedures and $m$ different data types, we can have up to $nm$ if-else checks for finding the right procedure to call. To add the $m+1$-th type, we'll have to modify all $n$ procedures and add one new check to their code, which is tedious and error-prone. Data-directed programming solves this by having a table where the rows indicate the procedures and the columns the types. Each entry in the table shows the procedure to call for that input type. When we want to add a new type, we just add some new entries to the table. This means that functionality for new types can be designed in isolation and then combined additively (without modification).
 
+### Modularity and state
+To keep programs modular, it's useful to represent real world entities as durable objects that change through the program execution. Having a state can be achieved either through object-oriented programming (OOP), where each class instance has a state, or through procedural abstractions. 
+
+```python
+def make_withdraw(balance: int):
+    def withdraw(amount: int):
+        nonlocal balance
+        if amount > balance:
+            return "Insufficient funds"
+        balance = balance - amount
+        return balance
+    return withdraw
+```
+
+A classic example of a stateful procedure is an ATM where we set the initial balance and return an inner procedure, modifying that balance. If a given function only ever reads a variable then the value of this variable can easily be substituted inside the function.
+
+But with assignment introduced, the substitution model is no longer an adequate model of procedure application. It is now important to know at what time a variable was bound to a given value. This can be achieved using the environment model.
+
+The environment model consists of a sequence of frames. Each frame has
+- a table of bindings between names and values
+- a pointer to the enclosing environment.
+
+To compute an expression in a given environment, we (i.e., the interpreter) look up if the variable name is bound in the current frame. If it is, we substitutes it with its corresponding value, otherwise we looks in the table of bindings of the enclosing environment, and so on, until a binding is found, or we reach the global environment.
+
+To evaluate a procedure that in turn calls other procedures, we create a new frame for each procedure call.  The binding table contains the formal parameter names bound to the arguments, and the pointer references the environment from which the function was called. This allows us to efficiently resolve naming conflicts between local and global variables. 
+
+So long as we do not use assignments, two evaluations of the same procedure with the same arguments will produce the same result. Such procedures can be viewed as computing mathematical functions. Programming without any use of assignments is accordingly known as **functional programming**.
+
+In contrast to functional programming (a special type of declarative programming), programming that makes extensive use of assignment is known as **imperative programming**. Programs written in imperative style are additionally susceptible to bugs related to the ordering of statements around the assignment, as well as concurrency issues. Nonetheless, modeling entities as objects, each with its own state, is very convenient and natural.
 
 
-<!-- The major implementation cost of first-class procedures is that allowing procedures
-to be returned as values requires reserving storage for a procedure’s free variables even
-while the procedure is not executing. -->
+
+
