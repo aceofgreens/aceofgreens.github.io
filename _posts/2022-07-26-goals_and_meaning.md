@@ -1,6 +1,6 @@
 ---
 layout: post
-title: On Goal Generation
+title: Goals and Meaning
 date: 2022-07-26 16:00:00 +0200
 tags: [ai, ultra-rationalism, rl]
 ---
@@ -66,8 +66,25 @@ In reality, it is not that the $pq$-system really performs addition, it's just t
 
 With humans, I like to think that meaning and rewards are, likewise, closely related. Since rewards are sparse, it is not often that we find our actions and their results meaningful. I believe that meaning arises when we consider how our actions in the current state will increase or decrease the likelihood of obtaining rewards. Ultimately, we all have a mental model of past state-action-reward trajectories from which we learn. Our current actions become meaningful only when we find an isomorphism between the perceived effect of these actions in terms of reward collection and the past trajectories of collected state-action-reward transitions. In other words, I believe that the meaning we attribute to actions is ultimately tied to the biochemical rewards on which we depend.
 
+This isomorphism idea of meaning is powerful, but it's not the only available one. We can also try an [operational semantics](https://en.wikipedia.org/wiki/Operational_semantics) approach. This comes from computer science where the semantics (meaning) of an executable statement are defined to be the exact consequences of that statement and how it is to be executed by a, *broadly* speaking, interpreter.
+For example, we can say that
 
+$$
+\big ( \langle C_1, s \rangle \rightarrow s' \big ) \Rightarrow \big (\langle C_1; C_2, s \rangle \rightarrow \langle C_2, s' \rangle \big).
+$$
 
+This means that if a program $C_1$, starting in state $s$, changes the state to $s'$, then piping two programs $C_1$ and $C_2$ sequentially and starting from $s$, will change the state to whichever state $C_2$ changes it to, starting from $s'$. This gives meaning to the sequential composition of two programs $C_1;C_2$ and this meaning is defined by following the operation of the program.
+
+Note that this type of meaning, where the meaning of statements is based on how they are executed, is quite raw and primitive. It's very general, but it doesn't fit our setting of actions and rewards intuitively. 
+We can always say that the programs $C_1$ and $C_2$ are two policies controlling our actions. In that sense, operational semantics tells us that the effect of composing two sequences of actions, given that we know how the first sequence will change the environment, is based on how the second sequence will change the environment. If we think of each state $s$ as having its own reward $r$, then yes, actions sequences are meaningful, depending on the states $s$ and $s'$ through which you pass.
+
+We've explored how rewards and meaning mix together. But what about the rewards themselves? How do they arise? Since rewards are biochemical, I think it's logical to say that the actions our reward system incentivizes are those that provoke the highest positive biochemical response. The agent seeks pleasure, delight, and satisfaction in an almost hedonistic way. Even agents that are far-sighted (with very high time preferences) still form goals based on the maximization of biochemical rewards.
+
+It is not uncommon to find people whose ultimate goals are to "sit on the front porch, relax, drink whiskey, and smoke cigars". This maximizes their rewards and you can't blame them. And yet, other more abstract goals like "become financially independent" are just as common. One possible explanation for their occurence is that these "extrinsic" rewards derive their motivational value as a result of learned association with real biochemical rewards. In order to enjoy the finest cigars I need to be financially independent, or so it goes. As a result, the extrinsic rewards become correlated with the intrinsic ones.
+
+Another thing is that our reward production is very, for lack of a better word, psychosomatic. If you're down or depressed, menial activities that usually produce immediate rewards may not produce now. In that sense, your mental health affects your physical health. Likewise, various rewards can be weighted differently at times. For example, if you're desperately hungry, the reward from consumption is the only one that matters. One small nitpick here is that the word psychosomatic implies a kind of autonomous mental and physical systems, whereas I'm not so sure if the mental state of a person is not directly accounted for by their physical state.
+
+To summarize, humans are agents that learn through a sophisticated kind of reinforcement. A set of intrinsic reward signals has helped us evolve and adapt. The observed abundance in meaning results from associating high level outcomes to low-level biochemical rewards. I'd like to think that this is all there is...
 
 
 
@@ -77,8 +94,7 @@ What are the rewards - psychosomatic,
 association. -->
 
 <!-- Main ideas: 
-Meaning as semantics (operational)
+Association between higher order states of the world
 psychosomatic rewards
 Control through sensors
-Association between higher order states of the world
  -->

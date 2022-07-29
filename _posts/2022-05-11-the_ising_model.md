@@ -70,7 +70,7 @@ from scipy.signal import correlate2d
 
 def ising_model_metropolis_sample(n: int, T: float, num_iters: int):
     """
-    Iterates the Metropolis dynamics for a the Ising model for a fixed number
+    Iterates the Ising model Metropolis dynamics for a fixed number
     of iterations. Returns a sample from the approximate equilibrium distribution.
     """
     j = 0
