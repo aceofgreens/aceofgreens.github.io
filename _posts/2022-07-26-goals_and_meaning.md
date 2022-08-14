@@ -35,7 +35,7 @@ But I bet you that none of these are consciously chosen by us. I expect that the
 
 Before moving on, let's explore one particular concept from Douglas Hofstadter's almighty book [Gödel, Escher, Bach](https://en.wikipedia.org/wiki/G%C3%B6del,_Escher,_Bach). While I disagree with some of his ideas, I believe this one is spot on and fits nicely in this discussion. Let's explore the $pq$-system.
 
-The $pq$-system consists of theorems and axioms. Both of these are made up entirely out of the symbols $p$, $q$ and $-$ (a hyphen). An axiom is any combination of these symbols such that $x p - q x-$, where $x$ and $y$ consist of only hyphens. So, for example, all of the following strings belong to the $pq$-system as axioms.
+The $pq$-system consists of theorems and axioms. Both of these are made up entirely out of the symbols $p$, $q$ and $-$ (a hyphen). An axiom is any combination of these symbols of the form $x p - q x-$, where $x$ and $y$ consist of only hyphens. So, for example, all of the following strings belong to the $pq$-system as axioms.
 
 $$
 \begin{aligned}
@@ -46,7 +46,7 @@ $$
 \end{aligned}
 $$
 
-Apart from axioms, the $pq$-system also has a rule for defining theorems. Theorems are strings for which we can prove they belong to the system. The rule for defining new theorems is as follows: if $x$, $y$, and $z$ are strings containing hyphens only, and if $x p y q z$ is a theorem, then $x p y - q z -$ is also a theorem. So, for example, if
+Apart from axioms, the $pq$-system also has a rule for defining theorems. Theorems are strings for which we can prove they belong to the system. The only difference between axioms and theorems is that axioms are in the system by virtue of their definition, while for theorems, we can prove their inclusion using logic. That logic is called theorem-production rules. In the $pq$-system the rule for defining new theorems is as follows: if $x$, $y$, and $z$ are strings containing hyphens only, and if $x p y q z$ is a theorem, then $x p y - q z -$ is also a theorem. So, for example, if
 
 $$
 --p--q-----
@@ -58,7 +58,7 @@ $$
 --p---q------
 $$
 
-is also a theorem. The central question of the $pq$-system is to determine whether any given string is a theorem. For example, is $- p q - q - $ a theorem? No, because starting from the axiomatic strings, even if we apply the theorem production rule as many times as we want, the resulting string will never be $- p q - q - $. On the other hand, is $ - - p - - - q - - - - - $ a theorem? Yes, because starting from the axiom $ - - p - q - - - $ and applying the production rule 2 times, we reach the required string.
+is also a theorem. The central question of the $pq$-system is to determine whether any given string is in the system or not. This boils down to finding out if the given string is a theorem. For example, is $- p q - q - $ a theorem? No, because starting from the axiomatic strings, even if we apply the theorem production rule as many times as we want, the resulting string will never be $- p q - q - $. On the other hand, is $ - - p - - - q - - - - - $ a theorem? Yes, because starting from the axiom $ - - p - q - - - $ and applying the production rule 2 times, we reach the required string.
 
 Can you figure out a way to easily determine which strings are theorems? Have you spotted the regularity in the form of the theorems? As it turns out, a string is in the $pq$-system if it represents a valid addition statement. $ - p - - q - - -$ is in the system, because we can count the number of hyphens and reach $1 + 2 = 3$. The $p$ stands for plus, and the $q$ for equals. The theorems simply resemble addition.
 
@@ -80,11 +80,14 @@ We can always say that the programs $C_1$ and $C_2$ are two policies controlling
 
 We've explored how rewards and meaning mix together. But what about the rewards themselves? How do they arise? Since rewards are biochemical, I think it's logical to say that the actions our reward system incentivizes are those that provoke the highest positive biochemical response. The agent seeks pleasure, delight, and satisfaction in an almost hedonistic way. Even agents that are far-sighted (with very high time preferences) still form goals based on the maximization of biochemical rewards.
 
-It is not uncommon to find people whose ultimate goals are to "sit on the front porch, relax, drink whiskey, and smoke cigars". This maximizes their rewards and you can't blame them. And yet, other more abstract goals like "become financially independent" are just as common. One possible explanation for their occurence is that these "extrinsic" rewards derive their motivational value as a result of learned association with real biochemical rewards. In order to enjoy the finest cigars I need to be financially independent, or so it goes. As a result, the extrinsic rewards become correlated with the intrinsic ones.
+It is not uncommon to find people whose ultimate desires are to "sit on the front porch, relax, drink whiskey, and smoke cigars". This maximizes their rewards and you can't blame them. What gives their actions meaning is how much each action contributes to achieving this blissful state. And yet, other more abstract goals like "become financially independent" are just as common. One possible explanation for their occurence is that these "extrinsic" rewards derive their motivational value as a result of learned association with real biochemical rewards. In order to enjoy the finest cigars I need to be financially independent, or so it goes. As a result, the extrinsic rewards of being financially secured become correlated with the intrinsic biochemcal ones.
 
-Another thing is that our reward production is very, for lack of a better word, psychosomatic. If you're down or depressed, menial activities that usually produce immediate rewards may not produce now. In that sense, your mental health affects your physical health. Likewise, various rewards can be weighted differently at times. For example, if you're desperately hungry, the reward from consumption is the only one that matters. One small nitpick here is that the word psychosomatic implies a kind of autonomous mental and physical systems, whereas I'm not so sure if the mental state of a person is not directly accounted for by their physical state.
+Another thing is that our reward production is very, for lack of a better word, psychosomatic. If you're down or depressed, menial activities that usually produce immediate rewards may not produce now. Depressed people enjoy chocolate far less than non-depressed ones. In that sense, your mental health affects your physical health. Likewise, your physical state can also affect your mental state. For example, if you're desperately hungry, the reward from consumption is the only one that matters right now.
 
-To summarize, humans are agents that learn through a sophisticated kind of reinforcement. A set of intrinsic reward signals has helped us evolve and adapt. The observed abundance in meaning results from associating high level outcomes to low-level biochemical rewards. I'd like to think that this is all there is...
+One small nitpick here is that the word psychosomatic implies, in some way, the existence of separate mental and physical "foundations". I think this form of [Cartesian duality](https://en.wikipedia.org/wiki/Mind%E2%80%93body_dualism#Cartesian_dualism) is an absurd idea and is not at all what I mean. To be precise, reward production is a physical process, itself determined by many other physical processes - the heart maintains the blood flow, the brain maintains the mental simulation in which we live (sometimes eerily called the psychosphere) and so on. Reward is psychosomatic in the sense that both physical and psychological factors affect it. Nonetheless, psychological factors have physical precursors.
+
+To summarize, humans are agents that learn through a sophisticated kind of reinforcement. A set of evolved intrinsic reward signals has helped us modulate our behaviours and adapt to the dynamic environment. Being autotelic agents, we attribute personal meaning to our actions, but this does not mean that we are free to choose that meaning. We maximize biochemical rewards. Good life can't be understood in any other way than through the psychosomatic dopamine secretions in your brain. This is what gives you meaning.
+The observed abundance in meaning results from associating high level outcomes to low-level biochemical rewards. I'd like to think that this is all there is, at least in principle. We'll see...
 
 
 
