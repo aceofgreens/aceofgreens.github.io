@@ -66,6 +66,14 @@ img {
     display: block;
     // vertical-align: middle;
     border-radius: 2%;
+
+    // If the website is viewed on a mobile device,
+    // the sizes of big images will be capped
+    @include media-query($on-palm) {
+      margin-left: 0%;
+      margin-right: 0%;
+      max-width: 100%;
+    }
   }
 
   &.extra_big_img {
@@ -75,6 +83,14 @@ img {
     display: block;
     // vertical-align: middle;
     border-radius: 2%;
+
+    // If the website is viewed on a mobile device,
+    // the sizes of big images will be capped
+    @include media-query($on-palm) {
+      margin-left: 0%;
+      margin-right: 0%;
+      max-width: 100%;
+    }
   }
 
   &.small_img {
@@ -88,6 +104,19 @@ img {
 
 
 }
+
+
+
+/**
+ * MathJax
+ */
+.MathJax_Display, .MJXc-display, .MathJax_SVG_Display {
+  @include media-query($on-palm) {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+}
+
 
 
 /**
