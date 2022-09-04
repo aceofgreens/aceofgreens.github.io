@@ -67,9 +67,9 @@ img {
     // vertical-align: middle;
     border-radius: 2%;
 
-    // If the website is viewed on a mobile device,
-    // the sizes of big images will be capped
-    @include media-query($on-palm) {
+    // If the device width allows overflowing, overflow the images on the left and right,
+    // otherwise cap the sizes to be equal to $content-width
+    @include media-query(calc(1.2 * #{$content-width})) {
       margin-left: 0%;
       margin-right: 0%;
       max-width: 100%;
@@ -84,9 +84,9 @@ img {
     // vertical-align: middle;
     border-radius: 2%;
 
-    // If the website is viewed on a mobile device,
-    // the sizes of big images will be capped
-    @include media-query($on-palm) {
+    // If the device width allows overflowing, overflow the images on the left and right,
+    // otherwise cap the sizes to be equal to $content-width
+    @include media-query(calc(1.6 * #{$content-width})) {
       margin-left: 0%;
       margin-right: 0%;
       max-width: 100%;
@@ -111,7 +111,7 @@ img {
  * MathJax
  */
 .MathJax_Display, .MJXc-display, .MathJax_SVG_Display {
-  @include media-query($on-palm) {
+  @include media-query($content-width) {
     overflow-x: auto;
     overflow-y: hidden;
   }

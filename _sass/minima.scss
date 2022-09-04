@@ -40,8 +40,6 @@ $highlight-rouge-background-color: $background-color; //eef
   $highlight-rouge-background-color: $background-color; //eef 
 }
 
-
-
 $table-text-align: left !default;
 
 // Width of the content area
@@ -57,11 +55,13 @@ $on-laptop:        800px !default;
 //     padding-left: $spacing-unit / 2;
 //   }
 // }
+
 @mixin media-query($device) {
   @media screen and (max-width: $device) {
     @content;
   }
 }
+
 
 @mixin relative-font-size($ratio) {
   font-size: $base-font-size * $ratio;
