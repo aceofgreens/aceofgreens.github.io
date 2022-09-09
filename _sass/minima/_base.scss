@@ -102,6 +102,15 @@ img {
     border-radius: 2%;
   }
 
+  &.extra_small_img {
+    margin-left:20%; 
+    margin-right:0%;
+    max-width: 60%;
+    display: block;
+    // vertical-align: middle;
+    border-radius: 2%;
+  }
+
 
 }
 
