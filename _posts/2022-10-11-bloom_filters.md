@@ -20,7 +20,7 @@ So how do we represent the set membership relation? When adding an element $x$, 
 
 To query an input $x'$ we compute $h_1(x'), ..., h_k(x')$ and look whether all the corresponding array bits are $1$. If even a single position is $0$, then most certainly $x'$ is not in the set. Why? Because if it's in the set, we would have set $h_1(x'), ..., h_k(x')$ all to $1$ upon adding $x'$. On the other hand, if all of $h_1(x'), ..., h_k(x')$ are $1$, then either $x'$ is really in the set, or we've modified $h_1(x'), ..., h_k(x')$ by chance when previously adding other elements. In that case, the result "Yes" *may* turn out to be a false positive.
 
-We can calculate its probability easily. We model the set $\mathcal{S}$ with the bit array $M$. The probability that a hash function sets a given bit is $\frac{1}{m}$, where $m$ is the size of the bit array. The probability of not setting that bit is $1 - \frac{1}{m}$. Likewise, assuming the hash functions are all independent, the probability of a bit not being set by all $k$ hash functions is
+We can calculate the probability of false positives easily. We model the set $\mathcal{S}$ with the bit array $M$. The probability that a hash function sets a given bit is $\frac{1}{m}$, where $m$ is the size of the bit array. The probability of not setting that bit is $1 - \frac{1}{m}$. Likewise, assuming the hash functions are all independent, the probability of a bit not being set by all $k$ hash functions is
 
 $$
 P(M[i] = 0) = \big (1 - \frac{1}{m} \big )^k.
@@ -61,7 +61,7 @@ Note that with only 1 hash function, for a missing element $x'$, a false positiv
 
 Unfortunately, Bloom filters do not provide a way to know how many elements are in the set. There are estimation formulas for that [3]. Another disadvantage is that there is no way to remove elements from the set. We cannot just hash the element $x$ we want to delete, and set the corresponding bits to 0, because this will also delete any other elements that coincidentally hash to the same bit array indices. With a classic Bloom filter, the only way to delete an element is to rebuild the whole bit array again, without that element. If we go towards supporting additional functionality, counting Bloom filters don't simply set the selected bits to 1, but actually increment the value at those indices by 1. To delete an element then, one computes the hashes and decrements all indices by 1. If any of them is equal to 0, then the element is not in the set. This counting approach, however, has its drawbacks as well - larger array size, limited scalability, and arithmetic overflow.
 
-A nice additional feature, albeit of limited practical value, is that one can compute the union of two sets by simply `OR`-ing the two respective Bloom filter arrays, assuming they have the same array size and hash functions. The resulting array will represent the union. If instead, we apply the `AND` operator, the resulting Bloom filter has a false positive rate equal to the maximum rate of the two input filters. This may be larger than the false positive rate that we get if we build the resulting Bloom filter from scratch.
+A nice additional feature, albeit of limited practical value, is that one can compute the union of two sets by simply `OR`-ing the two respective Bloom filter arrays, assuming they have the same array size and hash functions. The resulting array will represent the union. If instead, we apply the `AND` operator, the resulting Bloom filter has a false positive rate equal to the maximum rate of the two input filters. This may be larger than the false positive rate that we get if we build the resulting Bloom filter for the set intersection from scratch.
 
 There are various other data structures which improve over the Bloom filter by adding the ability to delete elements from the set, and reducing the space overhead. One popular such structure is the [Cuckoo filter](https://en.wikipedia.org/wiki/Cuckoo_filter), invented in 2014 [4].
 
@@ -80,24 +80,24 @@ Going from cuckoo hashing to cuckoo filters takes a bit more work but is managea
 
 To lookup an item $x$:
 1. We compute the fingerprint $f$ of $x$
-2. We compute two bucket indices $i$ and $j$ such that  
+2. We compute two bucket indices $i_1$ and $i_2$ such that  
 $i_1 = h_1(x)$ and $i_2 = i_1 \oplus h_2(f)$
 3. If $M[i_1]$ or $M[i_2]$ contains $f$, return `true`, else return `false`.
 
 Here $\oplus$ is the bitwise `XOR` operation. The use of multiple hash functions bears resemblance to the Bloom filters. The calculation with the `XOR` operation is called *partial-key cuckoo hashing* and allows one to calculate the second bucket index directly from the first and the fingerprint, bypassing the need to retrieve the original item (which may be large and stored on disk).
 
-The deletion is very similar, we calculate the buckets $i$ and $j$ and if one of them has the fingerprint $f$, we delete a copy of $f$ from that bucket. Importantly, deletion is dangerous because it may delete an element whose fingerprint collides with that of the element we really want to delete. It is safe to delete only items which have been inserted in the table.
+The deletion is very similar, we calculate the bucket indices $i_1$ and $i_2$ and if one of them has the fingerprint $f$, we delete a copy of $f$ from that bucket. Importantly, deletion is dangerous because it may delete an element whose fingerprint collides with that of the element we really want to delete. It is safe to delete only items which have been inserted in the table.
 
 Finally, the insertion strongly resembles that of standard cuckoo hashing:
 1. Compute the fingerprint $f$ of $x$
-2. Compute two bucket indices $i$ and $j$ such that  
+2. Compute two bucket indices $i_1$ and $i_2$ such that  
 $i_1 = h_1(x)$ and $i_2 = i_1 \oplus h_2(f)$
 3. If $M[i_1]$ or $M[i_2]$ has an empty entry, add $f$ in that bucket and return
 4. Otherwise, select $i$ randomly from $i_1$ and $i_2$
 5. Select a random entry $e$ from $M[i]$
 6. Swap $f$ with $e$
-7. Compute the second index $i = i \oplus h_2(f)$
-8. If $M[i]$ has an empty entry, add $f$ to it and return
+7. Compute the second index $j = i \oplus h_2(f)$
+8. If $M[j]$ has an empty entry, add $f$ to it and return
 9. Otherwise repeat 4-8 until until an empty entry is found or a number of specified iterations have passed.
 
 <figure>
