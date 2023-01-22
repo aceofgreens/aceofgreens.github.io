@@ -59,7 +59,7 @@ $$
 So how might we compute Radon transform for a given image $f(x, y)$?
 1. First, the image has to be padded to a square. This is easily achieved by adding zero rows and columns such that the the non-zero pixels of the actual image stay roughly in the center of the resulting square image.
 2. Create an array of $N$ angles for the lines - $(\phi_1, \phi_2, ..., \phi_N)$. These should span the range from 0 to 180 degrees.
-3. Initialize an array to store the Radon transform results. This should have as many rows as the padded image and as many columns as the angles.
+3. Initialize a matrix to store the Radon transform results. This should have as many rows as the padded image and as many columns as the angles. This matrix is called a sinogram.
 4. For each of the angles, rotate the image by that amount.
 The rotation can be achieved by using a similarity matrix. The translations in the third column ensure that the centre $(c_x, c_y)$ does not change when rotating. Then, sum the pixel intensities across the rows and store the aggregated values in the corresponding column in the Radon array.
 
@@ -72,6 +72,74 @@ $$
 $$
 
 At the end we are left with a matrix containing the integrals for the various $(\phi, r)$ lines, where $\phi$ angles has been defined manually and the distances $r$ comes from the pixels along the side of the image.
+
+So this is what the X-ray detectors collect after many rotations. However, What we really care about is the reconstruction of the original image from the sinogram. Since in reality we don't have access to the original image, but only the sinogram, we need to reverse the Radon transform to reconstruct the original image.
+
+To understand how this can be done, first list down the 1D and 2D Fourier transforms:
+
+$$
+\begin{aligned}
+\hat{f}(\xi) & = \int_{-\infty}^\infty f(x)e^{-2 \pi i \xi x} dx \\
+\hat{f}(\xi_x, \xi_y) & = \iint_{-\infty}^\infty f(x, y) e^{-2\pi i (\xi_x x + \xi_y y)} dx dy
+\end{aligned}
+$$
+
+Now, let's take the Radon transform $g(\phi, r)$ and apply a one-dimensional Fourier transform on it, along the radius $r$, holding $\phi$ fixed. We get
+
+$$
+\begin{aligned}
+\hat{g}(\phi, \xi) & = \int_{-\infty}^\infty g(\phi, r)e^{-2 \pi i \xi r} dr \\
+& = \iiint f(x, y) \delta(x \cos \phi + y \sin \phi - r)  e^{-2 \pi i \xi r} dx dy dr \\
+& = \iint f(x, y) e^{-2 \pi i \xi (x \cos \phi + y \sin \phi)} dx dy
+\end{aligned}
+$$
+
+The change from the second to the third line comes from the sifting property of the Dirac delta function: when integrating across $r$, we know that all contributions where $r \ne x\cos \phi + y \sin \phi$ will be zero and hence we can just evaluate the inner function at $r = x\cos \phi + y \sin \phi$. In any case, one can recognize that line three is actually the two-dimensional Fourier transform evaluated at $\xi \cos \phi$ and $\xi \sin \phi$. And this is not a coincidence, it results from the [Fourier slice theorem](https://en.wikipedia.org/wiki/Projection-slice_theorem), stating that the one-dimensional Fourier transform of a single Radon projection projection is equal to the two-dimensional Fourier transform of the original image evaluated on the line on which the projection was taken.
+
+We have established that by taking one-dimensional convolutions on the Radon projections, we obtain points from the two-dimensional Fourier transform on the original image. The next logical step would be to reconstruct the image with the inverse Fourier transform.
+
+For the two dimensional case the inverse is given by
+
+$$
+f(x, y) = \iint F(u, v) e^{2 \pi i (u x + v y)} du dv.
+$$
+
+Let's change to polar coordinates. We set $u = r \cos \phi$ and $v = r \sin \phi$. The determinant of the Jacobian of the transformation is then
+
+$$
+\det 
+\begin{bmatrix}
+\cos \phi & -r \sin \phi \\
+\sin \phi & r \cos \phi\\
+\end{bmatrix}
+
+= r
+$$
+
+and the inverse Fourier transform becomes
+
+$$
+f(x, y) = \iint F(\phi, r) e^{2 \pi i r(x \cos \phi + y \sin \phi)} |r| dr d\phi.
+$$
+
+Here $r$ and $\phi$ are placeholder variables and should only showcase the general functional form. By substituting them with $\xi$, the frequency along the original $r$ dimension, and $\phi$, the angle, we can get the inverse 2D transform for our particular problem:
+
+$$
+f(x, y) = \iint \hat{g}(\phi, \xi) e^{2 \pi i \xi(x \cos \phi + y \sin \phi)} |\xi| d \xi d\phi.
+$$
+
+Then, the general strategy of reconstructing the image at point $(x, y)$ is the following: for every line passing through $(x, y)$, each with its own angle $\phi$, compute the inverse one-dimensional Fourier transform along the frequency dimension $\xi$ (this would be the inner integral), evaluate it at $(x, y)$, and add the resulting values together (corresponding to the outer integral).
+
+There is a problem however. Since often more lines intersect at the center of the image, the center of our reconstruction will be brighter, and possibly blurrier. This can be fixed, and surprisingly, the solution comes out of the function itself.
+The term $|\xi|$ is called a *ramp* filter because it filters out low frequency signals. It deblurs the image and makes the edges sharper. Here, it is in the frequency domain and is multiplied to the other function, but it can also be applied in the spatial domain [as a convolution](https://en.wikipedia.org/wiki/Convolution_theorem). In fact, in the spatial domain it corresponds to a wavelet.
+
+<figure>
+    <img class='extra_big_img' src="/resources/radon.png" alt="The Radon transform and reconstruction" width="1200">
+    <figcaption>Figure 1: The original image is on the left. The sinogram (Radon transform) is in the middle. The reconstruction is on the right. The shapes of the images and of the sinogram do not match due to required padding during the operations.</figcaption>
+</figure> 
+
+
+
 
 <!-- Image taken from here https://commons.wikimedia.org/wiki/File:CT_of_a_normal_brain,_axial_17.png -->
 
