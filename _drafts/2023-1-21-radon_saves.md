@@ -17,6 +17,11 @@ Computed tomography, also called computerized tomography is a technique to do to
 
 The main aspect of theoretical interest is that, for each X-ray, the detector in which it falls, captures the total loss of energy of the ray. Thus from a single measurement we cannot determine where exactly the energy decreased most, how many different types of tissues it went through, and what they different densities were. In a sense, what we only see is the sum aggregated from many interactions. The question is how we can reconstruct the inner geometry of the medium from these aggregates - a difficult inverse problem.
 
+<figure>
+    <img class='small_img' src="/resources/radon_setup_2.png" alt="The Radon transform and reconstruction" width="1200">
+    <figcaption>Figure 1: The computed tomography setup.</figcaption>
+</figure> 
+
 For the sake of discussion, suppose the real image of the given slice is given by the function $f(\textbf{x}) = f(x, y)$, where $x$ and $y$ are the spatial coordinates. A single X-ray travels as a line $L$ and, simplifying a bit, we observe the integral of the function across that line
 
 $$
@@ -94,7 +99,7 @@ $$
 \end{aligned}
 $$
 
-The change from the second to the third line comes from the sifting property of the Dirac delta function: when integrating across $r$, we know that all contributions where $r \ne x\cos \phi + y \sin \phi$ will be zero and hence we can just evaluate the inner function at $r = x\cos \phi + y \sin \phi$. In any case, one can recognize that line three is actually the two-dimensional Fourier transform evaluated at $\xi \cos \phi$ and $\xi \sin \phi$. And this is not a coincidence, it results from the [Fourier slice theorem](https://en.wikipedia.org/wiki/Projection-slice_theorem), stating that the one-dimensional Fourier transform of a single Radon projection projection is equal to the two-dimensional Fourier transform of the original image evaluated on the line on which the projection was taken.
+Here $\xi$ is the frequency variable corresponding to $r$. The change from the second to the third line comes from the sifting property of the Dirac delta function: when integrating across $r$, we know that all contributions where $r \ne x\cos \phi + y \sin \phi$ will be zero and hence we can just evaluate the inner function at $r = x\cos \phi + y \sin \phi$. In any case, one can recognize that line three is actually the two-dimensional Fourier transform evaluated at $\xi \cos \phi$ and $\xi \sin \phi$. And this is not a coincidence, it results from the [Fourier slice theorem](https://en.wikipedia.org/wiki/Projection-slice_theorem), stating that the one-dimensional Fourier transform of a single Radon projection projection is equal to the two-dimensional Fourier transform of the original image evaluated on the line on which the projection was taken.
 
 We have established that by taking one-dimensional convolutions on the Radon projections, we obtain points from the two-dimensional Fourier transform on the original image. The next logical step would be to reconstruct the image with the inverse Fourier transform.
 
@@ -135,9 +140,10 @@ The term $|\xi|$ is called a *ramp* filter because it filters out low frequency 
 
 <figure>
     <img class='extra_big_img' src="/resources/radon.png" alt="The Radon transform and reconstruction" width="1200">
-    <figcaption>Figure 1: The original image is on the left. The sinogram (Radon transform) is in the middle. The reconstruction is on the right. The shapes of the images and of the sinogram do not match due to required padding during the operations.</figcaption>
+    <figcaption>Figure 2: The original image is on the left. The sinogram (Radon transform) is in the middle. The reconstruction is on the right. The shapes of the images and of the sinogram do not match due to required padding during the operations.</figcaption>
 </figure> 
 
+<!-- https://commons.wikimedia.org/wiki/File:CT_of_a_normal_brain_(thumbnail).png -->
 
 
 
