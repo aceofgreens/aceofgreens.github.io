@@ -41,6 +41,19 @@ Reconstructing with the actual magnitudes and a set of random phases, or with th
 
 This is the first hint that **by modifying the phases** we can change the shapes of the objects in the image and potentially **enhance any edges or visually impaired features**.
 
+Additional insights can be gained by exploring how an electromagnetic pulse, like light, propagates in a dispersive medium, like a fiber. This will be useful to showcase how optical dispersion in fiber changes the phases of the waves. Wave propagation is a complicated topic and the cornerstone here is the following fundamental partial differential equation:
+
+$$
+i \frac{\partial A }{\partial z} + \frac{i \alpha}{2} A - \frac{\beta_2 }{2} \frac{\partial^2 A}{\partial t^2 } + \gamma |A|^2 A = 0.
+$$
+
+This equation is fundamental and deserves some explanation:
+- We can imagine a one-dimensional horizontal fiber of length $L$. The variable $z$ is the spatial distance from the start of the fiber, and ranges from $0$ to $L$. The variable $t$ is the time and shows how various quantities change through time.
+- Suppose the input signal is $f(t)$. As it travels through the fiber it's modified by various fiber characteristic effects into the output signal $y(t)$. Our main interest is in estimating what is $y(t)$ and how $f(t)$ changes into it.
+- $A(z, t)$ is the amplitude of the signal at position $z$ and time $t$
+- $\alpha$ is an *attenuation* parameter and is related to how much information is lost in the fiber. The entire term $i \alpha A /2$ represents the loss at the current amplitude,
+- $\beta_2$ is called the [*group velocity dispersion* (GVD)](https://en.wikipedia.org/wiki/Group_velocity_dispersion) parameter. It relates to how the pulse travelling through the fiber broadens due to [dispersion](https://en.wikipedia.org/wiki/Dispersion_(optics)). This happens because in a dispersive medium, the refraction index depends on the wavelength and hence, white light, being a combination of many individual monochromatic components, is broken down into its spectral colors. Additionally, with dispersion the [velocity of individual waves](https://en.wikipedia.org/wiki/Phase_velocity) depends on the wavelength and hence the shape of the [pulse](https://en.wikipedia.org/wiki/Wave_packet), itself being a combination of possibly many waves, is broadened as some of the waves start to travel [faster than the pulse itself](https://en.wikipedia.org/wiki/Group_velocity). 
+- The $\gamma$ parameter controls the nonlinearity term $\gamma\|A\|^2 A$ and represents many of the nonlinear effects that could arise in optical fibers. These are mainly caused by the fact that the polarization density depends nonlinearly on the electric field of the light.
 
 <!-- 1. Phase and amplitude, Fourier phase of images
 2. NLSE for propagation
