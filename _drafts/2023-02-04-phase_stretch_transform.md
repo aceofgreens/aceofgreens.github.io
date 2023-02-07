@@ -55,6 +55,37 @@ This equation is fundamental and deserves some explanation:
 - $\beta_2$ is called the [*group velocity dispersion* (GVD)](https://en.wikipedia.org/wiki/Group_velocity_dispersion) parameter. It relates to how the pulse travelling through the fiber broadens due to [dispersion](https://en.wikipedia.org/wiki/Dispersion_(optics)). This happens because in a dispersive medium, the refraction index depends on the wavelength and hence, white light, being a combination of many individual monochromatic components, is broken down into its spectral colors. Additionally, with dispersion the [velocity of individual waves](https://en.wikipedia.org/wiki/Phase_velocity) depends on the wavelength and hence the shape of the [pulse](https://en.wikipedia.org/wiki/Wave_packet), itself being a combination of possibly many waves, is broadened as some of the waves start to travel [faster than the pulse itself](https://en.wikipedia.org/wiki/Group_velocity). 
 - The $\gamma$ parameter controls the nonlinearity term $\gamma\|A\|^2 A$ and represents many of the nonlinear effects that could arise in optical fibers. These are mainly caused by the fact that the polarization density depends nonlinearly on the electric field of the light.
 
+It's worth mentioning that if $\alpha = 0$ we get the [Nonlinear Schrödinger Equation](https://en.wikipedia.org/wiki/Nonlinear_Schr%C3%B6dinger_equation) (NLSE), where the role of the spatial and temporal variables have been swapped. In general, the pulse propagation equation does not have a close-form analytical solution. In practice it's solved numerically using finite differences or the so-called [Split-step Fourier](https://en.wikipedia.org/wiki/Split-step_method) method which is at least an order of magnitude faster.
+
+To understand the phase stretch transform we have to solve the pulse propagation equation. However, we'll simplify considerably by assuming that the fiber is lossless, $\alpha = 0$, and that there are no nonlinearities. This leaves only the dispersion term and makes the resulting equation resemble the [heat equation](https://en.wikipedia.org/wiki/Heat_equation) in functional form:
+
+$$
+\frac{\partial A}{\partial z} = -i \frac{\beta_2}{2} \frac{\partial^2 A}{\partial t}.
+$$
+
+The shortest solution is to transform both sides of the equality into frequency space and solve the equation there. 
+For simplicity, let's consider this Fourier transform form (other conventions are also possible)
+$$
+f(\omega) = \int_{-\infty}^\infty f(x) e^{-i\omega x} dx.
+$$
+
+$A$ consists of two variables, $z$ and $t$. We apply the Fourier transform along the $t$ dimension, after which we get
+
+$$
+\frac{\partial }{\partial z}\tilde{A}(z, \omega) = - (i \omega)^2 i \frac{\beta_2}{2} \tilde{A}(z, \omega) = i \omega^2 \frac{\beta_2}{2} \tilde{A}(z, \omega)  
+$$
+
+Here $\tilde{A}(z, \omega)$ is the transformed amplitude and $\omega$ is the angular frequency. The equalities above hold due to the derivative property of the Fourier transform. In any case, we can solve this ODE, and use the transformed boundary condition $\tilde{A}(0, \omega) = \tilde{f}(\omega)$ to obtain a solution in the frequency domain 
+
+$$
+\tilde{A}(z, \omega) = \tilde{f}(t)e^{i \frac{\beta_2}{2} z \omega^2}.
+$$
+
+The general solution then uses the inverse Fourier transform and is
+
+$$
+A(z, t) = \frac{1}{2 \pi} \int_{\infty}^\infty 
+$$
 <!-- 1. Phase and amplitude, Fourier phase of images
 2. NLSE for propagation
 3. Time stretching 

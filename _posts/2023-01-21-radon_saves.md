@@ -76,7 +76,7 @@ $$
 \end{bmatrix}
 $$
 
-At the end we are left with a matrix containing the integrals for the various $(\phi, r)$ lines, where $\phi$ angles has been defined manually and the distances $r$ comes from the pixels along the side of the image.
+At the end we are left with a matrix containing the integrals for the various $(\phi, r)$ lines, where the $\phi$ angles has been defined manually and the distances $r$ comes from the pixels along the side of the image.
 
 So this is what the X-ray detectors collect after many rotations. However, What we really care about is the reconstruction of the original image from the sinogram. Since in reality we don't have access to the original image, but only the sinogram, we need to reverse the Radon transform to reconstruct the original image.
 
