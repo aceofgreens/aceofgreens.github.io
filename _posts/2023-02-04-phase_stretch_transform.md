@@ -57,7 +57,7 @@ $$
 \end{align} 
 $$
 
-As can be seen from Figure 2 the aggregate wave has a complicated shape. The component $2 A \cos \big (\frac{k_1 - k_2}{2}x - \frac{\omega_1 - \omega_2}{2}t \big )$ is called the *envelope* because it tightly surrounds the aggregate wave at any point $(x, t)$. The other, higher-frequency wave is called the *carrier* wave because it carries the useful signal of the envelope and is being [modulated](https://en.wikipedia.org/wiki/Amplitude_modulation) by it.
+As can be seen from Figure 2 the aggregate wave has a complicated shape. The component $2 A \cos \big (\frac{k_1 - k_2}{2}x - \frac{\omega_1 - \omega_2}{2}t \big )$ is called the *envelope* because it tightly surrounds the aggregate wave at any point $(x, t)$. The other, higher-frequency wave is called the *carrier* wave (or sometimes the *ripples*) because it carries the useful signal of the envelope and is being [modulated](https://en.wikipedia.org/wiki/Amplitude_modulation) by it.
 
 If we release a small object into a current flowing like the waves here, we can measure two different velocities - the phase velocity and the group velocity.
 The phase velocity is the velocity (in meters per second or any other units) with which any particular frequency component of the wave travels. It is given by $\nu_p = \omega / k$ - angular change per unit of time divided by angular change per unit of space. In contrast, the group velocity is the velocity with which the envelope of the wave propagates through space, and is given by $\nu_g = \partial \omega / \partial k$ (in the continuous case).
@@ -88,7 +88,7 @@ In vacuum, an electromagnetic wave has a constant $\omega$, independent of $k$. 
     <figcaption>Figure 3: Wave packets travelling in a non-dispersive and dispersive environments. Only the real part is plotted. On the left, the envelope keeps the same shape through time. On the right, the envelope broadens as time increases. It diffuses due to dispersion. </figcaption>
 </figure> 
 
-Additional insights can be gained by exploring how an electromagnetic pulse, like light, propagates in a dispersive medium, like a fiber. This will be useful to showcase how optical dispersion in fiber changes the phases of the waves. Wave propagation is a complicated topic and the cornerstone here is the following partial differential equation:
+Additional insights can be gained by exploring how an electromagnetic pulse, like light, propagates in a dispersive medium, like a fiber. This will be useful to showcase how optical dispersion in fiber changes the phases of the waves. Wave propagation is a complicated topic and the cornerstone here is the [following](https://www.pmoptics.com/Pulse_Propagation.html) partial differential equation:
 
 $$
 i \frac{\partial A }{\partial z} + \frac{i \alpha}{2} A - \frac{\beta_2 }{2} \frac{\partial^2 A}{\partial t^2 } + \gamma |A|^2 A = 0.
@@ -97,8 +97,8 @@ $$
 This equation is fundamental and deserves some explanation:
 - We can imagine a one-dimensional horizontal fiber of length $L$. The variable $z$ is the spatial distance from the start of the fiber, and ranges from $0$ to $L$. The variable $t$ is the time and shows how various quantities change through time.
 - Suppose the input signal is $f(t)$. As it travels through the fiber it's modified by various fiber characteristic effects into the output signal $y(t)$. Our main interest is in estimating what is $y(t)$ and how $f(t)$ changes into it.
-- $A(z, t)$ is the amplitude of the signal at position $z$ and time $t$
-- $\alpha$ is an *attenuation* parameter and is related to how much information is lost in the fiber. The entire term $i \alpha A /2$ represents the loss at the current amplitude,
+- $A(z, t)$ is the amplitude of the envelope at position $z$ and time $t$.
+- $\alpha$ is an *attenuation* parameter and is related to how much information is lost in the fiber. The entire term $i \alpha A /2$ represents the loss at the current amplitude.
 - $\beta_2$ is called the [*group velocity dispersion* (GVD)](https://en.wikipedia.org/wiki/Group_velocity_dispersion) parameter. It relates to how the pulse travelling through the fiber broadens due to [dispersion](https://en.wikipedia.org/wiki/Dispersion_(optics)). This happens because in a dispersive medium the [phase velocity](https://en.wikipedia.org/wiki/Phase_velocity) of individual monochromatic waves depends on the wavelength and hence the shape of the [pulse](https://en.wikipedia.org/wiki/Wave_packet), itself being a combination of possibly many waves, is broadened as some of the waves start to travel [faster than the pulse itself](https://en.wikipedia.org/wiki/Group_velocity). 
 - The $\gamma$ parameter controls the nonlinearity term $\gamma\|A\|^2 A$ and represents the [Kerr effect](https://en.wikipedia.org/wiki/Kerr_effect), one of many nonlinear effects that could arise in optical fibers. These are mainly caused by the fact that the polarization density depends nonlinearly on the electric field of the light.
 
@@ -113,7 +113,11 @@ $$
 The shortest solution is to transform both sides of the equality into frequency space and solve the equation there. 
 For simplicity, let's consider this Fourier transform form (other conventions are also possible)
 $$
-f(\omega) = \int_{-\infty}^\infty f(x) e^{-i\omega x} dx.
+\tilde{f}(\omega) = \int_{-\infty}^\infty f(x) e^{-i\omega x} dx
+$$
+and
+$$
+f(x) = (2\pi)^{-1}\int_{-\infty}^\infty \tilde{f}(\omega) e^{i\omega x} d\omega.
 $$
 
 $A$ consists of two variables, $z$ and $t$. We apply the Fourier transform along the $t$ dimension, after which we get
@@ -148,7 +152,7 @@ $$
 \mathbb{S}\{ f(t) \} = \int_{-\infty}^\infty \mathcal{F}\{f(t)\} e^{i \phi(\omega)} \tilde{L}(\omega) e^{i \omega t} d \omega.
 $$
 
-Here $\mathcal{F}$ is the one-dimensional Fourier transform mapping the original input signal $f(t)$ from time domain to frequency domain $\tilde{f}(\omega)$, $\tilde{L}(\omega)$ is the low-pass filter which in the frequency domain is a multiplication, and $e^{i \phi(\omega)}$ is the phase filter that serves to stretch the phases based on their frequencies. It is called a time stetching operation because by changing the phases one can essentially change the frequency of the waves making it stretch in time. In fact, this has found incredible applications [2].
+Here $\mathcal{F}$ is the one-dimensional Fourier transform mapping the original input signal $f(t)$ from time domain to frequency domain $\tilde{f}(\omega)$, $\tilde{L}(\omega)$ is the low-pass filter which in the frequency domain is a multiplication, and $e^{i \phi(\omega)}$ is the phase filter that serves to stretch the phases based on their frequencies. It is called a time stetching operation because by changing the phases of the individual waves making up the wave packet we are stretching or squishing its envelope in time. In fact, this has found incredible applications [2].
 
 Finally, with images we do not have any time and any frequencies present are spatial. Additionally, digital images are inherently discrete. Based on these two observations one can define the phase stretch transform (PST), which is basically the two-dimensional, discrete spatial version of the previous operation:
 
@@ -179,7 +183,7 @@ So overall there are 4 hyperparameters:
 3. The warp of the phase kernel, $W$. Experimentally, a higher $W$ produces sharper, more clear-cut edges but also increases edge noise, producing edges where there are none.
 4. The way to do morphological processing on the features. This can be as simple as setting a threshold to binarize the image.
 
-Let's take a look at how the algorithm works in more detail. Figure 4 shows the first part of pipeline, where we apply a low-pass filter to deblur the initial image. The image is first converted into frequency space. There the Gaussian filter is applied by multiplying it with the spectrum (the alternative would be to do a convolution in image-space). After that, the image is reconstructed using the inverse Fourier transform, producing a blurrier and denoised version.
+Let's take a look at how the algorithm works in more detail. Figure 4 shows the first part of the pipeline, where we apply a low-pass filter to blur the initial image. The image is first converted into frequency space. There the Gaussian filter is applied by multiplying it with the spectrum (the alternative would be to do a convolution in image-space). After that, the image is reconstructed using the inverse Fourier transform, producing a blurrier and denoised version.
 
 <figure>
     <img class='img' src="/resources/low_pass_filter.png" alt="Fourier reconstructions" width="1200">
@@ -201,7 +205,7 @@ The low-pass filter modifies only the amplitudes of the waves. Next, we have to 
     <figcaption>Figure 5: The PST and its effect on the image. The phase kernel (left) is applied to the image, producing an image with enhanced features (middle). Then, to extract the edges, one can binarize the image or apply morphological operations (right). The parameters used are $S=0.5$, $W=20$, $\sigma=0.1$ and a quantile threshold of $0.85$. </figcaption>
 </figure> 
 
-Having computed the phase kernel $\phi(r)$ we multiply $e^{i \phi(r)}$ with the 2D Fourier spectrum of the filtered image, take the inverse 2D FFT, and normalize the result to be in $[0, 1]$. The resulting features are shown in the second image of Figure 5. The transform is now complete and any edges or corners have been enhanced. For the sake of better visualisation, we can binarize the image. Here we compute the 85-th percentile of the feature values and set all pixels with intensity below that value to 0. This produces the final black-and-white image.
+Having computed the phase kernel $\phi(r)$ we multiply $e^{i \phi(r)}$ with the 2D Fourier spectrum of the filtered image, take the inverse 2D FFT, and normalize the result to be in $[0, 1]$. The resulting features are shown in the second image of Figure 5. The transform is now complete and any edges or corners have been enhanced. For the sake of better visualisation, we can binarize the image. Here we compute the 85-th percentile of the feature values and set all pixels with intensity below that value to $0$. Similarly those with intensity values above the threshold are set to $1$. This produces the final black-and-white image.
 
 Our testing image of the [Curiosity rover](https://commons.wikimedia.org/wiki/File:MSL_Sol_3070_-_MAHLI.jpg) contains *a lot* of edges and as a result the final image is full of detail. If one wants to obtain only a semantic subset of the edges (e.g. those of the rover, but not of the rocks) tweaking the hyperparameters may not help much if both the desired and undesired edges have similar phase strengths. Nonetheless, with a bit of tuning and visual inspection one can easily achieve good and sharp edges without any added noise or edge tear.
 
