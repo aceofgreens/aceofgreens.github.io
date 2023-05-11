@@ -84,7 +84,7 @@ In a democratic setup of "one man, one vote", one would vote "yes" if they stand
 
 Mathematically, this dynamic is represented as a folding map that takes in a vector of wealths, sets the elements above a certain threshold to 0, and uniformly distributes the sum of those elements to the elements less than that threshold. Iterating this map converges to an oscillating "equilibrium" with periodicity 2. This means that we eventually reach a state where if voter $i$ has positive wealth in the current iteration, he will lose it and in the next iteration he will have 0 wealth. But he will then be a beneficient of the wealth transfer in that iteration, and so on. There will be only 2 classes of people - those with wealth and those without. The forced misallocation each iteration would converge to a single value, it being the rate at which the cumulative wealth transfer increases.
 <figure>
-    <img class='extra_big_img' src="/resources/weighted_voting_simulation.svg" alt="First simulation" width="1200">
+    <img class='big_img' src="/resources/weighted_voting_simulation.svg" alt="First simulation" width="1200">
     <figcaption>Figure 2: Results from the first simulation.</figcaption>
 </figure>
 
@@ -144,7 +144,7 @@ The results from this simulation are striking. Under the equal weights case, the
 Why does this happen? Because labour incomes are heavily skewed to the right, with the mean being greater than the median. As a result, tax contributions are also skewed to the right. Hence, for the poorest 51%, the mean collected tax which they receive will always be higher than what they pay, prompting them to vote for ever increasing taxation.
 
 <figure>
-    <img class='extra_big_img' src="/resources/weighted_voting_simulation2.svg" alt="First simulation" width="1200">
+    <img class='big_img' src="/resources/weighted_voting_simulation4.svg" alt="Second simulation" width="1200">
     <figcaption>Figure 3: Results from the second simulation.</figcaption>
 </figure>
 
