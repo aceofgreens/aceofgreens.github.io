@@ -26,6 +26,9 @@ theme: minima
 plugins:
   - jekyll-feed
 
+minima:
+  date_format: "%-d %b %Y"
+
 # highlighter: rouge
 markdown: kramdown
 
@@ -63,5 +66,9 @@ google_analytics: true
 domain: aceofgreens.github.io
 url: https://aceofgreens.github.io
 baseurl: /
+
+permalink: /:title:output_ext
+
+
 # excerpt_separator: <--end excerpt-->
 
