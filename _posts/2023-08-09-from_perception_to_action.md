@@ -21,6 +21,11 @@ The pathway from light entering the eye to the processing of visual information 
 
 The currently dominating view of how step 8 works is the [two-stream hypothesis](https://en.wikipedia.org/wiki/Two-streams_hypothesis), according to which after initial processing in the primary visual cortex $V_1$, visual information is divided into two separate pathways or "streams": the **dorsal** one processes spatial information, particularly related to the location of objects and guiding movements relative to them, and the **ventral** one recognizes objects and identifies "what" something is, along with attributes like color and shape.
 
+<figure>
+    <img class='small_img' src="/resources/brain_regions.png" alt="The money market equilibrium" width="1000">
+    <figcaption>Figure 1: The four lobes in the brain's cerebral cortex. Image taken from <a href="https://commons.wikimedia.org/wiki/File:Brain_regions_on_T1_MRI.png">here</a>.</figcaption>
+</figure>
+
 ### Scanning
 Step 8 is where things get fuzzy. Most of our daily navigation tasks require a combination of "what" and "where", so both streams are active, often in parallel. However, under controlled lab experiments, if a person is asked to focus on a simple task which requires only one type of information processing, individual isolated active regions in the brain can be identified. Most of our cognitive neuscience knowledge has been obtained in such a way. By *scanning* people while they go about their tasks we can see which regions of the brain are involved in which mental activities.
 
@@ -48,7 +53,7 @@ In many experiments focusing on awareness two additional key areas are usually a
 ### Attention
 Out visual feed is very rich in information. However, not all of it is useful given a particular task. We attend to only some parts of the visual information. Whether it is covert attention (fixed gaze, but attending to objects in the peripheral vision) or overt (focusing the gaze on an object of interest), two main areas are activated: the [intraparietal sulcus](https://en.wikipedia.org/wiki/Intraparietal_sulcus) and the [frontal eye field](https://en.wikipedia.org/wiki/Frontal_eye_fields) in the prefrontal cortex. In fact, it's common to label areas like these, which are often interconnected and active during the same time as [brain networks](https://en.wikipedia.org/wiki/Large-scale_brain_network). The dorsal attention network, containing the two regions mentioned above, is one of these and its main role is to manage [visuospatial attention](https://en.wikipedia.org/wiki/Visual_spatial_attention). It is a "top-down" attention network. The task is set up in the prefrontal cortex and based on it, attention is used to enhance or inhibit useful/useless signal streams or create a template against which objects can be matched (in a matching task).
 
-The other attention network is the [ventral attention](https://en.wikipedia.org/wiki/Salience_network) one which is "bottom up" and is responsible for detecting unexpected or behaviorally relevant "salient" stimuli. Key regions here include the temporoparietal junction (TPJ) and the ventral frontal cortex. The latter of these is activated whenever we are making decisions regarding visual/auditory tasks like driving (visual input, manual output) and talking at the same time (auditory input, vocal output). In those cases the ventral prefrontal cortex becomes a bottleneck because computation for two different tasks has to happen *sequentially*, which takes time. When driving this increased reaction time can be problematic in certain situations. That is why multitasking is hard and people should spend their attention carefully.
+The other attention network is the [ventral attention](https://en.wikipedia.org/wiki/Salience_network) one which is "bottom up" and is responsible for detecting unexpected or behaviorally relevant, "salient" stimuli. Key regions here include the temporoparietal junction (TPJ) and the ventral frontal cortex. The latter of these is activated whenever we are making decisions regarding visual/auditory tasks like driving (visual input, manual output) and talking at the same time (auditory input, vocal output). In those cases the ventral prefrontal cortex becomes a bottleneck because computation for two different tasks has to happen *sequentially*, which takes time. When driving this increased reaction time can be problematic in certain situations. That is why multitasking is hard and people should spend their attention carefully.
 
 ### Memory
 We do not know that much about the low-level details of how memories are formed, represented, or retrieved. But we know that the [hippocampus](https://en.wikipedia.org/wiki/Hippocampus) has a lot to do with it. Its fundamental role is to represent the location of the person in space. It is activated in two cases: when solving tasks like planning how to get from point A to point B, and when conjuring up events from the past. In fact, such past events are called [episodic memory](https://en.wikipedia.org/wiki/Episodic_memory) - personal memories of events from your life, essentially state transitions *very roughly* like $(s_t, a_t, r_t, t, s_{t+1}, a_{t+1}, r_{t+1}, t+1, ...)$. 
@@ -82,23 +87,3 @@ It is useful to be aware of one's intent to do something earlier rather than lat
 After the prefrontal cortex has selected an action the corresponding signals are sent to brain areas around the [motor cortex](https://en.wikipedia.org/wiki/Motor_cortex) where the signals are refined, decoded, and finally relayed down the spinal cord towards our limbs. When it comes to learning fine motor actions like e.g.    playing a violing, the structure of interest is the [cerebellum](https://en.wikipedia.org/wiki/Cerebellum). It refines the motor actions initiated by other parts of the brain to ensure that the resulting movements are accurate, smooth, and coordinated.
 
 As people learn manual skills, the sensory consequences of the movements become more predictable. There have been experiments where the subjects learn simple mechanical tasks well enough so that they can repeat various movements without references to any visual cues, after which the mechanics of the movement task are changed. This causes a "prediction error" when it comes to our expected sensory inputs. In turn the cerebellum gets fired up, prompting us to pay more attention on the next iteration. A similar process happens in the [anterior striatum](https://en.wikipedia.org/wiki/Striatum) with unexpected rewards. In general, this is evidence of a more profound concept related to [free energy minimization](https://en.wikipedia.org/wiki/Free_energy_principle) - the idea that the brain tries to minimize the "surprise" in terms of its sensory inputs.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
