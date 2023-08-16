@@ -22,7 +22,7 @@ The pathway from light entering the eye to the processing of visual information 
 The currently dominating view of how step 8 works is the [two-stream hypothesis](https://en.wikipedia.org/wiki/Two-streams_hypothesis), according to which after initial processing in the primary visual cortex $V_1$, visual information is divided into two separate pathways or "streams": the **dorsal** one processes spatial information, particularly related to the location of objects and guiding movements relative to them, and the **ventral** one recognizes objects and identifies "what" something is, along with attributes like color and shape.
 
 <figure>
-    <img class='small_img' src="/resources/brain_regions.png" alt="The money market equilibrium" width="1000">
+    <img class='small_img' src="/resources/brain_regions.png" alt="Brain MRI" width="1000">
     <figcaption>Figure 1: The four lobes in the brain's cerebral cortex. Image taken from <a href="https://commons.wikimedia.org/wiki/File:Brain_regions_on_T1_MRI.png">here</a>.</figcaption>
 </figure>
 
