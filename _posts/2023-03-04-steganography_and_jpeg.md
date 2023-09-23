@@ -122,7 +122,7 @@ The DCT can be trivially extended to two-dimensional signals and it's what we'll
 
 $$
 \begin{aligned}
-F(x, y) & = e_u e_v \sum_{x=0}^{N-1} \sum_{y=0}^{N-1} f(x, y) \cos \Big[\frac{\pi}{N} \big(x + \frac{1}{2}\big) u \Big]   \cos \Big[\frac{\pi}{N} \big(y + \frac{1}{2}\big) v \Big] \\
+F(u, v) & = e_u e_v \sum_{x=0}^{N-1} \sum_{y=0}^{N-1} f(x, y) \cos \Big[\frac{\pi}{N} \big(x + \frac{1}{2}\big) u \Big]   \cos \Big[\frac{\pi}{N} \big(y + \frac{1}{2}\big) v \Big] \\
 
 f(x, y) & = \frac{2}{N} \sum_{u=0}^{N-1} \sum_{v=0}^{N-1} e_u e_v F(u, v)  \cos \Big[\frac{\pi}{N} \big(x + \frac{1}{2}\big) u \Big] \cos \Big[\frac{\pi}{N} \big(y + \frac{1}{2}\big) v \Big] \\
 
