@@ -58,12 +58,12 @@ Obtaining 3D information from the world is a crucial part for navigating the env
 3D information from multiple views is even more plentiful.
 - In **motion parallax**, one fixates a given point in the distance and starts moving to the side. Then, points closer than the one which is fixated will move in the opposite direction, inversely-proportional to how close they are to the viewer. Points farther away than the fixated point will move in the same direction as the viewer.
 - **Optical flow**, or the motion vectors originating from our direction of motion, are useful for the maintenance of balance and the perception of self-motion.
-- **Binocular stereopsis** is similar to motion parallex except that it occurs due to the disparities of the projection of the scene onto the two retinas of the eyes. It doesn't provide absolute depth and is only useful for objects which are not terribly far away.
+- **Binocular stereopsis** is similar to motion parallax except that it occurs due to the disparities of the projection of the scene onto the two retinas of the eyes. It doesn't provide absolute depth and is only useful for objects which are not terribly far away.
 - **Eye vergence** can produce absolute depth estimates from the angle between the eyes when one is fixated on an object.
 
 ### Perception and Action
 
-Following David Marr, we can think of our perceptions as serving two functions: one is to recognize objects and the other is to produce actions. The former requires localizing objects and assigning semantics to them. Regardingt the latter, there are many low-level actions that directly depend on our perceptions:
+Following David Marr, we can think of our perceptions as serving two functions: one is to recognize objects and the other is to produce actions. The former requires localizing objects and assigning semantics to them. Regarding the latter, there are many low-level actions that directly depend on our perceptions:
 1. Maintenance of balance is based on the vestibular system in the inner ear and the optical flow from our body sway
 2. The heading direction, similarly is given by the point at which the optical flow originates
 3. Time-to-contact can produce an estimate of the time an object will hit us from the rate of dilation of the projection of that object onto the retina. This does not require estimating velocity or distance to the object.
