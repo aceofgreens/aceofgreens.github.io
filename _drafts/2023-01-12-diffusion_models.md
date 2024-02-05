@@ -131,7 +131,7 @@ $$
 
 Other discrete diffusion formulations also have similarly-looking continuous SDEs. But once we have trained the score network, how do we actually generate a sample using the reverse SDE? Well, we use a numerical SDE solver like the Euler-Maruyama or the stochastic Runge-Kutta. These solvers discretize the SDE in tiny steps and iterate in a manner similar to Langevin dynamics, adding a small amount of noise at every step.
 
-Importantly, it can be proved that the DDPMs and the score-based methods are *equivalent*. It takes some math to see this, but at the end one can reparametrize the DDPM to produce scores. The formulas and the loss function are adjusted accordingly. This produces a unified perspective - the network can use the noisy $(\textbf{x}\_t, t)$ to predict either $\textbf{x}\_0$, or $\epsilon_t$, or $\nabla\_\textbf{x} \log p(\textbf{x}\_t)$ - all will work, but will require different denoising formulas.
+Importantly, it can be proved that the DDPMs and the score-based methods are *equivalent*. It takes some math to see this, but at the end one can reparametrize the DDPM to produce scores. In fact, the relation is relatively simple: $\nabla\_{\textbf{x}_t} \log p(\textbf{x}\_t)  = - \epsilon\_\theta(\textbf{x}\_t, t) / \sqrt{1 - \bar{\alpha}_t}$. The formulas and the loss function are adjusted accordingly. This produces a unified perspective - the network can use the noisy $(\textbf{x}\_t, t)$ to predict either $\textbf{x}\_0$, or $\epsilon_t$, or $\nabla\_\textbf{x} \log p(\textbf{x}\_t)$ - all will work, but will require different denoising formulas.
 
 
 ### Practical Considerations
@@ -162,14 +162,38 @@ Notice how here to generate $\textbf{x}\_{t-1}$ you need to know both $\bar{\alp
 
 Apart from DDIM, one can typically get a huge inference speed improvement by doing diffusion in a latent space, as opposed to for example the high dimensional sample space of images. In a latent diffusion model one uses an encoder, like a VQ-VAE or something similar, to map the clean input to a latent space. In the latent space we add noise and pass the noisy variable to a U-Net which denoises it. Subsequently, this variable is fed to a decoder which upsamples and decodes back into the modality of interest. It is common also to have additional modality-specific encoders for any data that will condition the diffusion process. A cross-attention block in the U-Net handles the conditioning.
 
-This idea of latent diffusion is *incredibly* powerful. It allows diffusion to be used in, realistically, all kinds of contexts. Using separate encoders and decoders allows one to build multi-modal generative models that can condition one signal on any other and can produce any signal modality from any other.
+This idea of latent diffusion is *incredibly* powerful. It allows diffusion to be used in, realistically, all kinds of contexts. Using separate encoders and decoders allows one to build multi-modal generative models that can condition one signal on any other and can produce any signal modality from any other. Consider a model like [Marigold](https://marigoldmonodepth.github.io/). They take a latent diffusion model and finetune it on synthetic (image, depth) pairs. The encoder transforms both RGB and depth (itself treated as a grayscaled image) into the latent space. The decoder maps the latent into a depth image. The result is a strong diffusion model for depth prediction.
+
+And as these systems become more multi-modal it matters more and more that the conditioning is accurate. Suppose we want to generate an image conditional on a high-level semantic label $y$ and we are given a classifier $f\_\phi(\textbf{x}\_t, t)$ that uses the current noisy images. Then, the score of the joint distribution $p(\textbf{x}\_t, y)$ is:
+
+$$
+\begin{align}
+\nabla_{\textbf{x}_t} \log p(\textbf{x}_t, y) &= \nabla_{\textbf{x}_t} \log p(\textbf{x}_t) + \nabla_{\textbf{x}_t} \log p(y | \textbf{x}_t) \\
+& \approx \frac{1}{\sqrt{1 - \bar{\alpha}_t}} \epsilon_\theta(\textbf{x}_t, t) + \nabla_{\textbf{x}_t} \log f_\phi(y | \textbf{x}_t) \\
+&=  \frac{1}{\sqrt{1 - \bar{\alpha}_t}} \big( \epsilon_\theta(\textbf{x}_t, t) - \sqrt{1 - \bar{\alpha}_t} \nabla_{\textbf{x}_t} \log f_\phi(y | \textbf{x}_t) \big).
+\end{align}
+$$
+
+The second line results from a first-order Taylor approximation of $\log p(y \| \textbf{x}\_t)$. Thus, to make our diffusion model condition on the semantics $y$, one needs to adjust the model output by a scaled gradient of the classifier - simply use $\epsilon\_\theta(\textbf{x}\_t, t) - \sqrt{1 - \bar{\alpha}\_t} \nabla_{\textbf{x}\_t} \log f\_\phi(y \| \textbf{x}\_t)$ instead of $\epsilon\_\theta(\textbf{x}\_t, t)$. The interpretation is that one learns now the score of the joint distribution. This method is called *classifier guided* diffusion.
+
+A slightly more popular approach is *classifier-free guidance*, where one does not have a separate classifier but instead uses the same model - sometimes conditioning on the signal $y$, sometimes not. This produces an implicit classifier. Its gradient is given by 
+
+$$
+
+\begin{align}
+\nabla_{\textbf{x}_t} \log p(y | \textbf{x}_t) &= \nabla_{\textbf{x}_t} \log p(\textbf{x}_t | y) - \nabla_{\textbf{x}_t} \log p(\textbf{x}_t | y = \emptyset) \\
+&= -\frac{1}{\sqrt{1 - \bar{\alpha}_t}}\big( \epsilon_\theta(\textbf{x}_t, y) - \epsilon_\theta(\textbf{x}_t, y=\emptyset) \big).
+\end{align}
+$$
+
+One can then easily derive that the quantity to be used instead of $\epsilon\_\theta(\textbf{x}_t, t)$ in the subsequent calculations becomes actually $(1 + w)\epsilon\_\theta(\textbf{x}_t, t, y) - w \epsilon\_\theta(\textbf{x}_t, t, y = \emptyset)$. We have added a weight $w$ which shows how much the model should focus on the semantics $y$ when generating the sample. The default value of $1$ works reasonable.
+
+<!-- This aspect of controllability is most visible in text-to-image generation where we want the visual aspect to accurately represent the whole text prompt. -->
 
 
 
 
 To add:
-1. Marigold
-2. Stable diffusion
 3. DiffusionDet and others.
 4. Diffusion for 3D pose estimation. PoseDiffusion, etc.
 5. Stable-diffusion XL Turbo -->
