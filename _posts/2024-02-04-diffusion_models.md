@@ -80,12 +80,12 @@ $$
 \mu_{\theta}(\textbf{x}_{t-1} | \textbf{x}_t) = \frac{1}{\sqrt{\bar{\alpha}_t}} \big(\textbf{x}_t - \frac{1 - \alpha_t}{\sqrt{1 - \bar{\alpha}_t} \epsilon_t} \epsilon_{\theta}(\textbf{x}_t, t) \big).
 $$
 
-This is roughly how denoising diffusion probabilistic models (DDPM) work. At training time the network learns to estimate the noise. At test time, we start with a single sample $\textbf{x}\_T$ from the prior, a Gaussian, call the model to obtain $\epsilon\_\theta(\textbf{x}\_T)$, compute $\mu\_\theta(\textbf{x}\_{T-1} \| \textbf{x}\_T)$ analytically and sample $\textbf{x}\_{T-1}$ from the estimated distribution of $\textbf{x}\_{T-1} \| \textbf{x}\_T$. Repeat autoregressively until we get to $\textbf{x}\_0$.
+This is roughly how denoising diffusion probabilistic models (DDPM) work [1]. At training time the network learns to estimate the noise. At test time, we start with a single sample $\textbf{x}\_T$ from the prior, a Gaussian, call the model to obtain $\epsilon\_\theta(\textbf{x}\_T)$, compute $\mu\_\theta(\textbf{x}\_{T-1} \| \textbf{x}\_T)$ analytically and sample $\textbf{x}\_{T-1}$ from the estimated distribution of $\textbf{x}\_{T-1} \| \textbf{x}\_T$. Repeat autoregressively until we get to $\textbf{x}\_0$.
 
 
 ### Score-Based Generative Modeling
 
-There is another diffusion formulation which is quite intuitive - that of score matching. Given a distribution $p(\textbf{x})$, the score $s(\textbf{x})$ is simply the gradient of the log-likelihood, $\nabla_\textbf{x} \ln p(\textbf{x})$. It's an attractive quantity because it doesn't require calculating any untractable normalization constants. But how is it related to sample generation?
+There is another diffusion formulation which is quite intuitive - that of score matching. Given a distribution $p(\textbf{x})$, the score $s(\textbf{x})$ is simply the gradient of the log-likelihood, $\nabla_\textbf{x} \ln p(\textbf{x})$. It's an attractive quantity because it doesn't require calculating any intractable normalization constants. But how is it related to sample generation?
 
 One usage of the score is in stochastic gradient Langevin dynamics (SGLD), a curious, perhaps even beautiful, method for sampling from physics/thermodynamics. Suppose we start from a sample $\textbf{x}\_0$. To, get a sample from the target distribution $p(\textbf{x})$ we can simply do log-likelihood ascent, with added noise injection:
 
@@ -98,7 +98,7 @@ $$
 
 Overall this resembles very closely gradient ascent. As long as $t \rightarrow \infty$ and $\epsilon \rightarrow \textbf{0}$, $\textbf{x}\_t$ will be a sample from $p(\textbf{x})$. The added noise at each step is necessary, otherwise the sequence will converge to a local minimum and will depend on starting location. So if we train a model for the score, $s\_\theta(\cdot)$, we can just plug it in the Langevin equation and iterate to get a sample. This is the inference approach of score-based sample generation.
 
-Now, it's useful to see also the case where the diffusion time is continuous. Suppose $t$ is continuous and in $[0, T]$. The forward process adding noise to the data can now be modeled as the SDE
+Now, it's useful to see also the case where the diffusion time is continuous [2]. Suppose $t$ is continuous and in $[0, T]$. The forward process adding noise to the data can now be modeled as the SDE
 
 $$
 d\textbf{x} = f(\textbf{x}, t) dt + g(t) d\textbf{w},
@@ -118,6 +118,11 @@ $$
 
 Note that here, depending on the exact SDE, $p(\textbf{x}(t) \| \textbf{x}(0))$ may or may not be computable efficiently. If the drift coefficients are affine, then this probability is Gaussian and can be computed easily. For more advanced ones, one can use Kolmogorov's forward equation or simply simulate it.
 
+<figure>
+    <img class='extra_big_img' src="/resources/diff_sde.png" alt="Diffusion SDE" width="2000">
+    <figcaption>Figure 1: A continuous time diffusion process. Left part shows the forward process which adds noise. Right part shows the inverse process which denoises. Image taken from <a href="https://arxiv.org/pdf/2011.13456.pdf">(Song, Y. 2020)</a>.</figcaption>
+</figure>
+
 Consider the benefit of adding noise for training the score network. Without adding noise the ground-truth score can be evaluated only at the samples in the dataset. But the first sample $\textbf{x}(T)$ from the prior at test time may be very far from the data distribution. Hence, if you don't have data points around the space where your prior has high density your score estimate won't be accurate at those locations. To alleviate this, the forward diffusion effectively performs *annealing*. Adding the noise allows us to learn the score over a larger and more smooth region, covering the path from the data distribution to the prior one.
 
 The DDPM model that we discussed above can written in both its discrete and continuous versions:
@@ -131,14 +136,14 @@ $$
 
 Other discrete diffusion formulations also have similarly-looking continuous SDEs. But once we have trained the score network, how do we actually generate a sample using the reverse SDE? Well, we use a numerical SDE solver like the Euler-Maruyama or the stochastic Runge-Kutta. These solvers discretize the SDE in tiny steps and iterate in a manner similar to Langevin dynamics, adding a small amount of noise at every step.
 
-Importantly, it can be proved that the DDPMs and the score-based methods are *equivalent*. It takes some math to see this, but at the end one can reparametrize the DDPM to produce scores. In fact, the relation is relatively simple: $\nabla\_{\textbf{x}_t} \log p(\textbf{x}\_t)  = - \epsilon\_\theta(\textbf{x}\_t, t) / \sqrt{1 - \bar{\alpha}_t}$. The formulas and the loss function are adjusted accordingly. This produces a unified perspective - the network can use the noisy $(\textbf{x}\_t, t)$ to predict either $\textbf{x}\_0$, or $\epsilon_t$, or $\nabla\_\textbf{x} \log p(\textbf{x}\_t)$ - all will work, but will require different denoising formulas.
+Importantly, it can be proved that the DDPMs and the score-based methods are *equivalent* [3]. It takes some math to see this, but at the end one can reparametrize the DDPM to produce scores. In fact, the relation is relatively simple: $\nabla\_{\textbf{x}_t} \log p(\textbf{x}\_t)  = - \epsilon\_\theta(\textbf{x}\_t, t) / \sqrt{1 - \bar{\alpha}_t}$. The formulas and the loss function are adjusted accordingly. This produces a unified perspective - the network can use the noisy $(\textbf{x}\_t, t)$ to predict either $\textbf{x}\_0$, or $\epsilon_t$, or $\nabla\_\textbf{x} \log p(\textbf{x}\_t)$ - all will work, but will require different denoising formulas.
 
 
 ### Practical Considerations
 
 Naturally, to be able to learn $\epsilon_t$, $\textbf{x}\_0$, or $\nabla_\textbf{x} \log p(\textbf{x}\_t)$, especially when $\textbf{x}$ is very high-dimensional, one needs to have a big model. Denoising architectures with skip connections, like U-Nets, or pure transformer-based approaches, for example for non-image data, are the go-to choice. 
 
-Apart from model size, one needs to consider also the inference speed. With DDPMs you have to iterate from $T$ to $1$, which in practice is simply too slow. One straightforward approach is to simply denoise once every $S$ steps, for a total of $\lfloor T/S \rfloor$ denoising calls. Since the model has learned to produce a meaningful output for all $(\textbf{x}\_t, t)$, we are simply calling it $S$ times less. Another similar approach is given by denoising diffusion implicit models (DDIM), which requires some effort to fully understand, but it's worth it.
+Apart from model size, one needs to consider also the inference speed. With DDPMs you have to iterate from $T$ to $1$, which in practice is simply too slow. One straightforward approach is to simply denoise once every $S$ steps, for a total of $\lfloor T/S \rfloor$ denoising calls. Since the model has learned to produce a meaningful output for all $(\textbf{x}\_t, t)$, we are simply calling it $S$ times less. Another similar approach is given by denoising diffusion implicit models (DDIM) [4], which requires some effort to fully understand, but it's worth it.
 
 To reduce the number of iterations, one needs to come up with an inference process that simply uses less steps. The objective optimized by DDPM only depends on $p(\textbf{x}\_t \| \textbf{x}\_0)$, not on $p(\textbf{x}\_{1:T})$. In principle, there are many processes that have the same $p(\textbf{x}\_t \| \textbf{x}\_0)$, but may not be Markovian. This, in turn can be used to speed up the generation of new samples. One can consider the following:
 
@@ -160,9 +165,14 @@ $$
 
 Notice how here to generate $\textbf{x}\_{t-1}$ you need to know both $\bar{\alpha}\_t$ and $\bar{\alpha}\_{t-1}$. This means that you can have irregularly spaced $\alpha\_t$ coefficients. Thus, DDIM allows one to define a forward process on only a small subset of timesteps from $\\{1, 2, ..., T\\}$, which in turns greatly speeds up the reverse generative process. It does not require retraining, just changing the reverse process.
 
-Apart from DDIM, one can typically get a huge inference speed improvement by doing diffusion in a latent space, as opposed to for example the high dimensional sample space of images. In a latent diffusion model one uses an encoder, like a VQ-VAE or something similar, to map the clean input to a latent space. In the latent space we add noise and pass the noisy variable to a U-Net which denoises it. Subsequently, this variable is fed to a decoder which upsamples and decodes back into the modality of interest. It is common also to have additional modality-specific encoders for any data that will condition the diffusion process. A cross-attention block in the U-Net handles the conditioning.
+Apart from DDIM, one can typically get a huge inference speed improvement by doing diffusion in a latent space, as opposed to for example the high dimensional sample space of images [5]. In a latent diffusion model one uses an encoder, like a VQ-VAE or something similar, to map the clean input to a latent space. In the latent space we add noise and pass the noisy variable to a U-Net which denoises it. Subsequently, this variable is fed to a decoder which upsamples and decodes back into the modality of interest. It is common also to have additional modality-specific encoders for any data that will condition the diffusion process. A cross-attention block in the U-Net handles the conditioning.
 
-This idea of latent diffusion is *incredibly* powerful. It allows diffusion to be used in, realistically, all kinds of contexts. Using separate encoders and decoders allows one to build multi-modal generative models that can condition one signal on any other and can produce any signal modality from any other. Consider a model like [Marigold](https://marigoldmonodepth.github.io/). They take a latent diffusion model and finetune it on synthetic (image, depth) pairs. The encoder transforms both RGB and depth (itself treated as a grayscaled image) into the latent space. The decoder maps the latent into a depth image. The result is a strong diffusion model for depth prediction.
+<figure>
+    <img class='img' src="/resources/ldm.png" alt="Diffusion SDE" width="2000">
+    <figcaption>Figure 2: Architecture schematic of a latent diffusion model. Image taken from <a href="https://openaccess.thecvf.com/content/CVPR2022/papers/Rombach_High-Resolution_Image_Synthesis_With_Latent_Diffusion_Models_CVPR_2022_paper.pdf">(Rombach, R. 2022)</a>.</figcaption>
+</figure>
+
+This idea of latent diffusion is *incredibly* powerful. It allows diffusion to be used in, realistically, all kinds of contexts. Using separate encoders and decoders allows one to build multi-modal generative models that can condition one signal on any other and can produce any signal modality from any other. Consider a model like [Marigold](https://marigoldmonodepth.github.io/) [6]. They take a latent diffusion model and finetune it on synthetic (image, depth) pairs. The encoder transforms both RGB and depth (itself treated as a grayscaled image) into the latent space. The decoder maps the latent into a depth image. The result is a strong diffusion model for depth prediction.
 
 And as these systems become more multi-modal it matters more and more that the conditioning is accurate. Suppose we want to generate an image conditional on a high-level semantic label $y$ and we are given a classifier $f\_\phi(\textbf{x}\_t, t)$ that uses the current noisy images. Then, the score of the joint distribution $p(\textbf{x}\_t, y)$ is:
 
@@ -174,9 +184,9 @@ $$
 \end{align}
 $$
 
-The second line results from a first-order Taylor approximation of $\log p(y \| \textbf{x}\_t)$. Thus, to make our diffusion model condition on the semantics $y$, one needs to adjust the model output by a scaled gradient of the classifier - simply use $\epsilon\_\theta(\textbf{x}\_t, t) - \sqrt{1 - \bar{\alpha}\_t} \nabla_{\textbf{x}\_t} \log f\_\phi(y \| \textbf{x}\_t)$ instead of $\epsilon\_\theta(\textbf{x}\_t, t)$. The interpretation is that one learns now the score of the joint distribution. This method is called *classifier guided* diffusion.
+The second line results from a first-order Taylor approximation of $\log p(y \| \textbf{x}\_t)$. Thus, to make our diffusion model condition on the semantics $y$, one needs to adjust the model output by a scaled gradient of the classifier - simply use $\epsilon\_\theta(\textbf{x}\_t, t) - \sqrt{1 - \bar{\alpha}\_t} \nabla_{\textbf{x}\_t} \log f\_\phi(y \| \textbf{x}\_t)$ instead of $\epsilon\_\theta(\textbf{x}\_t, t)$. The interpretation is that one learns now the score of the joint distribution. This method is called *classifier guided* diffusion [7].
 
-A slightly more popular approach is *classifier-free guidance*, where one does not have a separate classifier but instead uses the same model - sometimes conditioning on the signal $y$, sometimes not. This produces an implicit classifier. Its gradient is given by 
+A slightly more popular approach is *classifier-free guidance*, where one does not have a separate classifier but instead uses the same model - sometimes conditioning on the signal $y$, sometimes not [8]. This produces an implicit classifier. Its gradient is given by 
 
 $$
 
@@ -188,15 +198,18 @@ $$
 
 One can then easily derive that the quantity to be used instead of $\epsilon\_\theta(\textbf{x}_t, t)$ in the subsequent calculations becomes actually $(1 + w)\epsilon\_\theta(\textbf{x}_t, t, y) - w \epsilon\_\theta(\textbf{x}_t, t, y = \emptyset)$. We have added a weight $w$ which shows how much the model should focus on the semantics $y$ when generating the sample. The default value of $1$ works reasonable.
 
-<!-- This aspect of controllability is most visible in text-to-image generation where we want the visual aspect to accurately represent the whole text prompt. -->
+With text-to-image models conditioning on the prompt requires us to be more careful. One of the principal difficulties here is that only nouns can be decoded to explicit visual objects, compared to modifiers like adjectives, adverbs, and propositions which modify the appearance of objects or the positional relationships between them. Additionally, learning content and style separately has been somewhat possible, as there are methods which can do it, but it's far from a solved matter. A famous technique here is *textual inversion* [10] - one finetunes a latent diffusion model on a small set of target images of a specific object, along with captions like "A photo of a $S\_\*$", where $S\_\*$ is the object. The model only learns the embedding for the token $S\_\*$ after which it can refer to it.
+
+Regarding the cultural effects of AI-generated images, I believe the evidence speaks for itself. Depending on the prompt, these models can produce images that *can* realistically be considered artwork, sometimes being indistinguishable from actual paintings by human artists. Yes, one can flood the art market with tons of new generated images, rendering human art close to worthless, but so what? The end consumer will only benefit from this. If anything, text-to-image AI models will likely reduce the elitist status of visual art and will force people to appreciate an image, or a painting, for its actual content, not for the career, name, or personality of its creator. We should value paintings only based on how much their visual pattens resonate with our own experiences. In that context, AI art *is* art, by whatever non-humancentric definiton we adopt. Finally, I think we should be optimistic, because the best artworks are yet to come... and they won'be envisaged by a human brain.
 
 
-
-
-To add:
-3. DiffusionDet and others.
-4. Diffusion for 3D pose estimation. PoseDiffusion, etc.
-5. Stable-diffusion XL Turbo -->
-
-
-
+### References
+[1] Ho, Jonathan, Ajay Jain, and Pieter Abbeel. [Denoising diffusion probabilistic models.](https://proceedings.neurips.cc/paper/2020/hash/4c5bcfec8584af0d967f1ab10179ca4b-Abstract.html) Advances in neural information processing systems 33 (2020): 6840-6851.   
+[2] Song, Yang, et al. [Score-based generative modeling through stochastic differential equations.](https://arxiv.org/abs/2011.13456) arXiv preprint arXiv:2011.13456 (2020).   
+[3] Luo, Calvin. [Understanding diffusion models: A unified perspective.](https://arxiv.org/abs/2208.11970) arXiv preprint arXiv:2208.11970 (2022).   
+[4] Song, Jiaming, Chenlin Meng, and Stefano Ermon. [Denoising diffusion implicit models.](https://arxiv.org/abs/2010.02502) arXiv preprint arXiv:2010.02502 (2020).   
+[5] Rombach, Robin, et al. [High-resolution image synthesis with latent diffusion models.](https://openaccess.thecvf.com/content/CVPR2022/html/Rombach_High-Resolution_Image_Synthesis_With_Latent_Diffusion_Models_CVPR_2022_paper.html) Proceedings of the IEEE/CVF conference on computer vision and pattern recognition. 2022.   
+[6] Ke, Bingxin, et al. [Repurposing Diffusion-Based Image Generators for Monocular Depth Estimation.](https://arxiv.org/abs/2312.02145) arXiv preprint arXiv:2312.02145 (2023).   
+[7] Dhariwal, Prafulla, and Alexander Nichol. [Diffusion models beat gans on image synthesis.](https://proceedings.neurips.cc/paper_files/paper/2021/hash/49ad23d1ec9fa4bd8d77d02681df5cfa-Abstract.html) Advances in neural information processing systems 34 (2021): 8780-8794.   
+[8] Ho, Jonathan, and Tim Salimans. [Classifier-free diffusion guidance.](https://arxiv.org/abs/2207.12598) arXiv preprint arXiv:2207.12598 (2022).   
+[9] Gal, Rinon, et al. [An image is worth one word: Personalizing text-to-image generation using textual inversion.](https://arxiv.org/abs/2208.01618) arXiv preprint arXiv:2208.01618 (2022).   
