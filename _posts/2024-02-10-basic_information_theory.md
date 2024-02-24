@@ -46,7 +46,7 @@ $$
 
 Therefore, as $N$ increases, most strings $\textbf{x}$ will be typical. This is a first observation. A second useful one is that we can approximately count the number of typical elements. The smallest probability that a typical $\textbf{x}$ can have is $2^{-N(H + \beta)}$. We need the total probability of the typical elements to be less than unity, $\| T_{N\beta}\| 2^{-N(H + \beta)} < 1$ and hence $\| T_{N\beta} \| < 2^{N(H + \beta)}$.
 
-The typical set $T_{N\beta}$ is not the best set for compression, $H_\delta(X^N)$ is. For a fixed $\beta$, $S_\delta$ necessarily has at most elements as $T_{N\beta}$, so in fact the size of the typical set provides an upper bound on $H_\delta(X^N)$. Hence $H_\delta(X^N)$ is bounded from above by $\log_2 \| T_{N\beta}\| = N(H + \beta)$. We now set $\beta = \epsilon$ and choose some possibly large $N_0$ such that $\frac{\sigma^2}{\epsilon^2 N_0} \le \delta$. The result is that $1/N \cdot H_\delta(X^N) < H + \epsilon$, which is independent of $\delta$.
+The typical set $T_{N\beta}$ is not the best set for compression, $S_\delta(X^N)$ is. For a fixed $\beta$, $S_\delta(X^N)$ necessarily has at most elements as $T_{N\beta}$, so in fact the size of the typical set provides an upper bound on $H_\delta(X^N)$. Hence $H_\delta(X^N)$ is bounded from above by $\log_2 \| T_{N\beta}\| = N(H + \beta)$. We now set $\beta = \epsilon$ and choose some possibly large $N_0$ such that $\frac{\sigma^2}{\epsilon^2 N_0} \le \delta$. The result is that $1/N \cdot H_\delta(X^N) < H + \epsilon$, which is independent of $\delta$.
 
 A proof by condradiction based on similar logic shows that $1/N \cdot H_\delta(X^N) > H - \epsilon$, which is again, indepedent of $\delta$. This result is quite deep and is called [Shannon's source coding theorem](https://en.wikipedia.org/wiki/Shannon%27s_source_coding_theorem):
 
@@ -54,7 +54,7 @@ $$
  H - \epsilon < \frac{1}{N} \cdot H_\delta(X^N) <  H + \epsilon.
 $$
 
-Here's how to interpret it. We have a source of information - a random variable. We first fix the probability of error $\delta$ that they are willing to accept. We might even fix it something arbitrarily close to $0$. Now, the average minimal bits per symbol consistent with $\delta$ are given by $H_\delta(X^N)/N$. For any finite sequence of $N$ samples, the required bits per symbol do not exceed $H + \epsilon$. $N$ and $\epsilon$ depend on each other, so for a fixed length $N$, we can calculate an $\epsilon$ or vice versa, for a desired $\epsilon$ we can calculate a required $N$. As $N$ tends to infinity the bits per symbol of the encoding cannot increase beyond the entropy. Likewise, one needs at least $H-\epsilon$ bits per symbol to specify $\textbf{x}$, even if we allow errors most of the time. Therefore, this result establishes that for lossless compression the average optimal code length cannot be shorter than the entropy.
+Here's how to interpret it. We have a source of information - a random variable. We first fix the probability of error $\delta$ that we are willing to accept. We might even fix it something arbitrarily close to $0$. Now, the average minimal bits per symbol consistent with $\delta$ are given by $H_\delta(X^N)/N$. For any finite sequence of $N$ samples, the required bits per symbol do not exceed $H + \epsilon$. $N$ and $\epsilon$ depend on each other, so for a fixed length $N$, we can calculate an $\epsilon$ or vice versa, for a desired $\epsilon$ we can calculate a required $N$. As $N$ tends to infinity the bits per symbol of the encoding cannot increase beyond the entropy. Likewise, one needs at least $H-\epsilon$ bits per symbol to specify $\textbf{x}$, even if we allow errors most of the time. Therefore, this result establishes that for lossless compression the average optimal code length cannot be shorter than the entropy.
 
 Therefore, the entropy $H(X)$ obtains а new meaning. It gives a lower bound on the average bitlength of a lossless encoding of $X$. The cross-entropy, $H(p, q)$, used commonly in machine learning, also has an interesting meaning. Through the cross-entropy decomposition
 
@@ -89,7 +89,7 @@ Lempel-Ziv codes are another useful type of stream codes which do not need a pro
 
 None of these codes will be decoded properly if any of the message bits are changed. Thus, in a noisy channel, where the environment can mutate the codes before they have been passed to the decoder, one needs to be careful - error detection and correction algorithms are needed.
 
-A discrete memoryless channel $Q$ is characterized by an input and output alphabets $\mathcal{A}_X$ and $\mathcal{A}_Y$, along with the probabilities $p(y \| x)$. We can measure how much information the output $Y$ conveys about the input $X$ using the mutual information $I(X; Y)$ defined as:
+A discrete noisy memoryless channel $Q$ adds noise to the codewords and is characterized by an input and output alphabets $\mathcal{A}_X$ and $\mathcal{A}_Y$, along with the probabilities $p(y \| x)$. We can measure how much information the output $Y$ conveys about the input $X$ using the mutual information $I(X; Y)$ defined as:
 
 $$
 \begin{align}
@@ -109,4 +109,4 @@ The channel coding theorem, again due to Claude Shannon, states that, intuitivel
 
 Something interesting happens if we are allowed to use the noisy channel $N$ times, instead of just once - the multi-use channel starts looking more and more like a noisy typewriter one (stated without proof) and we can find a non-confusable input subset with which to transmit data error-free. Indeed, the number of typical $\textbf{y}$ is $2^{NH(Y)}$. The number of typical $\textbf{y}$ given a typical $\textbf{x}$ is $2^{NH(Y \| X)}$. Hence, the non-confusable subsets are at most $2^{NH(Y) - NH(Y \| X)} = 2^{NI(X;Y)}$. This shows that for sufficiently large $N$ it is possible to encode and transmit a message with essentially null error up to some rate given by the channel capacity.
 
-These results are strong but they are only scraping the surface when it comes to codes. Some of the most powerful codes like low-density parity-check codes, convolution codes, and turbo codes build on top of more theory and hence we have to leave them for the future. 
+These results are strong but they are only scraping the surface when it comes to codes. Some of the most powerful codes like low-density parity-check codes, convolution codes, and turbo codes build on top of more theory and hence we have to leave them for the future.
