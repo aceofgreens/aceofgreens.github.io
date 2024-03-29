@@ -20,6 +20,14 @@ K-D trees are similar data structures but with some differences. A $k$-d tree is
 
 One particular strenght of both the octree and the $k$-d tree is the ability to find nearest neighbors efficiently. To find the nearest neighbor of a query point $p$, we follow the branches according to $p$'s location until we reach a leaf node. Its distance to $p$ is the current minimal distance. Then, we start backtracking up the tree. At each of the internal nodes we compare the distance between $p$ and the splitting value. If it is larger than the current minimal distance, there's no point in searching the corresponding branch. If it is smaller, then there may be a leaf node that is closer than our current estimate, in which case we have to search that branch. The search ends once we reach the root.
 
+<figure>
+    <img class='small_img' src="/resources/octree.png" alt="Octree spatial representation" width="1200">
+    <figcaption>Figure 1: 3D space divided according to an octree. There are only 5 points, shown by the black octants which they occupy. The tree depth is 5 levels. Notice how recursively dividing the octants produces unoccipied regions. </figcaption>
+</figure>
+
+
+Being able to efficiently calculate closest points allows us to calculate the Chamfer distance between two point clouds. It is given by the symmetric average distance between a point from the first cloud and its nearest neighbor in the other one. It is a fundamental metric used when registering or generating point clouds. It has wide applications for example in autonomous vehicles where [generative models predict future Lidar clouds](https://arxiv.org/abs/2311.01017) conditional on vehicle motion.
+
 What else can we do with point clouds? There are various options. One can:
 - Downsample the points by bucketing them into regularly-placed voxels and averaging all points within each voxel. This has the effect of filtering out noisy points.
 - Estimate vertex normals by looking at the neighborhood of each point and computing a principal axis based on the covariance of the points in that neighborhood.
@@ -31,6 +39,16 @@ Now consider triangle meshes. They consist of $N$ three-dimensional vertices, pe
 - Filter the surface "roughness" by averaging the vertices in a neighborhood, as given by the connectivity of the mesh. This can make surfaces smoother, but some filters based on this principle, like the Laplacian, can have the problem of thinning the surface too much.
 - Sample a point cloud from the mesh. Simple methods like uniform sampling from the vertices may result in some points being clustered. To address this, other methods like Poisson disk sampling can be used.
 - Do mesh simplification. This means reducing the number of vertices and faces while keeping the mesh detail quality as high as possible. A simple method here could be just to average the vertices falling in a given voxel.
+
+Figure 2 visualizes various characteristics of the mesh like depth, normals, and different shading settings. Note that a triangle face normal is useful in telling us how the face is oriented in 3D. If the shading uses face normals, then it can either apply a constant shade to the whole face - [flat shading](https://en.wikipedia.org/wiki/Shading#Flat_shading), or it can evaluate the colors in two neighboring face centers or vertices and interpolate colours/shades in between - [Gouraud shading](https://en.wikipedia.org/wiki/Gouraud_shading). The former produces discontinuous colors along continuous viewed surfaces, while the latter may produce unrealistic visual artefacts. A slightly more expensive solution is the [Phong shading](https://en.wikipedia.org/wiki/Phong_shading) where instead of interpolating colours we interpolate vertex normals. This produces excellent visual results. A separate topic is whether one uses specular reflection in the lightning. The combination of using both a diffuse and specular reflection is called the [Phong reflection model](https://en.wikipedia.org/wiki/Phong_reflection_model).
+
+<figure>
+    <img class='extra_big_img' src="/resources/mesh.png" alt="Mesh visualisation" width="1200">
+    <figcaption>Figure 2: Various mesh renderings. 3D object taken from the <a href="https://objaverse.allenai.org/">Objaverse dataset</a>. Top row, left to right: 1. A seashell, rendered with specular lightning, textures, and smooth shading; 2. Same, but with flat shading; 3. Only diffuse lightning with textures; 4. Triangle mesh overlay. Bottom row, left to right: 1. No shading; 2. Coloring based on the x-coordinate of each point; 3. Normals, visualized as RGB colors; 4. Depth map. </figcaption>
+</figure>
+
+
+
 
 
 
