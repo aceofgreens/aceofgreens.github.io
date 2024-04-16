@@ -61,4 +61,28 @@ Here we've passed an input array of shape $(5,)$ even though only two elements a
 
 Other functional transforms work in a similar way - they trace the computation into a jaxpr, modify it optimize it, and run it. Consider `jit`. It relies on Google's powerful XLA compiler. XLA does not typically create `.so` files in the way traditional compilers might output executable or linkable binaries. Instead, XLA generates machine code dynamically at runtime, which is directly executed in-memory. This approach is aligned with how JIT compilation typically works - compiling code when it is needed, without creating persistent binary files on disk. 
 
+The vectorizing transform, `vmap` pushes a new axis to the jaxpr along which the function will be vectorized. If it's not vectorized, the function has to be called separately on many inputs, producing multiple XLA calls. `vmap` speeds this up noticeably by simply adding the new index in the jaxpr, which shows up usually as fewer calls. After all, when you've traced the computation graph you know the exact shapes and dtypes, so adding the new axis in the right places is not impossible. The parallelization transform `pmap` vectorizes and splits the batch across the available devices, producing actual parallelism.
 
+So where does Jax shine? Here are a few cool examples. First is `jax.lax.scan`, which essentially unrolls a function across time, while carrying over the state. Recurrent modules like LSTM and GRU are exactly of this type - you provide the initial hidden/cell state and unroll the computation graph for a few steps. Similarly, in RL the `scan` function can provide perform entire episode roll-outs - you give bundle the environment step function and the action selection function together and give it to `scan`, along with the initial state. Super useful.
+
+Another example where Jax fits well is with optimizers. The `Optax` library is pretty good for this. It offers perhaps one of the most intuitive interface for setting up optimizers, chaining optimizers, lr schedules, postprocessing gradients, all because of the functional nature of Jax. Let's take a look at some curious optimizers from it. 
+
+First consider that given any meaningful minimization problem gradient descent is guaranteed to reach a local minima, if it exists. However, in min-max problems standard gradient descent may not converge. And these settings are not that exotic, they show up in generative adversarial networks, constrained RL, federated learning, adversarial attacks, network verification, game-theoretic simulations and so on. For the simplest case suppose you're optimizing
+$
+\min_{x \in \mathbb{R}} \max_{y \in \mathbb{R}} x y.
+$
+The update rules with gradient descent would be the following, which in fact does not converge
+
+$$
+x_{t + 1} = x_t - \eta_t \nabla_x f(x_t, y_t) \\
+y_{t + 1} = y_t + \eta_t \nabla_y f(x_t, y_t). \\
+$$
+
+Optimistic gradient descent does manage to converge, but it uses a memory-based negative momentum, which requires keeping the past state of the entire set of parameters:
+
+$$
+x_{t + 1} = x_t -2 \eta_t \nabla_x f(x_t, y_t) + \eta_t \nabla_x f(x_{t-1}, y_{t-1}) \\
+y_{t + 1} = y_t + 2\eta_t \nabla_y f(x_t, y_t) - \eta_t \nabla_y f(x_{t-1}, y_{t-1}). \\
+$$
+
+As a second example, consider Model Agnostic Meta Learning (MAML), a stone cold classic. MAML optimizes $\mathcal{L}(\theta - \nabla_\theta \mathcal{L}(\theta, \textbf{X}, \textbf{Y}), \textbf{X}', \textbf{Y}')$. That is, we have a set of samples and targets $(\textbf{X}, \textbf{Y})$, perhaps for one particular task, the current parameters $\theta$, and we compute a few model updates on this data, obtaining new parameters $\theta'$. This is the *inner* optimization step. Then, using $\theta'$ and a new set of samples $(\textbf{X'}, \textbf{Y'})$, perhaps for a new task we calculate the loss and we calculate new gradients, which we subsequently apply. This is the *outer* step. We can think of it as a differentiable cross-validation with respect to the model parameters. Implementing this in PyTorch is tricky (speaking from experience) because only the parameters updates from the outer loop are actually applied. The params from the inner loop are used only temporarily. In Jax the whole MAML setup is less than 30 lines of code.
