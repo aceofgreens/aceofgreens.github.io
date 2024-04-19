@@ -65,13 +65,13 @@ The vectorizing transform, `vmap` pushes a new axis to the jaxpr along which the
 
 So where does Jax shine? Here are a few cool examples. First is `jax.lax.scan`, which essentially unrolls a function across time, while carrying over the state. Recurrent modules like LSTM and GRU are exactly of this type - you provide the initial hidden/cell state and unroll the computation graph for a few steps. Similarly, in RL the `scan` function can provide perform entire episode roll-outs - you give bundle the environment step function and the action selection function together and give it to `scan`, along with the initial state. Super useful.
 
-Another example where Jax fits well is with optimizers. The `Optax` library is pretty good for this. It offers perhaps one of the most intuitive interface for setting up optimizers, chaining optimizers, lr schedules, postprocessing gradients, all because of the functional nature of Jax. Let's take a look at some curious optimizers from it. 
+Another example where Jax fits well is with optimizers. The `Optax` library is pretty good for this. It offers perhaps one of the most intuitive interfaces for setting up optimizers, chaining optimizers, lr schedules, postprocessing gradients, all because of the functional nature of Jax. Let's take a look at some curious optimizers from it. 
 
-First consider that given any meaningful minimization problem gradient descent is guaranteed to reach a local minima, if it exists. However, in min-max problems standard gradient descent may not converge. And these settings are not that exotic, they show up in generative adversarial networks, constrained RL, federated learning, adversarial attacks, network verification, game-theoretic simulations and so on. For the simplest case suppose you're optimizing
+First consider that given any meaningful minimization problem gradient descent is guaranteed to reach a local minima, if such exists. However, in min-max problems standard gradient descent may not converge. And these settings are not that exotic, they show up in generative adversarial networks, constrained RL, federated learning, adversarial attacks, network verification, game-theoretic simulations and so on. For the simplest case suppose you're optimizing
 $
-\min_{x \in \mathbb{R}} \max_{y \in \mathbb{R}} x y.
+\min_{x \in \mathbb{R}} \max_{y \in \mathbb{R}} f(x, y).
 $
-The update rules with gradient descent would be the following, which in fact does not converge
+The update rules with gradient descent would be the following, which in fact may oscillate or diverge:
 
 $$
 x_{t + 1} = x_t - \eta_t \nabla_x f(x_t, y_t) \\
@@ -85,4 +85,18 @@ x_{t + 1} = x_t -2 \eta_t \nabla_x f(x_t, y_t) + \eta_t \nabla_x f(x_{t-1}, y_{t
 y_{t + 1} = y_t + 2\eta_t \nabla_y f(x_t, y_t) - \eta_t \nabla_y f(x_{t-1}, y_{t-1}). \\
 $$
 
-As a second example, consider Model Agnostic Meta Learning (MAML), a stone cold classic. MAML optimizes $\mathcal{L}(\theta - \nabla_\theta \mathcal{L}(\theta, \textbf{X}, \textbf{Y}), \textbf{X}', \textbf{Y}')$. That is, we have a set of samples and targets $(\textbf{X}, \textbf{Y})$, perhaps for one particular task, the current parameters $\theta$, and we compute a few model updates on this data, obtaining new parameters $\theta'$. This is the *inner* optimization step. Then, using $\theta'$ and a new set of samples $(\textbf{X'}, \textbf{Y'})$, perhaps for a new task we calculate the loss and we calculate new gradients, which we subsequently apply. This is the *outer* step. We can think of it as a differentiable cross-validation with respect to the model parameters. Implementing this in PyTorch is tricky (speaking from experience) because only the parameters updates from the outer loop are actually applied. The params from the inner loop are used only temporarily. In Jax the whole MAML setup is less than 30 lines of code.
+As a second example, consider Model Agnostic Meta Learning (MAML), a classic. MAML optimizes $\mathcal{L}(\theta - \nabla_\theta \mathcal{L}(\theta, \textbf{X}, \textbf{Y}), \textbf{X}', \textbf{Y}')$. That is, we have a set of samples and targets $(\textbf{X}, \textbf{Y})$, perhaps for one particular task, the current parameters $\theta$, and we compute a few model updates on this data, obtaining new parameters $\theta'$. This is the *inner* optimization step. Then, using $\theta'$ and a new set of samples $(\textbf{X'}, \textbf{Y'})$, perhaps for a new task we calculate the loss and we calculate new gradients, which we subsequently apply. This is the *outer* step. We can think of it as a differentiable cross-validation with respect to the model parameters. Implementing this in PyTorch is tricky (speaking from experience) because only the parameter updates from the outer loop are actually applied. The params from the inner loop are used only temporarily. In Jax the whole MAML setup is less than 30 lines of code.
+
+As a third example, consider sharpness-aware-minimization (SAM). The idea here is to find points in the parameter spece which not only have a low loss but are in a neighborhood where all nearby points have uniformly low loss. Let $\mathcal{S}$ be the training set, $\textbf{w}$ the model weights, and $L_\mathcal{S}$ be the loss function. Then, SAM optimizes
+
+$$
+\min_\textbf{w} \ \ L_\mathcal{S}^\text{SAM}(\textbf{w}) + \lambda {\lVert \textbf{w} \rVert}_2^2, \text{ with } L_\mathcal{S}^\text{SAM}(\textbf{w}) = \max_{| \boldsymbol{\epsilon}|_p \le \rho} L_\mathcal{S}(\textbf{w} + \boldsymbol{\epsilon})
+$$
+
+which is interpreted as follows. When at $\textbf{w}$, we first find the adversarial vector $\boldsymbol{\epsilon}$ which maximally increases the loss. For this to be meaningful $\boldsymbol{\epsilon}$ has to be bounded. Then we minimize the loss at the perturbed set of weights. This ensures that we minimize the loss at the sharpest point in the neighborhood. In practice, one uses an approximation to the $\nabla_w L_\mathcal{S}^{\text{SAM}}$. The optimal value of $\boldsymbol{\epsilon}$ from the inner maximization problem depends on the gradients at $\textbf{w}$, so in reality one computes two sets of gradients - one at $\textbf{w}$ and one at $\textbf{w} + \boldsymbol{\epsilon}$. In most most cases this additional computation is worth it, as SAM typically yields noticeable improvements over SGD or Adam.
+
+
+<figure>
+    <img class='img' src="/resources/sam_opt.png" alt="sam_optimization" width="1200">
+    <figcaption>Figure 1: Sharpness-aware minimization. Instead of taking the orange direction of steepest descent, one takes the blue direction of maximum descent with respect to the point in the neighborhood where the loss landscape is sharpest. This leads to solutions which are sufficiently flat. Image taken from <a href="https://arxiv.org/pdf/2010.01412.pdf">here</a>.</figcaption>
+</figure>
