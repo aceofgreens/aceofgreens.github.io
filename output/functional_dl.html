@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Functional Deep Learning | The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+
+
+    <meta name="description" content="JAX, the functional automatic differentiation library from Google, has established itself as a highly useful deep learning tool. It stands in stark contrast with the OOP approach of Torch and offers an interesting perspective to how deep learning systems can be built in an entirely functional approach. In reality, the boundaries between Torch and Jax are blurry, as nowadays flax has features which look like the OOP style of Torch, while functorch mimics the features of Jax. Nonetheless, Jax was the first of its kind and still carries heavy momentum when it comes to new projects implemented with it. Let's explore it a bit." />
+
+    <meta name="tags" content="ai" />
+    <meta name="tags" content="cs" />
+
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <header class="post-header">
+      <h1 class="post-title p-name" itemprop="name headline">Functional Deep Learning</h1>
+      <p class="post-meta">
+        <time class="dt-published" datetime="2024-04-11T07:00:00+02:00" itemprop="datePublished">
+          11 Apr 2024
+        </time>
+      </p>
+
+    </header>
+
+    <div class="post-content">
+      <p>JAX, the functional automatic differentiation library from Google, has established itself as a highly useful deep learning tool. It stands in stark contrast with the OOP approach of Torch and offers an interesting perspective to how deep learning systems can be built in an entirely functional approach. In reality, the boundaries between Torch and Jax are blurry, as nowadays <code>flax</code> has features which look like the OOP style of Torch, while <code>functorch</code> mimics the features of Jax. Nonetheless, Jax was the first of its kind and still carries heavy momentum when it comes to new projects implemented with it. Let's explore it a bit.</p>
+<p>Jax is all about composable function transformations. It emphasizes pure functions with no side effects. The computational state is represented as an immutable object. As a result, to call the forward pass of the network you have to pass not only the inputs <span class="math">\(x\)</span>, but also the current parameters <span class="math">\(\theta\)</span>, the pseudorandom generator, and anything else needed. This is a curious deviation from Torch - it's closer to mathematical notation and facilitates the composition of multiple functional transforms. Speaking of which, the three main selling points here are <code>grad</code> - the ability to differentiate potentially any array with respect to any other one, <code>jit</code> - the ability to just-in-time compile code, and <code>vmap</code> - the ability to vectorize a function application across multiple arguments.</p>
+<p>Let's take a peek at what happens under the hood. Jax is written mostly in pure Python so we can go quite far with just a debugger. Suppose you have a very simple function like</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">jax.numpy</span> <span class="k">as</span> <span class="nn">jnp</span>
+<span class="kn">from</span> <span class="nn">jax</span> <span class="kn">import</span> <span class="n">grad</span>
+
+<span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">gradf</span> <span class="o">=</span> <span class="n">grad</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<span class="n">grad_at_x</span> <span class="o">=</span> <span class="n">gradf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</code></pre></div>
+
+<p>The function <code>grad</code> is built on top of <code>vjp</code>, the vector-Jacobian product function, so without loss of generality, we'll explore how entire Jacobians are computed. How does Jax represent Jacobians as composable transformations? </p>
+<p>Consider that for a function <span class="math">\(f: \mathbb{R}^n \rightarrow \mathbb{R}^m\)</span>, the Jacobian is <span class="math">\(\partial f(\textbf{x}) \in \mathbb{R}^{m \times n}\)</span>, a matrix. But we can also find a mapping from a specific <span class="math">\(x\)</span> to the tangent space at that <span class="math">\(x\)</span>. For example, if <span class="math">\(f\)</span> is one-dimensional, this mapping is given by <span class="math">\(\partial f(x) = f(x) + \frac{df(x)}{dx} (v - x)\)</span>. That is, we give the function a point <span class="math">\(x\)</span> and it returns the equation for the tangent line at point <span class="math">\(x\)</span>, which is a new function of, say, variable <span class="math">\(v\)</span>. In higher dimensions, for a fixed <span class="math">\(\textbf{x}\)</span>, the tangent space is still a linear map from <span class="math">\(\textbf{x} \in \mathbb{R}^n\)</span> to <span class="math">\(\textbf{y} \in \mathbb{R}^m\)</span></p>
+<div class="math">$$
+\textbf{y} = f(\textbf{x}) + \partial f(\textbf{x}) (\textbf{v} - \textbf{x}),
+$$</div>
+<p>where the Jacobian <span class="math">\(\partial f(\textbf{x})\)</span> is the slope and <span class="math">\(\textbf{y}\)</span> is a point on the tangent space, evaluated at <span class="math">\(\textbf{x}\)</span>. The signature of this function is <span class="math">\(\partial f: \mathbb{R}^n \rightarrow \mathbb{R}^n \rightarrow \mathbb{R}^m\)</span> because it takes a point <span class="math">\(\textbf{x}\)</span> and returns the equation of the tangent space. Now we uncurry this function so that it takes a pair <span class="math">\((\textbf{x}, \textbf{v})\)</span> and returns <span class="math">\(\partial f(\textbf{x}) \textbf{v}\)</span>, i.e. the tangent at <span class="math">\(\textbf{x}\)</span> multiplied by <span class="math">\(\textbf{v}\)</span>, which is essentially the directional derivative of the tangent space at <span class="math">\(\textbf{x}\)</span> in the direction <span class="math">\(\textbf{v}\)</span>. Jax calls <span class="math">\(\textbf{x}\)</span> the <em>primals</em> and <span class="math">\(\textbf{v}\)</span> the <em>tangents</em>. The function <code>jvp</code> takes in a function <span class="math">\(f\)</span>, primals <span class="math">\(\textbf{x}\)</span> and tangents <span class="math">\(\textbf{v}\)</span> and conveniently evaluates <span class="math">\((f(\textbf{x}), \partial f(\textbf{x}) \textbf{v})\)</span> using <em>forward</em> differentiation.</p>
+<p>With <code>jvp</code> there is no backward pass. To compute the derivatives, for each primitive operation in the function Jax uses a JVP-rule which calculates the function value at the primals and the corresponding JVP. Deep within <code>jvp</code> it creates a <code>WrappedFun</code>, this being the type representing a function to compose with transformations, and adds the <code>jvp</code> transformation to its transform stack. Through a method <code>call_wrapped</code> it begins applying the transforms. We reach a generator called <code>jvpfun</code> which actually does the computation. It creates a special <code>JVPTrace</code> object which acts as a context manager. These tracers are key: they are abstract stand-ins for array objects, and are passed to JAX functions in order to extract the sequence of operations that the function encodes. Further down, the entire calculation is traced (parsed) into a <code>JVPTracer</code> object which contains actual primal and tangent values, and an actual sequence of primitive computations. Each of these contains its parameters, such as the start index, strides, and so on for a <code>slice</code> primitive, or the dimension for a <code>squeeze</code> primitive, or a full <code>jaxpr</code> to execute for a <code>pjit</code> primitive. These are evaluated one by one according to their rules.</p>
+<p>Thus <code>jvp</code> calculates the derivatives in a bottom-up manner by propagating the primal values and the tangents along the traced function. The tangent gets multiplied according to the rules of calculus. If we set the the initial tangent value to a one-hot vector, we'll get the corresponding column in the Jacobian as output. Setting the tangent to a unit vector will produce a directional derivative in the unit direction - not the Jacobian! To get the full Jacobian, we have to run the forward pass <span class="math">\(n\)</span> times. For that reason forward mode AD is preferred when the function outputs many more elements than it takes as input. Here's an important chunk from <code>jacfwd</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="n">pushfwd</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_jvp</span><span class="p">,</span> <span class="n">f_partial</span><span class="p">,</span> <span class="n">dyn_args</span><span class="p">)</span>
+<span class="n">y</span><span class="p">,</span> <span class="n">jac</span> <span class="o">=</span> <span class="n">vmap</span><span class="p">(</span><span class="n">pushfwd</span><span class="p">,</span> <span class="n">out_axes</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))(</span><span class="n">_std_basis</span><span class="p">(</span><span class="n">dyn_args</span><span class="p">))</span>
+</code></pre></div>
+
+<p>The function <code>jacrev</code> calculates the Jacobian using reverse mode AD in a fairly similar manner. Except that now the it uses <code>vjp</code> which models the mapping <span class="math">\((\textbf{x}, \textbf{v}) \mapsto (f(x), \partial f(\textbf{x})^T \textbf{v})\)</span>. It lets us build Jacobian matrices one row at a time which is more efficient in cases like deep learning, where Jacobians are wider. Also the function <code>grad</code> computes the whole gradient in a single call. The downside is that the space complexity of this is linear in the depth of the computation graph.</p>
+<p>Here's a high level of how <code>vjp</code> works. It takes any traceable function and the primals and <em>linearizes</em> it, obtaining a tangent function at the primals. The linearization actually uses <code>jvp</code> inside of it and produces a jaxpr, traced from the forward pass. Subsequently we return a complicated-beyond-comprehension wrapped function which contains the jaxpr, the constants, and all other context. This function actually has a call to <code>backward_pass</code> inside it and is designed to accept the equivalents of <span class="math">\(\textbf{v}\)</span>. These are all wrappers capturing the necessary context from the forward pass. At the end, we actually evaluate this function by passing a few one-hot encoded vectors, obtaining our Jacobian.</p>
+<p>In addition to tracing the function Jax works by converting it to an intermediate representation called a Jaxpr - a Jax expression. As we've already seen these jaxprs pop up at various places to allow for the detailed interpretation of the computations. The jaxpr for our function above is</p>
+<div class="highlight"><pre><span></span><code>{ lambda ; a:f32[5]. let
+    b:f32[1] = slice[limit_indices=(1,) start_indices=(0,) strides=None] a
+    c:f32[] = squeeze[dimensions=(0,)] b
+    d:f32[1] = slice[limit_indices=(1,) start_indices=(0,) strides=None] a
+    e:f32[] = squeeze[dimensions=(0,)] d
+    f:f32[1] = slice[limit_indices=(2,) start_indices=(1,) strides=None] a
+    g:f32[] = squeeze[dimensions=(0,)] f
+    h:f32[] = mul e g
+    i:f32[] = add c h
+  in (i,) }
+</code></pre></div>
+
+<p>Here we've passed an input array of shape <span class="math">\((5,)\)</span> even though only two elements are used, which is not a problem. These jaxprs are very rich in functionality - each operation can be inspected and modified. Each line of the jaxpr is an equation with input and output variables, the primitive, its parameters, and so on, that can be evaluated.</p>
+<p>Other functional transforms work in a similar way - they trace the computation into a jaxpr, modify it optimize it, and run it. Consider <code>jit</code>. It relies on Google's powerful XLA compiler. XLA does not typically create <code>.so</code> files in the way traditional compilers might output executable or linkable binaries. Instead, XLA generates machine code dynamically at runtime, which is directly executed in-memory. This approach is aligned with how JIT compilation typically works - compiling code when it is needed, without creating persistent binary files on disk. </p>
+<p>The vectorizing transform, <code>vmap</code> pushes a new axis to the jaxpr along which the function will be vectorized. If it's not vectorized, the function has to be called separately on many inputs, producing multiple XLA calls. <code>vmap</code> speeds this up noticeably by simply adding the new index in the jaxpr, which shows up usually as fewer calls. After all, when you've traced the computation graph you know the exact shapes and dtypes, so adding the new axis in the right places is not impossible. The parallelization transform <code>pmap</code> vectorizes and splits the batch across the available devices, producing actual parallelism.</p>
+<p>So where does Jax shine? Here are a few cool examples. First is <code>jax.lax.scan</code>, which essentially unrolls a function across time, while carrying over the state. Recurrent modules like LSTM and GRU are exactly of this type - you provide the initial hidden/cell state and unroll the computation graph for a few steps. Similarly, in RL the <code>scan</code> function can provide perform entire episode roll-outs - you give bundle the environment step function and the action selection function together and give it to <code>scan</code>, along with the initial state. Super useful.</p>
+<p>Another example where Jax fits well is with optimizers. The <code>Optax</code> library is pretty good for this. It offers perhaps one of the most intuitive interfaces for setting up optimizers, chaining optimizers, lr schedules, postprocessing gradients, all because of the functional nature of Jax. Let's take a look at some curious optimizers from it. </p>
+<p>First consider that given any meaningful minimization problem gradient descent is guaranteed to reach a local minima, if such exists. However, in min-max problems standard gradient descent may not converge. And these settings are not that exotic, they show up in generative adversarial networks, constrained RL, federated learning, adversarial attacks, network verification, game-theoretic simulations and so on. For the simplest case suppose you're optimizing
+<span class="math">\(
+\min_{x \in \mathbb{R}} \max_{y \in \mathbb{R}} f(x, y).\)</span>
+The update rules with gradient descent would be the following, which in fact may oscillate or diverge:</p>
+<div class="math">$$
+x_{t + 1} = x_t - \eta_t \nabla_x f(x_t, y_t) \\
+y_{t + 1} = y_t + \eta_t \nabla_y f(x_t, y_t). \\
+$$</div>
+<p>Optimistic gradient descent does manage to converge, but it uses a memory-based negative momentum, which requires keeping the past state of the entire set of parameters:</p>
+<div class="math">$$
+x_{t + 1} = x_t -2 \eta_t \nabla_x f(x_t, y_t) + \eta_t \nabla_x f(x_{t-1}, y_{t-1}) \\
+y_{t + 1} = y_t + 2\eta_t \nabla_y f(x_t, y_t) - \eta_t \nabla_y f(x_{t-1}, y_{t-1}). \\
+$$</div>
+<p>As a second example, consider Model Agnostic Meta Learning (MAML), a classic. MAML optimizes <span class="math">\(\mathcal{L}(\theta - \nabla_\theta \mathcal{L}(\theta, \textbf{X}, \textbf{Y}), \textbf{X}', \textbf{Y}')\)</span>. That is, we have a set of samples and targets <span class="math">\((\textbf{X}, \textbf{Y})\)</span>, perhaps for one particular task, the current parameters <span class="math">\(\theta\)</span>, and we compute a few model updates on this data, obtaining new parameters <span class="math">\(\theta'\)</span>. This is the <em>inner</em> optimization step. Then, using <span class="math">\(\theta'\)</span> and a new set of samples <span class="math">\((\textbf{X'}, \textbf{Y'})\)</span>, perhaps for a new task we calculate the loss and we calculate new gradients, which we subsequently apply. This is the <em>outer</em> step. We can think of it as a differentiable cross-validation with respect to the model parameters. Implementing this in PyTorch is tricky (speaking from experience) because only the parameter updates from the outer loop are actually applied. The params from the inner loop are used only temporarily. In Jax the whole MAML setup is less than 30 lines of code.</p>
+<p>As a third example, consider sharpness-aware-minimization (SAM). The idea here is to find points in the parameter spece which not only have a low loss but are in a neighborhood where all nearby points have uniformly low loss. Let <span class="math">\(\mathcal{S}\)</span> be the training set, <span class="math">\(\textbf{w}\)</span> the model weights, and <span class="math">\(L_\mathcal{S}\)</span> be the loss function. Then, SAM optimizes</p>
+<div class="math">$$
+\min_\textbf{w} \ \ L_\mathcal{S}^\text{SAM}(\textbf{w}) + \lambda {\lVert \textbf{w} \rVert}_2^2, \text{ with } L_\mathcal{S}^\text{SAM}(\textbf{w}) = \max_{| \boldsymbol{\epsilon}|_p \le \rho} L_\mathcal{S}(\textbf{w} + \boldsymbol{\epsilon})
+$$</div>
+<p>which is interpreted as follows. When at <span class="math">\(\textbf{w}\)</span>, we first find the adversarial vector <span class="math">\(\boldsymbol{\epsilon}\)</span> which maximally increases the loss. For this to be meaningful <span class="math">\(\boldsymbol{\epsilon}\)</span> has to be bounded. Then we minimize the loss at the perturbed set of weights. This ensures that we minimize the loss at the sharpest point in the neighborhood. In practice, one uses an approximation to the <span class="math">\(\nabla_w L_\mathcal{S}^{\text{SAM}}\)</span>. The optimal value of <span class="math">\(\boldsymbol{\epsilon}\)</span> from the inner maximization problem depends on the gradients at <span class="math">\(\textbf{w}\)</span>, so in reality one computes two sets of gradients - one at <span class="math">\(\textbf{w}\)</span> and one at <span class="math">\(\textbf{w} + \boldsymbol{\epsilon}\)</span>. In most most cases this additional computation is worth it, as SAM typically yields noticeable improvements over SGD or Adam.</p>
+<figure>
+    <img class='img' src="/images/sam_opt.png" alt="sam_optimization" width="1200">
+    <figcaption>Figure 1: Sharpness-aware minimization. Instead of taking the orange direction of steepest descent, one takes the blue direction of maximum descent with respect to the point in the neighborhood where the loss landscape is sharpest. This leads to solutions which are sufficiently flat. Image taken from <a href="https://arxiv.org/pdf/2010.01412.pdf">here</a>.</figcaption>
+</figure>
+
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'], ['$', '$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+    </div>
+  
+  <p class="post-meta">
+    Tags: ai, cs
+  </p>
+
+  </article>
+
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>

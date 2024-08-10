@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+{% block content_title %}
+{% endblock %}
+
+<article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <div class="post-content e-content content" itemprop="articleBody">
+    {{ page.content }}
+  </div>
+
+  {# <p class="post-meta">
+  {%- if page.tags.size > 0 -%}
+  Tag{%- if page.tags.size > 1 -%}s{%- endif -%}: {{ page.tags | sort | join: ", " }}
+  {%- endif -%}
+  </p> #}
+
+  {# {%- if site.disqus.shortname -%}
+    {%- include disqus_comments.html -%}
+  {%- endif -%} #}
+
+  {# <a class="u-url" href="{{ page.url | relative_url }}" hidden></a> #}
+</article>
+
+
+{% endblock content %}

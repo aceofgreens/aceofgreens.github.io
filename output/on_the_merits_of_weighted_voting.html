@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>On the Merits of Weighted Voting | The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+
+
+    <meta name="description" content="Weighted voting, the idea that some participants have bigger weight to their vote than others, is a controversial but important idea. While it can illuminate many of our modern world practices and suggest novel ways to look at them, it still seems under-developed in the literature, at least in those aspects which I'll discuss here. This topic is near and dear to me and I have spent the last four years thinking about it. I have discussed it with friends and acquaintances, finding that few share my enthusiasm on it. Nonetheless, time and logic have fully convinced me of its merit... Buckle up, this is going to be a ride." />
+
+    <meta name="tags" content="econ" />
+    <meta name="tags" content="ultra-rationalism" />
+
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <header class="post-header">
+      <h1 class="post-title p-name" itemprop="name headline">On the Merits of Weighted Voting</h1>
+      <p class="post-meta">
+        <time class="dt-published" datetime="2022-08-01T16:00:00+02:00" itemprop="datePublished">
+          1 Aug 2022
+        </time>
+      </p>
+
+    </header>
+
+    <div class="post-content">
+      <p><a href="https://en.wikipedia.org/wiki/Weighted_voting">Weighted voting</a>, the idea that some participants have bigger weight to their vote than others, is a controversial but important idea. While it can illuminate many of our modern world practices and suggest novel ways to look at them, it still seems under-developed in the literature, at least in those aspects which I'll discuss here. This topic is near and dear to me and I have spent the last four years thinking about it. I have discussed it with friends and acquaintances, finding that few share my enthusiasm on it. Nonetheless, time and logic have fully convinced me of its merit... Buckle up, this is going to be a ride.</p>
+<p>People form societies with the goal of solving their mundane daily tasks in a more efficient manner. This is a most natural thing to do. A society consists of the individual people and the social relationships between them, this forming a social organization where</p>
+<ul>
+<li>the effects of one person's actions spill over to the others,</li>
+<li>people attain greater benefits from cooperation rather than competition.</li>
+</ul>
+<p>However, conflicts inevitably arise between the individual members and they can be resolved using violence or diplomacy. Which of these is deployed depends largely on how costly violence would be for the participating parties. Contrary to violence, voting is a standard way of diplomatic conflict resolution. It is possible only if people agree that everyone will cast their vote, and a single outcome will be decided based on all votes, possibly weighted by certain merit criteria. Note that this includes the democratic case of equal voting weights. The procedure of selecting the final decision from the individual votes should be known and accepted by all so that the final outcome doesn't depend on e.g. the person counting the votes.</p>
+<p>The final voting result creates winners and losers. Those whose individual vote is in agreement with the final result will be satisfied, while those whose votes are different from the final result will be malcontent. A big question in economics is whether we can objectively measure the outcome of such scenarios, where we have net winners and net losers on both sides. You see, the voting setup is just a tool for coordination, an algorithm for the problem of optimal allocation of scarce resources with globally-felt consequences. Therefore, we are mainly interested in the following:</p>
+<ul>
+<li><strong>How can we evaluate the outcome from a voting system when there are competing and self-contradicting performance metrics present?</strong> To one net loser, the outcome may feel like a disastrous calamity, while for another it may just be a temporary setback. Which one of these opinions should we base our analysis on?</li>
+<li><strong>How can we design a voting system that will maximize the created value in most cases, under a given quality definition?</strong> A better voting system will produce more value for all people. Obviously, we want to create value, rather than destroy it.</li>
+</ul>
+<h3>The scourge of utility</h3>
+<p>People have <a href="https://en.wikipedia.org/wiki/Preference_(economics)">preferences</a> over world states. These are the orderings that are attributed to hypothetical states of the world. For example, a person may prefer the state where he works as a teacher to that where he works as a car technician. In turn, he may prefer being a car technician to being unemployed. His preferences create a ranking of these scenarios according to how beneficial they are. A lot of theory could be developed around preferences - whether they are stable across time, complete, transitive, convex, strict, stochastic, and so on. None of these matter for this discussion. What matters is that preferences represent the attitudes of people toward different scenarios.</p>
+<p>Using the concept of preferences we can get a first primitive performance metric for analyzing voting outcomes. For a binary vote with a yes/no outcome, we can simply count how many voters prefer the final vote to its alternative. Assuming that everyone voted for their preferred outcome, this is exactly like counting the people who voted for the final result. And if the final result is chosen by the majority vote, then this already maximizes our performance metric.</p>
+<p>However, looking at just the preferential order of the outcomes misses the fact that these preferences have a magnitude, or intensity. One person may prefer peace to war much more strongly than another. And if this is not taken into account, the binary majority vote, while maximizing the number of preferred outcomes, may not maximize their total magnitude.</p>
+<p>To represent the magnitude of preferences in a quantitative way we may use <a href="https://en.wikipedia.org/wiki/Utility">utility functions</a>. These are mathematical functions which take in as input a given world state and output a real number. For example, for a given person, the world state of having 3 cars and 2 houses may produce a utility of 250, while 2 cars and 3 houses - 350. Needless to say, working with actual numbers is beneficial because it allows us to create proper mathematical models - the entire <a href="https://en.wikipedia.org/wiki/Consumer_choice">consumer choice</a> is based on utility functions.</p>
+<p>While very useful for simple modelling, utility functions are not applicable to the real world because:</p>
+<ul>
+<li>Real world utility functions are <em>extremely</em> complex - they may be random, unstable, stochastic, or with no closed mathematical form. The famous <a href="https://en.wikipedia.org/wiki/Cobb%E2%80%93Douglas_production_function">Cobb-Douglas</a> functional form is rarely found in real life.</li>
+<li>The utility units of measurement are meaningless. What does it mean to have utility 350? This is only meaningful when compared to a utility of 250 or 400.</li>
+</ul>
+<p>The outcome of the vote implies a utility for everyone and hence, you can measure the total utility for that outcome. Some voters will be just happy, some other will be delighted, others may be indifferent, yet others may be in shock. A function representing the utility of a collective is called a <a href="https://en.wikipedia.org/wiki/Social_welfare_function">social welfare function</a>. This is any function that takes in the individual utility functions and aggregates them, representing the utility of the group.</p>
+<p>We might try to maximize the total utility of the group, i.e. increase total happiness. But what if there is a person whose utility is extremely volatile and its magnitude is larger than that of the others. Then to increase total utility, we'll have to satisfy him in particular, which requires special treatment. Isn't this unfair?</p>
+<p>So we might then try to maximize the average utility, or the median utility. This is more robust to outlier preferences, but still the utility of some individuals will dominate the aggregates. We might switch the objective to maximizing the utility of the least well-off individual (the Rawlsian principle), but then you are disregarding all but one person.</p>
+<p>Defining a good social welfare function is problematic because it requires making judgement calls regarding who should be treated preferentially. Utility is only meaningful for comparing states by a single person, not by different people. Moreover, any calculation based on utility is subjective. I firmly believe that it is wrong to consider such a subjective quantity as our target variable to maximize when making decisions with group-wide effects. Instead, we need to come up with something objective, meaningful, and computable.</p>
+<h3>The setup</h3>
+<p>In most countries, the voting setup is the following:</p>
+<ul>
+<li>People forcefully contribute a part of their income through taxation. </li>
+<li>The contributions are pooled and spent however the government decides, most commonly on redistribution. </li>
+<li>The voting that takes place is very indirectly about how this pool of money is spent. The people vote for the election of government officials who then change the spending policy.</li>
+</ul>
+<p>Suppose that we're trying to design the weights of a voting system such that given all votes, the total utility is maximized. So we go around and ask people about their utilities under the different outcomes. The utility of a person is based on their starting income, how much is taken from them through taxation, and how much they receive from redistribution. But since utility is subjective, any assessment of the voting outcome based on measured utility will also be subjective. Likewise, the most vociferous voters will likely greatly under-report the utility for their undesided outcomes, so that the resulting vote favours them. Finally, nothing prohibits others from doing the same, thus creating an environment where the loudest and most raucous ones will have the largest weights.</p>
+<p>Hence, in a voting system where we are trying to set the weights to maximize utility, the people who stand to lose the most utility have the largest weigths. Obvious reasons why we should move away from utility-based social welfare are:</p>
+<ul>
+<li>We are maximizing a subjective and non-static metric.</li>
+<li>Individual utilities from outcomes will be under-reported, in order to get more weight. This process may become more aggravated with time and may continue indefinitely.</li>
+</ul>
+<p>A better and objective metric for assessing voting outcomes is the total quantity of money not spent where its owners wanted. In this case, we are setting the weights such that the sum of all contributions whose owners' votes are not equal to the passing vote is minimized. For example, suppose we have a binary vote about how to spend the collected contributions - on education, or on infrastructure. Suppose the passing vote is "infrastructure". Then the cost of that outcome is the sum of all contributions whose owners voted "education".</p>
+<p>Counting misallocated money is an objective metric - it is not based on utility, but rather funds contributed, which are clearly measurable. It's also fair, as the different contributions are treated equally and no man is favoured at the expense of others. Let's call this quantity <em>forceful misallocation</em> to indicate that these funds are collected forcefully (through taxation) and are misallocated (not spent where their original owners want). </p>
+<p>Given these considerations, I state directly that <strong>the democratic case of equal weights on all votes, does not minimize the forcefully misallocated funds</strong>. The problem with equal votes is that any 51% majority can pass a vote where they misallocate the contributions of the remaining 49%. And if further, those 51% are with the least contributions, then, holding everything else fixed, this actually maximizes forceful misallocation!</p>
+<p>I also claim that <strong>minimizing forceful misallocation will tend to produce highly beneficial outcomes in terms of utility</strong>. Why? Because we are willing to spend money on those things which provide the most utility to us. And if you cannot spend that money, then you cannot reap the utility from whatever you have missed out on. Hence, forceful misallocation in voting prevents people from maximizing their individual utility. Or in other words, if we minimize forceful misallocation, we maximize the sum of all individual utilities dependant only on their individual contributions.</p>
+<figure>
+    <img class='img' src="/images/independent_utilities.svg" alt="Independent utilities" width="1200">
+    <figcaption>Figure 1: Utility relationships with two voters. Suppose we have two voters with two utility functions. When considering how they would spend their contributions, the scope of their utilities is shown in yellow, along with their maximums in red. Considering both their own contribution and the other voter's contribution, their utilities can take on a larger set of values - the green ones. The sum of the utilities in the two blue points is nonsensical because these utilities have different scales and are dependent on each other. On the contrary, the sum of utilities in the two red points is meaningful, because they are resulting from separate contributions.</figcaption>
+</figure>
+
+<h3>The solution?</h3>
+<p>So if equal weights do not minimize forceful misallocation, what does? I believe the answer is to have the weights proportional to the contributions. It's quite simple, people who contribute more should have bigger weights on their vote precisely because they stand to lose more if their contributions are misallocated.</p>
+<p>This setup has several benefits:</p>
+<ul>
+<li>It is <strong>pragmatic</strong>, as the weights are bound to something objective and measurable. This pragmatism is lacking in other systems where weights are bound to wisdom, as in noocracy, or to technical knowledge, as in a technocracy.</li>
+<li>It is <strong>fair</strong>. Your weights do not depend on who you are, but on rather how much you contribute and this criterion is the same for everyone. Race, religion, and education are extraneous.</li>
+<li>It trades off cost and benefit proportionally. If your share of the contributions is larger than your share of the weights, you have an incentive to contribute less. In the opposite case, you have an incentive to free-ride. Weights tied to contributions is what gives you <em>skin in the game</em>.</li>
+<li>More practically, vote buying (or electoral clientelism) will be reduced. Since those who sell their votes are typically people who contribute less through taxes, under a weighted voting scheme they will have less say in the final outcome. This will make the act of buying votes less profitable.</li>
+</ul>
+<p>Importantly, the weighted voting setting described above is different from plutocracy - rule of the rich. A wealthy person who does not contribute will have minimal weight and a wealthy person who contributes a lot will have a large weight. In general, wealthy people will be influential only if they contribute. And if they do become the most influential ones, they deserve it by virtue of having contributed the most. Do you not agree?</p>
+<h3>Simulations</h3>
+<p>Let's try to get a better understanding of the effects caused by weighted voting. We'll simulate equal and non equal weights in different simplified problem settings and compare the results, obtaining precious intuition along the way. In all experiments, we'll take the weights to be linearly proportional to the contributions. So a person who has contributed twice as much as another, will have twice as much weight - much like voting rights in corporations.</p>
+<p>First, we look at an unrealistic brutal scenario. Suppose there are <span class="math">\(N\)</span> voters, each having some wealth <span class="math">\(w_i &gt; 0, \ \forall i\)</span>. These wealths are sampled randomly from a Pareto distribution, for realism. The dynamic that we focus on is the following: at each iteration <span class="math">\(t\)</span>, there is a proposed vote for the majority of the poorest voters to plunder the wealth of the remaining wealthier voters and split it uniformly among themselves. Each person can vote "yes" or "no" to support the appropriation or not. In the worst case, the maximum appropriation occurs when the poorest 51% appropriate the wealth of the richer 49%. This is the case we'll look at.</p>
+<p>In a democratic setup of "one man, one vote", one would vote "yes" if they stand to gain from this appropriation, i.e. if they are in the bottom 51%, ranked by wealth. Otherwise, they would vote "no". At <span class="math">\(t=0\)</span> we have the initial wealths. At <span class="math">\(t=1\)</span> the used-to-be richest 49% are now the poorest and they, together with the poorest 2% from the previous 51%, will vote to plunder the wealth of the current 49%. At <span class="math">\(t=2\)</span> the previous plunderers will now be poorest, causing them to vote for the plundering of the current richest 49% and so on, creating a cycle.</p>
+<p>Mathematically, this dynamic is represented as a folding map that takes in a vector of wealths, sets the elements above a certain threshold to 0, and uniformly distributes the sum of those elements to the elements less than that threshold. Iterating this map converges to an oscillating "equilibrium" with periodicity 2. This means that we eventually reach a state where if voter <span class="math">\(i\)</span> has positive wealth in the current iteration, he will lose it and in the next iteration he will have 0 wealth. But he will then be a beneficient of the wealth transfer in that iteration, and so on. There will be only 2 classes of people - those with wealth and those without. The forced misallocation each iteration would converge to a single value, it being the rate at which the cumulative wealth transfer increases.</p>
+<figure>
+    <img class='big_img' src="/images/weighted_voting_simulation.svg" alt="First simulation" width="1200">
+    <figcaption>Figure 2: Results from the first simulation.</figcaption>
+</figure>
+
+<p>With weighted voting, more people would have to vote for the pillage. This will result not in a 51/49 split, but rather a 80/20 one. The experiments suggest that we still converge to an equilibrium with constant looting , but this time the wealth is cyclic with periodicity 3. Similarly, there are 3 wealth classes and the forced misallocation is also 3-cyclic. Importantly, it is lower than that under equal weights. This indicates that tying the weights to the contributions, or to how much you stand to lose, reduces forced misallocation.</p>
+<p>Let's now look at a different, slightly more realistic scenario. Again, we have <span class="math">\(N\)</span> voters. Each voter has a constant income propensity <span class="math">\(\xi_i &gt; 0\)</span> dictating how easy it is for them to obtain income (e.g. through labour). This propensity is intended to represent luck, intelligence, knowledge or any other factor that might contribute to having a large periodic income. At every iteration <span class="math">\(t\)</span>, each voter collects this unconditional income. From this income, each voter pays taxes according to the current tax rate. The taxes are pooled together and divided uniformly among all voters. Hence, to calculate the new wealth for voter <span class="math">\(i\)</span>, we take his current wealth, add the periodic income, subtract the paid taxes, and add the income from redistribution.</p>
+<p>The dynamic that we'll model is whether new proposed changes to the tax rate are accepted or not. Specifically, at every iteration <span class="math">\(t\)</span> there is a proposal for a new tax rate and everyone votes whether this new rate should be adopted. Each voter votes "yes" only if they will be better off under the new tax rate, i.e. if their inflows through redistribution minus their outflows through taxes under the new tax rate is greater than that same quantity under the current tax rate. We are interested in how the tax rate will evolve under equal and unequal voting weights.</p>
+<p>The simulation can be specified as follows:</p>
+<div class="math">$$\begin{align}
+\xi_i &amp; \sim \text{Pareto}(\alpha_0), \  \forall i \in \{1, ..., N\}  \\
+l_i^t &amp; \sim \mathcal{N}(\xi_i, \sigma_0 \xi_i), \ \forall i, \ \forall t\\
+\omega_i^{t+1} &amp; = \omega_i^t + l_i^t - l_i^t \tau(l_i^t, \alpha^t, \beta^t) + \frac{1}{N} \sum_{j = 1}^N l_j^t \tau(l_j^t, \alpha^t, \beta^t) \\
+\tau(x, \alpha, \beta) &amp; = 1 - \exp(-(x/\alpha)^\beta) \\
+\bar{\alpha}^t &amp; = \alpha^t + \mathcal{N}(0, 1) \\
+\bar{\beta}^t &amp; = \beta^t + \mathcal{N}(0, 1) \\
+\alpha^{t+1} &amp; = \begin{cases}
+\bar{\alpha}^t, &amp; \text{ if } \frac{\sum_i w_i v_i}{\sum_i w_i} &gt; 0.5 \\
+\alpha^t, &amp; \text{ otherwise }
+\end{cases} \\
+\beta^{t+1} &amp; = \begin{cases}
+\bar{\beta}^t, &amp; \text{ if } \frac{\sum_i w_i v_i}{\sum_i w_i} &gt; 0.5 \\
+\beta^t, &amp; \text{ otherwise }
+\end{cases} \\ w_i^t &amp; = 
+\begin{cases}
+\frac{1}{N}, &amp; \text{ if equal weights}\\
+\frac{l_i^t \tau(l_i^t, \alpha^t, \beta^t)}{ \sum_{j = 1}^N l_j^t \tau(l_j^t, \alpha^t, \beta^t)}, &amp; \text{ if unequal weights}\\
+\end{cases} \\
+\Delta \omega_i^t &amp; = \big(\frac{1}{N} \sum_{j = 1}^N l_j^t \tau(l_j^t, \bar{\alpha}^t, \bar{\beta}^t) - l_i^t \tau(l_i^t, \bar{\alpha}^t, \bar{\beta}^t)\big) -
+\big(\frac{1}{N} \sum_{j = 1}^N l_j^t \tau(l_j^t, \alpha^t, \beta^t) - l_i^t \tau(l_i^t, \alpha^t, \beta^t)\big) \\
+v_i^t &amp; = 
+\begin{cases}
+1, &amp; \text{ if }\Delta \omega_i^t &gt; 0 \\
+0, &amp; \text{ otherwise}
+\end{cases} \\
+\end{align}$$</div>
+<p>In the notation, subscripts <span class="math">\(i\)</span> are used to index the voters, superscripts <span class="math">\(t\)</span> are used to index the time iterations. <span class="math">\(l\)</span> are the labour incomes, <span class="math">\(\xi\)</span> the income propensities, and <span class="math">\(\alpha\)</span> and <span class="math">\(\beta\)</span> parametrize the tax rate, which is a cumulative Weibull distribution (for simplicity). The proposed tax rates are <span class="math">\(\bar{\alpha}\)</span> and <span class="math">\(\bar{\beta}\)</span>. The votes are <span class="math">\(v\)</span>, the weights are <span class="math">\(w\)</span> and the wealths are <span class="math">\(\omega\)</span>.</p>
+<p>The results from this simulation are striking. Under the equal weights case, the tax rate parameters converge to <span class="math">\(\alpha \approx 0\)</span> and <span class="math">\(\beta \approx 9.5\)</span>. The Weibull cumulative density with these parameters is for all practical purposes 1, for any <span class="math">\(x&gt;0\)</span>. This means that we converge to a flat 100% tax rate. Everyone pays all their labour income in taxes and receives one <span class="math">\(N\)</span>-th of the pool - the ultimate communist setting. As a result, the wealths of the voters are approximately the same and grow at the same rate.</p>
+<p>Why does this happen? Because labour incomes are heavily skewed to the right, with the mean being greater than the median. As a result, tax contributions are also skewed to the right. Hence, for the poorest 51%, the mean collected tax which they receive will always be higher than what they pay, prompting them to vote for ever increasing taxation.</p>
+<figure>
+    <img class='big_img' src="/images/weighted_voting_simulation4.svg" alt="Second simulation" width="1200">
+    <figcaption>Figure 3: Results from the second simulation.</figcaption>
+</figure>
+
+<p>On the other hand, with weights bound to the contributions, we converge to the parameters <span class="math">\(\alpha \approx 50\)</span> and <span class="math">\(\beta \approx 10\)</span>. The resulting tax rate is progressive with a well defined steep slope from 0 to 1 occurring at around <span class="math">\(x \approx 45\)</span>. However, the labour incomes <span class="math">\(l\)</span> from which taxes are paid are less than 2 on average, and as a result, they fall within a range where the tax rate is practically 0. Thus, we reach a state where no one pays any income taxes and there is no redistribution. There is large inequality, and the wealth of individual voters grows differently, according to their income propensities.</p>
+<p>Note that no income taxes implies no forceful misallocation, the main quantity of interest that we seek to minimize. This is in stark contrast to the case with equal votes, where just under half of all labour income is expropriated at every iteration. Under democracy, the cumulative expropriated funds scale as <span class="math">\(O(t)\)</span>, while under meritocracy, with weights tied to taxes, it scales as <span class="math">\(O(1)\)</span>. This does assume that the redistribution policy is fixed and that the tax rates cannot be regressive. Other models may yield different results. However, the distinction here is evident.</p>
+<p>The two simulations above were not meant to be realistic. They were meant to be worst-case scenarios and to provide bounds on the quantities of interest. Average case analyses are much more complicated. Nonetheless, results suggest that</p>
+<ul>
+<li>Depending on the dynamics involved, weighted voting may or may not change the resulting equilibrium states,</li>
+<li>Compared to equal weights, weights proportional to contributions yields lower forceful misallocation of resources,</li>
+<li>Equal weights can lead to low inequality and high unfairness, while unequal weights can lead to high inequality and low unfairness.</li>
+</ul>
+<p>Finally, a personal opinion which should be mentioned. I do not believe that giving more voting power to the highest contributors will hurt those really in need of help. If I had a weight of 0.51, being a de facto dictator in the votes, I would still donate to charities and help those in need. But I want to do it manually, not through the government. And if you think that weighted voting means the end of charity and compassion, answer me this: are people really cruel by heart, or are they just used to mindlessly delegating their altruistic attitudes to a mask-wearing, gun-pointing robber?</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'], ['$', '$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+    </div>
+  
+  <p class="post-meta">
+    Tags: econ, ultra-rationalism
+  </p>
+
+  </article>
+
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>

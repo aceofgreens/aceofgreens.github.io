@@ -1,0 +1,57 @@
+---
+title: The Great Charade
+date: 2023-08-15 07:00:00 +0200
+tags: ultra-rationalism
+slug: the_great_charade
+---
+
+The so-called "hard" problem of consciousness is one of the "hardest" conceptual questions related to our cognition and self-understanding. This problem has pervaded cultures and generations. Even modern neuroscientific theories of consciousness seem to fall short of being able to tackle it. In this post I delineate my take on the subject by answering those questions which are meaningful and explaining why other questions are ill-posed. In general, consciousness can be understood as a computational paradigm, and this is the only point of view which matters.
+
+There are, generally-speaking, two recognized problems related to consciousness that need to be solved - one is "easy", one is "hard".
+
+The easy problem of consciousness involves understanding the mechanisms that allow us to perceive, discriminate, integrate information, and produce reports about mental states. In essence, this problem is concerned with explaining the various cognitive and behavioral functions associated with consciousness. The term "easy" is used not because they are simple to solve but because they are amenable to standard scientific methods. Given enough time and research, it's believed that we can find neuronal or computational processes that underpin these functions. This is not what we'll discuss here.
+
+On the other hand, the hard problem of consciousness pertains to the question of why and how we have subjective experiences at all. Why does seeing red feel like something? Why is there a qualitative aspect to our experiences? This is more philosophical and less amenable to empirical investigation, making it "harder" to address with the tools of traditional science. This is what we'll tackle here.
+
+Jumping straight to the point, it should be clear that our *qualia*, individual pockets of subjective experience, are so abundantly diverse for a reason. That reason is to provide us with the means to **differentiate sensory information coming from different sources with different importances**. Here are a few examples:
+
+1. We feel heat in a different way than cold because it is beneficial to differentiate the two. 
+2. When standing near the edge of a cliff we may feel uneasy, tense, or lightheaded precisely because it is important to recognize the possibility of falling from the cliff. 
+3. The contrast between pleasure and pain is probably one of the clearest distinctions between those sensory states to seek and those to avoid.
+
+In all three examples failure to distinguish between the presence of important sensory information may result in death. Subjective experiences exist to help us attend to this information and condition our actions accordingly. This is a simple functional, evolutionary argument for *why* subjective experiences exist.
+
+Consider that if I pinch myself I do not feel the pinching sensation until the signal travels from my skin to my brain. So clearly, feelings are generated in the brain and they are tightly connected to information processing. However, while we might accept that conscious experiences serve a purpose and arise from neural processing, there's still a conceptual gap. Why should this type of processing feel like anything at all? Why isn't it just a series of silent, non-experiential computations? These questions are a bit harder, but here's my reasoning.
+
+Why is having subjective experiences, compared to not having them at all, useful? In short, there is no particular grand reason for why they should exist. But given that they exist, they are sufficiently different so as to maximize the information content that aids our survival. Let's derive *rewards* from first principles. As a starting point we'll assume only three things: a black-box environment in space-time, a fitness function, and agents which can act. How they act is determined by their policy functions. For simplicity assume that time is discrete between iterations but continuous within each one, and agents die-off at the end of the iteration. Furthermore, the fitness function measures the probability that an agent will replicate, producing copies of himself with possible mutations for the next iteration.
+
+The fitness function is unknown to the agents. Let's assume that there is a set of actions $ A^{ * }$ which consists of those actions in those states of the environment which are pivotal for a high probability of replication. At the first iteration, agents have random policy functions and thus act randomly. Those that execute more actions from $ A^{ * }$ get to replicate, the others do not. At the next iteration the agents are still random at which point again, some of them replicate, others do not. And this repeats ad infinitum.
+
+From here one can see that while some primitive adaptive behaviour can arise by chance, the signal which tunes the behaviour of the agents to the fitness function is simply too weak. Each agent remains totally oblivious about which specific actions contributed the most to replicating or not at the end. In fact, each agent does not optimize anything at this point. There is no reason why one action should be taken instead of another. Thus, global random modifications to the policy function between agent generations is a very slow way to evolve.
+
+Instead, a much more useful mechanism is one which adapts the bahaviour of agents *within* the current iteration. Suppose that some random mutation introduces a novel mechanism which provides some kind of value to the agents, based on the actions they take and the states they're in. The abstraction of such a "value" is called the *reward*. Now we have to learn a reward function for each agent, but the upside is that this reward function can provide supervision into the individual actions that the agents take within the iteration.
+
+Now, from iteration to iteration, the reward functions of agents can mutate and the agents themselves can learn to adapt their behaviour according to their own reward function. Those agents which have reward functions similar to the fitness function will replicate, in turn causing that particular reward function to become more and more widespread. Note that individual reward functions can still exhibit large variance in those aspects which are not "critical" according to the fitness function.
+
+So that's how reward functions are evolved. In reality, to make the agent adapt his policy to the reward function, the agent necessarily needs to be able to *experience* the reward (and I mean this in the most general "information processing" way possible). This is what gives rise to feelings and subjective experiences - they are just the way in which we probe the reward function. From here the most basic subjective experiences are the abstractions of pain and pleasure. I suspect that all sufficiently-complex living creatures are able to process pain and pleasure signals. Otherwise, it would be as if they don't have reward functions.
+
+The idea that an agent can process rewards without being aware of them is controversial. My intuition is that such an agent will be reactive, without the ability to consciously plan or to simulate the world like humans can. With us, when we imagine a sequence of possible states, we rely on semantic information which has been consciously experienced in the past. Hence, if we don't have subjective experiences, the quality of our mental simulations will be degraded... Imagine how you are frizzlethroping the spuddleflap with the flibberjibbulate. You can't? Perhaps you don't have the necessary representations for all of these objects and activities. You need to consciously experience these, and associate them with the labels, in order to simulate them.
+
+This reasoning develops a basic hierarchy. The most primitive creatures cannot feel rewards and do not optimize anything during their lifetimes. The only optimization is through random mutations between generations. More complicated creatures experience rewards in the form of pleasure and pain, which allows them to adapt their behaviour towards harvesting these rewards - a form of inter-generation optimization. Not having sufficient awareness over these rewards results in degraded capability to plan. The most sophisticated creatures can support diverse subjective experiences which in turns allows them to simulate the world more accurately. 
+
+It is the same with abstractions like *intent*, *desire*, or *awareness*. It's very difficult to simulate awareness or recognize awareness in other agents, which is undoubtedly useful for planning, unless you yourself can experience *awareness*. Similarly, you cannot form explicit episodic memories of things, of which you were not aware. Do you think that participants in the [invisible gorilla test](https://en.wikipedia.org/wiki/Inattentional_blindness), who were unaware of the gorilla, and were not told of it, form explicit memories in which the animal is present? This shows that subjective experiences are beneficial because they allow me to better predict the environment, which necessarily includes other agents. Of these agents, one is me. In turn, this leads to self-prediction and self-awareness.
+
+One final common question goes along the lines of "Why is it that we feel pain, pleasure, fear, joy in precisely those ways that we do, instead of some other totally different way?". I don't think this question is meaningful. Some other different way? Like what exactly? The thing is that I cannot even imagine how such a different way will feel like (again, because I need to be aware of it to later re-imagine it). Therefore, it almost seems like this *why* question has only one possible answer, and *why* questions with only one reason are ill-posed. After all, you need at least two possible reasons to say that the "right" reason is right, compared to the wrong one. Hence, I answer "Why not?". I don't think we should waste any more time on this.
+
+<!-- Well, it's useful for planning. The argument goes as follows:
+1. In order to have strong chances of survival in the world, you need to plan. 
+2. For that you need to simulate the environment dynamics, of which you are a part.
+3. Hence you need to simulate an agent who acts like you do. 
+4. The behaviour of that agent, now considered in third person perspective, may be quite difficult to predict in any given situation. 
+5. However, there are some abstractions that might help. One is the *intent* abstraction. This is a particular modifier which we attribute to our mental representations of an agent such that many observed actions of the agent lead to other states which are more and more resembling that one. 
+
+
+In essence, some states are desirable by the agent because many different actions, in many other states will lead to environment transitions which bring us closer to that desirable state. Reward functions, utility functions, or preferences can all be derived from here. Reactive agents that do not plan can be thought to have developed desirable states simply because evolution has hard-coded some behaviours rather than others.
+6. Knowing the desired state of the agent facilitates predicting the agent's behaviour because we know that across many different states, the agent will act so as to bring the environment towards the desired state.
+7. Hence, to simulate an agent we need to infer his desirable states. How do we do that? -->
+

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Principles of Optimal Induction | The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+
+
+    <meta name="description" content="Artificial general intelligence (AGI) still seems to be elusive. Although we are getting close to building a first generalist RL agent, it is unclear what exactly distinguishes, if at all, an AGI agent from a non-AGI one, trained on many different tasks, and able to generalize across them. Turns out, candidates for the kind of mathematical formalism that we need are already here. This post examines these beautiful, intuitive ideas and discusses what it takes to build an agent capable of coming up with the optimal-est optimal decisions." />
+
+    <meta name="tags" content="ai" />
+    <meta name="tags" content="cs" />
+
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <header class="post-header">
+      <h1 class="post-title p-name" itemprop="name headline">Principles of Optimal Induction</h1>
+      <p class="post-meta">
+        <time class="dt-published" datetime="2022-06-01T16:00:00+02:00" itemprop="datePublished">
+          1 Jun 2022
+        </time>
+      </p>
+
+    </header>
+
+    <div class="post-content">
+      <p>Artificial general intelligence (AGI) still seems to be elusive. Although we are getting close to building a first <a href="https://www.deepmind.com/publications/a-generalist-agent">generalist RL agent</a>, it is unclear what exactly distinguishes, if at all, an AGI agent from a non-AGI one, trained on many different tasks, and able to generalize across them. Turns out, candidates for the kind of mathematical formalism that we need are already here. This post examines these beautiful, intuitive ideas and discusses what it takes to build an agent capable of coming up with the optimal-<em>est</em> optimal decisions.</p>
+<p>Suppose you have the sequence <span class="math">\(1, 1, 1, 1, 1\)</span> and you're trying to predict the next number. It is sensible to predict <span class="math">\(1\)</span> again because the observed sequence had a constant value of <span class="math">\(1\)</span> in the past and there are no indications that the next number should be different. However, it is also possible to conjecture that the next number will be <span class="math">\(5\)</span> and that the data-generating process is e.g. "The first 5 numbers are ones, and after that it's all fives". This is certainly agreeing with the observations, but why do we find it absurd?</p>
+<p>Our brains <em>feel</em> that some conjectures are better than others. This feeling is a manifestation of the abstractions that the human brain has evolved to provide. We prefer simpler solutions to complicated ones and this most probably reflects a regularity in the universe that simple-to-express relationships account for more events than difficult-to-express ones.</p>
+<p>In any case, it is not a new idea that among all hypotheses that explain the observed data equally well we should favour the simplest one. This is exactly <a href="https://en.wikipedia.org/wiki/Occam%27s_razor">Occam's razor</a>. And note that this does not say anything about which, of all competing hypotheses, is true. It only says that we should act as if the simplest one is true.</p>
+<p>In computer science, the simplicity of a description can be measured by its length and the complexity of an object can be defined as the length of that object's shortest description, this being the famous concept of <a href="https://en.wikipedia.org/wiki/Kolmogorov_complexity">algorithmic (or Kolmogorov) complexity</a>. If we have a Turing machine <span class="math">\(T\)</span> and a program <span class="math">\(p\)</span>, we say that <span class="math">\(p\)</span> is a description of a string <span class="math">\(x\)</span> if <span class="math">\(T(p) = x\)</span>. Then, if <span class="math">\(\ell(p)\)</span> is the length of the program <span class="math">\(p\)</span> in bits, </p>
+<div class="math">$$
+K_T(x) = \min_p \ \{\ell (p): T(p) = x \}
+$$</div>
+<p>is the length of the shortest description of <span class="math">\(x\)</span> under Turing machine <span class="math">\(T\)</span>.</p>
+<p>The definition depends on <span class="math">\(T\)</span> which is inconvenient. It can be proved that a universal Turing machine, being able to simulate other Turing machines on arbitrary inputs, can <em>almost</em> produce always the shortest program for any <span class="math">\(x\)</span>:</p>
+<div class="math">$$
+K_U(x) \le K_T(x) + C_{TU}.
+$$</div>
+<p>This means that a universal Turing machine can produce a description of <span class="math">\(x\)</span> that is only a constant number of bits longer than that of <span class="math">\(T\)</span>, for all <span class="math">\(x\)</span> and <span class="math">\(T\)</span>. This is useful, because it allows us to not focus on the exact <span class="math">\(T\)</span> that computes the description and just use a universal <span class="math">\(T\)</span>. As a consequence, we can say that the <strong>information content</strong> or <strong>algorithmic complexity</strong> of an object is the length of the shortest program that produces that object as output, when ran on a universal Turing machine.</p>
+<p>But if we have multiple hypotheses all consistent with the observed data, does it really make sense to discard all but the simplest? What if the simplest one has a algorithmic complexity of 51 symbols and that of the the next one is 53 symbols? Then these two hypotheses differ in complexity only slightly. Shouldn't we keep them? Bayes tell us that:</p>
+<div class="math">$$
+p(\mathcal{H} | \mathcal{D}) = \frac{p(\mathcal{D} | \mathcal{H}) p(\mathcal{H})}{p(\mathcal{D})}
+$$</div>
+<p>where <span class="math">\(\theta\)</span> are the model parameters, <span class="math">\(\mathcal{D}\)</span> is the observed data, and <span class="math">\(\mathcal{H}\)</span> are the hyperparameters (model structure and hypothesis). In any case, we need a prior on <span class="math">\(\mathcal{H}\)</span> and one in line with Occam's razor is </p>
+<div class="math">$$
+p(\mathcal{H_i}) \propto 2^{-K_U (\mathcal{H_i})}.
+$$</div>
+<p>This prior suggests that we keep all consistent hypotheses, but weigh them exponentially according to their algorithmic complexity. The base of the exponent is <span class="math">\(2\)</span> because the number of programs, or hypotheses, of length <span class="math">\(n\)</span> is exactly <span class="math">\(2^n\)</span>. The normalization factor for the prior considers all programs which are consistent with the data, of which there may be a countably infinite number.</p>
+<p>This idea is in the right direction. From here, we can reach Ray Solomonoff's <em>universal probability distribution</em>, one of the most important concepts in the area of algorithmic information theory. This distribution is used to assign a prior to any observation. If we represent the observation as a binary string <span class="math">\(x\)</span>, then <span class="math">\(M(x)\)</span> is defined as the weighted sum of the complexities of all explanations consistent with the data. That is,</p>
+<div class="math">$$
+M(x) = \sum_{p: \ U(p) = x*} 2^{-\ell(p)}.
+$$</div>
+<p>We can think of this formula as follows. First, we fix the observed binary sequence <span class="math">\(x\)</span>. Then, we select a universal Turing machine <span class="math">\(U\)</span> and set its input tape to contain a number of random coin flips of length <span class="math">\(\ell(x)\)</span>. Note that the probability that <span class="math">\(x\)</span> was generated by a random coin process is <span class="math">\(2^{-\ell(x)}\)</span>. Then, with this input, we find all programs <span class="math">\(p\)</span> that when ran on <span class="math">\(U\)</span> produce an output string starting with <span class="math">\(x\)</span>. Subsequently, we compute the lengths of all these programs, and sum them in a weighted fashion, where the weights are exponential and inversely proportional to the lengths. This gives us the prior probability of observing <span class="math">\(x\)</span>. The notation <span class="math">\(x*\)</span> means any string in which <span class="math">\(x\)</span> is a prefix.</p>
+<p>Since any string <span class="math">\(x\)</span> can be computed on <span class="math">\(U\)</span> by 1 or more programs, <span class="math">\(M(\cdot)\)</span> assings a non-zero probability to all programs consistent with the data and we do not discard any plausible hypotheses. Because of the weights, programs with shorter length have exponentially larger weight compared to programs with longer length. As a result, <span class="math">\(M(x) \approx 2^{-K_U(x)}\)</span>.</p>
+<p>The fact that the output string can be longer than <span class="math">\(\ell(x)\)</span> relates to the ability to predict. In fact, a program <span class="math">\(p\)</span> may not halt after <span class="math">\(\ell(x)\)</span> symbols, it may produce infinitely many symbols. Those after the <span class="math">\(\ell(x)\)</span>-th index can be treated as predictions for unobserved future data. The only constraint on the program <span class="math">\(p\)</span> is that it is consistent with the past, i.e. the output string strats with <span class="math">\(x\)</span>.</p>
+<p>If <span class="math">\(x\)</span> is past observed data and <span class="math">\(y\)</span> is future unobserved data, then the posterior of <span class="math">\(y\)</span> given <span class="math">\(x\)</span> is defined as <span class="math">\(M(y|x) = M(xy)/M(x)\)</span>. The notation <span class="math">\(xy\)</span> means that <span class="math">\(x\)</span> and <span class="math">\(y\)</span> are concatenated. It can be proved that <span class="math">\(M(y | x) \approx 2^{-K_U(y|x)}\)</span>, where <span class="math">\(K_U(y | x)\)</span> is a small variation of the Kolmogorov complexity definition where the universal machine <span class="math">\(U\)</span> is given as input a properly encoded string <span class="math">\(x\)</span> concatenated to the program <span class="math">\(p\)</span>. In general, the above conditional probability <span class="math">\(M(y | x)\)</span> is large only if <span class="math">\(y\)</span> has a short succinct explanation from <span class="math">\(x\)</span>. In a sequential prediction setting, this implies that <span class="math">\(M(y | x)\)</span> is large only if the past <span class="math">\(x\)</span> predicts the future <span class="math">\(y\)</span> well.</p>
+<p>The combination of keeping all consistent explanations and weighing them by their length provides us with a <strong>complete and universal theory of prediction</strong>. Moreover, the prediction capabilities described above, also known as Solomonoff Induction, are as optimal as they can get. Solomonoff proved in 1978 that the expected squared loss, given a properly framed prediction problem, is bounded and <span class="math">\(M(x_{n+1}| x_1, ..., x_n)\)</span> converges to the true data-generating distribution. This is valid for <em>any</em> computable sequence with only minimal data needed.</p>
+<p>The downside is that the universal prior <span class="math">\(M(x)\)</span> is uncomputable, because some of the programs <span class="math">\(p\)</span> may not halt. As a result, it is impossible to implement Solomonoff's induction in practice. This motivates the need for approximation algorithms which trade-off accuracy for computability.</p>
+<h3>Extensions</h3>
+<p>Given that <span class="math">\(M(x)\)</span> is uncomputable, we can approximate it as follows. We know that <span class="math">\(M(x) \approx 2^{-K_U(x)}\)</span> and that very roughly <span class="math">\(K_U(x) \approx K_T(x)\)</span>. Then the concept of <strong>Minimum Description Length</strong> (MDL) is an approximation of the maximum a-posteriori solution of <span class="math">\(y|x\)</span>. It states that predicting <span class="math">\(y\)</span> of maximum <span class="math">\(M(y | x)\)</span> is approximately the same as predicting <span class="math">\(y\)</span> of minimum complexity <span class="math">\(K_T(xy)\)</span>. In other words, we are looking for a prediction <span class="math">\(y\)</span> that when combined with past observations <span class="math">\(x\)</span>, this joint data is maximally compressible. In practice <span class="math">\(T\)</span> could be any powerful compression algorithm like <a href="https://en.wikipedia.org/wiki/Lempel%E2%80%93Ziv%E2%80%93Welch">Lempel-Ziv-Welch</a> or <a href="https://en.wikipedia.org/wiki/Deflate">DEFLATE</a>.</p>
+<p>This also reveals the connection between intelligence and compression. Intelligence is the ability to model and compression is the ability to distill something to only its important patterns. Both concepts rely on finding regularities in the underlying data and because of that, intelligence is equivalently defined as the ability to compress information.</p>
+<p>The quantity <span class="math">\(K_U(x | y)\)</span> mentioned above could be related to how similar the objects <span class="math">\(x\)</span> and <span class="math">\(y\)</span> are. Intuitively, they are similar if <span class="math">\(x\)</span> can be reconstructed from <span class="math">\(y\)</span> which happens if <span class="math">\(K_U(x | y)\)</span> is small. However, <span class="math">\(K_U(x | y)\)</span> is not suited for a distance metric because it's not symmetric, normalized or even computable. We can make it symmetric and normalized (but still not computable) if we define the distance metric as:</p>
+<div class="math">$$
+0 \le d(x, y) := \frac{\max \{ K_U(x | y), K_U(y | x) \}}{\max \{ K_U(x), K_U(y)\}} \le 1.
+$$</div>
+<p>As a further enhancement, to approximate this quantity with a computable version, the <strong>Normalized Compression Distance</strong> [1] is defined as:</p>
+<div class="math">$$
+d(x, y) \approx \frac{K_T(xy) - \min \{ K_T(x), K_T(y)\}}{\max \{K_T(x), K_T(y) \}}
+$$</div>
+<p>where <span class="math">\(T\)</span> is a compressor, as before. Again, two objects are similar if given one of the objects, there is a short and succinct program that outputs the other object. Efficient compression and intelligence, in general, is a requirement for being able to notice similarities between objects.</p>
+<p>The biggest extension to the prediction theory presented above is when Solomonoff's universal induction is applied to a rational agent in an environment. This yields the <a href="https://en.wikipedia.org/wiki/AIXI">AIXI (or AI<span class="math">\(\xi\)</span>)</a> model [2, 3]. It relies on Occam's razor for induction, has no restrictions on the internal working of the agent, does not rely on hard-to-define terms like creativity, wisdom, consciousness, and being based on computation, is non-anthropocentric. There is strong evidence that this is <strong>the most intelligent environmental independent agent possible</strong>.</p>
+<p>The AIXI agent interacts with an environment, receiving observations <span class="math">\(o_t\)</span> and rewards <span class="math">\(r_t\)</span>. At every time step <span class="math">\(t\)</span>, the agent has access to the history of all previous observations <span class="math">\(o_1, ..., o_{t-1}\)</span> and rewards <span class="math">\(r_1, ..., r_{t-1}\)</span> and has to select the action <span class="math">\(a_t\)</span> that would maximizes the long-term sum of future rewards. This is a standard reinforcement learning setup. The AIXI agent selects the action as</p>
+<div class="math">$$
+a_t = \text{arg} \max_{a_t} \bigg ( \sum_{o_t, r_t}  ... \Big ( \max_{a_m} \sum_{o_m, r_m} [r_t + ... + r_m] (\sum_{p: \ U(p, a_1, ..., a_m) = o_1r_1...o_mr_m} 2^{-\ell(p)} ) \Big ) \bigg).
+$$</div>
+<p>We can think of this as follows. The agent considers a time horizon of <span class="math">\(t - m\)</span> steps into the future. Before step <span class="math">\(t\)</span> all the actions <span class="math">\(a_{&lt;t}\)</span>, observations <span class="math">\(o_{&lt;t}\)</span>, and rewards <span class="math">\(r_{&lt;t}\)</span> are real and collected. After step <span class="math">\(t\)</span> and up to <span class="math">\(m\)</span> all the quantities are imagined and depend on the learned model dynamics. The agent aims to maximize the sum of imagined rewards from the current step <span class="math">\(t\)</span> to step <span class="math">\(m\)</span>, which depends on the sequence of actions from <span class="math">\(t\)</span> to <span class="math">\(m\)</span>. For every sequence of imagined actions, we get a sequence of imagined rewards, whose sum is multiplied by a penalty - a mixture of all computable environments consistent with the agent's past observations and rewards (what we called <span class="math">\(M(\cdot)\)</span> above). The AIXI agent then choose the action whose consequence will maximize that eventual sum of rewards. </p>
+<p>Unfortunately, while AIXI is powerful and able to learn the environment dynamics, whether it is optimal is unclear [4]. It can predict the value of its actions, but it cannot predict the value of counterfactual actions not taken. Claiming that a learned policy is Pareto optimal is only <em>relative</em> to the universal Turing machine (UTM) used in AIXI. There are UTMs that when used, result in priors which are retained indefinitely, possibly leading to insufficient exploration. And unfortunately, insufficient exploration automatically leads to non-optimal asymptotic performance in all computable environments.</p>
+<p>The crux of this problem is that there cannot exist any invariance theorem for AIXI which bounds the quantity of rewards collected when changing the UTM. On the other hand, for Solomonoff induction such invariance theorems exist - the Kolmogorov complexities calculated by different UTMs differ only by a constant. It appears that the exploration-exploitation nature of reinforcement learning is a fundamental unavoidable obstacle.</p>
+<p>This post covered the fundamental ideas of Kolmogorov complexity, Solomonoff induction, and its extensions to universal similarity and AIXI. I have purposefully avoided some minor technical details, in order to make the text less cumbersome. In particular, the <span class="math">\(M(\cdot)\)</span> distribution requires a <em>monotone</em> TM and is, itself, not a probability measure, but a <em>semi</em>-measure. The definition of <span class="math">\(K_T(x|y)\)</span> was not presented because it relies on other notation like <a href="https://en.wikipedia.org/wiki/Elias_delta_coding">Elias Delta codes</a>. For a proper technical discussion one can visit the topics of <a href="http://www.scholarpedia.org/article/Algorithmic_probability">algorithmic probability</a> and Marcus Hutter's awesome <a href="http://www.hutter1.net/ai/suaibook.pdf">book slides</a>.</p>
+<h3>References</h3>
+<p>[1] Vitanyi, P. <a href="https://arxiv.org/abs/cs/0504089">Universal Similarity</a> arXiv:cs/0504089 (2005).<br>
+[2] Hutter, M. <a href="https://arxiv.org/abs/cs/0004001">A Theory of Universal Artificial Intelligence based on Algorithmic Complexity</a> arXiv:cs/0004001 (2000).<br>
+[3] Hutter, M. <a href="https://books.google.com/books?id=NP53iZGt4KUC">Universal Artificial Intelligence: Sequential Decisions based on Algorithmic Probability</a>. Texts in Theoretical Computer Science an EATCS Series. (2005).<br>
+[4] Leike, J. and Hutter, M. <a href="http://proceedings.mlr.press/v40/Leike15.pdf">Bad Universal Priors and Notions of Optimality</a> Proceedings of The 28th Conference on Learning Theory (2015).  </p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'], ['$', '$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+    </div>
+  
+  <p class="post-meta">
+    Tags: ai, cs
+  </p>
+
+  </article>
+
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>

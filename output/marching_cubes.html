@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Marching Cubes and Co | The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+
+
+    <meta name="description" content="The field of computer graphics contains some very nice and insightful algorithms. I wish I had explored them earlier, but it's still not that late. This post describes marching cubes - a ultra-simple algorithm for the extraction of a triangular mesh from a 3D field. This algorithm is widely applicable in all kinds of graphics applications, whether it is volumetric rendering of CT scans in healthcare, or tunnel/cave mapping in an industrial setting. It also combines well with the growingly-popular deep learning NeRF models. There it can be used to render a mesh from the 3D reconstruction." />
+
+    <meta name="tags" content="cs" />
+
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <header class="post-header">
+      <h1 class="post-title p-name" itemprop="name headline">Marching Cubes and Co</h1>
+      <p class="post-meta">
+        <time class="dt-published" datetime="2024-03-12T07:00:00+02:00" itemprop="datePublished">
+          12 Mar 2024
+        </time>
+      </p>
+
+    </header>
+
+    <div class="post-content">
+      <p>The field of computer graphics contains some very nice and insightful algorithms. I wish I had explored them earlier, but it's still not that late. This post describes <em>marching cubes</em> - a ultra-simple algorithm for the extraction of a triangular mesh from a 3D field. This algorithm is widely applicable in all kinds of graphics applications, whether it is volumetric rendering of CT scans in healthcare, or tunnel/cave mapping in an industrial setting. It also combines well with the growingly-popular deep learning NeRF models. There it can be used to render a mesh from the 3D reconstruction.</p>
+<p>Marching cubes is not the only clever algorithm worth knowing. We'll start with some basic 3D structures and then move to the volumetric stuff, where marching cube reigns.</p>
+<p>Consider point clouds as a relatively simple 3D data structure. A point cloud can be represented as a matrix of shape <span class="math">\((N, 3)\)</span> - <span class="math">\(N\)</span> 3-dimensional points, each representing particular <span class="math">\((x, y, z)\)</span> location. Just by looking at these numbers we can get a pretty good sense of the geometry of the scene, especially if the number of points is sufficiently large. Apart from the location, we can also have additional per-point parameters, like color, opacity, or a normal vector. These are stored into specialized file formats such as <code>.pcd</code> or <code>.ply</code>.</p>
+<p>Representing a bunch of points simply as a big matrix is a terrible idea for most purposes. We need specialized data structures, and the octree and <span class="math">\(k\)</span>-d trees come to the rescue. An octree is a tree in which every internal node has up to eight children. It is used to partition the space into 8 octants for easier searching. To build an octree we start with a single giant voxel covering all points. We then split it into 8 non-overlapping octants. Now, we keep subdiving those octants which have more than one point within them, until they have zero or one inside. The larger octants are not subdivided. In such a way a big tree is populated, whose internal nodes can have at most eight children. To insert a new point we start from the root node and progressively navigate down the branches until we find its new place. Searching is handled similarly.</p>
+<p>Octrees are the 3D variant of quadtrees. A quadtree divides 2D space into quadrants and subquadrants, representing the points as leaf nodes in a tree whose internal nodes can have at most four children. For both quadtrees and octrees the insertion and deletion of a single element have complexities <span class="math">\(O(\log n)\)</span> where <span class="math">\(n\)</span> is the number of nodes. </p>
+<p>K-D trees are similar data structures but with some differences. A <span class="math">\(k\)</span>-d tree is a binary tree and each internal node can have at most two children. At every internal node the points are split according to one coordinate axis - <span class="math">\(x\)</span>, <span class="math">\(y\)</span>, or <span class="math">\(z\)</span>, much like in a decision tree. To create one of these trees we start with the points, choose one axis, e.g. <span class="math">\(x\)</span>, and split at the median <span class="math">\(x\)</span>-coordinate of the points we have to insert. Half the points will be to the left of this node, and half to the right. We call the constructor recursively to further split each half until a desired number of points, perhaps one, falls within each subdivision. Search, insertion and deletion are all <span class="math">\(O(\log n)\)</span>.</p>
+<p>One particular strenght of both the octree and the <span class="math">\(k\)</span>-d tree is the ability to find nearest neighbors efficiently. To find the nearest neighbor of a query point <span class="math">\(p\)</span>, we follow the branches according to <span class="math">\(p\)</span>'s location until we reach a leaf node. Its distance to <span class="math">\(p\)</span> is the current minimal distance. Then, we start backtracking up the tree. At each of the internal nodes we compare the distance between <span class="math">\(p\)</span> and the splitting value. If it is larger than the current minimal distance, there's no point in searching the corresponding branch. If it is smaller, then there may be a leaf node that is closer than our current estimate, in which case we have to search that branch. The search ends once we reach the root.</p>
+<figure>
+    <img class='small_img' src="/images/octree.png" alt="Octree spatial representation" width="1200">
+    <figcaption>Figure 1: 3D space divided according to an octree. There are only 5 points, shown by the black octants which they occupy. The tree depth is 5 levels. Notice how recursively dividing the octants produces unoccipied regions. </figcaption>
+</figure>
+
+<p>Being able to efficiently calculate closest points allows us to calculate the Chamfer distance between two point clouds. It is given by the symmetric average distance between a point from the first cloud and its nearest neighbor in the other one. It is a fundamental metric used when registering or generating point clouds. It has wide applications for example in autonomous vehicles where <a href="https://arxiv.org/abs/2311.01017">generative models predict future Lidar clouds</a> conditional on vehicle motion.</p>
+<p>What else can we do with point clouds? There are various options. One can:</p>
+<ul>
+<li>Downsample the points by bucketing them into regularly-placed voxels and averaging all points within each voxel. This has the effect of filtering out noisy points.</li>
+<li>Estimate vertex normals by looking at the neighborhood of each point and computing a principal axis based on the covariance of the points in that neighborhood.</li>
+<li>Crop the point cloud, calculate a bounding box or a <a href="https://en.wikipedia.org/wiki/Convex_hull">convex hull</a> around it.</li>
+<li>Cluster the points into semantically meaningful groups or do plane segmentation to find a 3D plane with maximal number of points lying on it. This is commonly done with <a href="https://en.wikipedia.org/wiki/Random_sample_consensus">RANSAC</a> - that famous absurdly simple, absurdly robust line-fitting algorithm. </li>
+</ul>
+<p>Now consider triangle meshes. They consist of <span class="math">\(N\)</span> three-dimensional vertices, perhaps stored in an array of shape <span class="math">\((N, 3)\)</span>, and <span class="math">\(M\)</span> faces, which connect the vertices into cohesive surfaces. The faces can be stored in a matrix of shape <span class="math">\((M, 3)\)</span> where the <span class="math">\(i\)</span>-th row contains the indices for the three vertices defining the <span class="math">\(i\)</span>-th face. What can we do with such a mesh? We can:</p>
+<ul>
+<li>Crop, paint, or visualize it. In practice, visualisation looks nicely only with <em>shading</em> enabled, which requires surface normals in order to calculate how much light falls on each surface region, based on its orientation with respect to the light source.</li>
+<li>Filter the surface "roughness" by averaging the vertices in a neighborhood, as given by the connectivity of the mesh. This can make surfaces smoother, but some filters based on this principle, like the Laplacian, can have the problem of thinning the surface too much.</li>
+<li>Sample a point cloud from the mesh. Simple methods like uniform sampling from the vertices may result in some points being clustered. To address this, other methods like Poisson disk sampling can be used.</li>
+<li>Do mesh simplification. This means reducing the number of vertices and faces while keeping the mesh detail quality as high as possible. A simple method here could be just to average the vertices falling in a given voxel.</li>
+</ul>
+<p>Figure 2 visualizes various characteristics of the mesh like depth, normals, and different shading settings. Note that a triangle face normal is useful in telling us how the face is oriented in 3D. If the shading uses face normals, then it can either apply a constant shade to the whole face - <a href="https://en.wikipedia.org/wiki/Shading#Flat_shading">flat shading</a>, or it can evaluate the colors in two neighboring face centers or vertices and interpolate colours/shades in between - <a href="https://en.wikipedia.org/wiki/Gouraud_shading">Gouraud shading</a>. The former produces discontinuous colors along continuous viewed surfaces, while the latter may produce unrealistic visual artefacts. A slightly more expensive solution is the <a href="https://en.wikipedia.org/wiki/Phong_shading">Phong shading</a> where instead of interpolating colours we interpolate vertex normals. This produces excellent visual results. A separate topic is whether one uses specular reflection in the lightning. The combination of using both a diffuse and specular reflection is called the <a href="https://en.wikipedia.org/wiki/Phong_reflection_model">Phong reflection model</a>.</p>
+<figure>
+    <img class='extra_big_img' src="/images/mesh.png" alt="Mesh visualisation" width="1200">
+    <figcaption>Figure 2: Various mesh renderings. 3D object taken from the <a href="https://objaverse.allenai.org/">Objaverse dataset</a>. Top row, left to right: 1. A seashell, rendered with specular lightning, textures, and smooth shading; 2. Same, but with flat shading; 3. Only diffuse lightning with textures; 4. Triangle mesh overlay. Bottom row, left to right: 1. No shading; 2. Coloring based on the x-coordinate of each point; 3. Normals, visualized as RGB colors; 4. Depth map. </figcaption>
+</figure>
+
+<p>Going from mesh to point cloud is easy - one can just take the vertices or sample from them. It is more interesting how to go from point cloud to mesh and for this task there is a classic algorithm - ball pivoting. Consider a spherical ball of radius <span class="math">\(r\)</span> which is dropped somewhere on top of the point cloud. If <span class="math">\(r\)</span> is sufficiently large, the ball will hit exactly three points. These points form a triangle from which we will iteratively grow the surface mesh. In this initialization step of the algorithm we just need to find a <em>seed triangle</em> - three points laying on the surface of a sphere with radius <span class="math">\(r\)</span> such that no other points are within the sphere.</p>
+<p>Now, we start pivoting the ball across the edges of the triangle. If vertices <span class="math">\(v_1\)</span> and <span class="math">\(v_2\)</span> are joined by edge <span class="math">\(e_1\)</span>, we can imagine pushing the ball across <span class="math">\(e_1\)</span>, until it lands on a new point <span class="math">\(v_3\)</span>, in which case we construct edges <span class="math">\(e_2 = (v_1, v_3)\)</span> and <span class="math">\(e_3 = (v_2, v_3)\)</span>, thereby obtaining a new triangle. This process then continues, considering the newly added edges and adding additional triangles. When there are no more points to add, we can choose a different seed triangle and start from it.</p>
+<p>Note how the quality of the constructed mesh depends on the radius <span class="math">\(r\)</span>. If <span class="math">\(r\)</span> is too large, then you will certainly grow the mesh, but you may miss out on certain smaller non-convex regions and hence the result will be less detailed. If <span class="math">\(r\)</span> is too small, then the ball will "fall" through the point cloud and you will fail to grow the mesh and may end up with multiple meshes forming separate connected components. For that reason, care should be taken in how <span class="math">\(r\)</span> is chosen. Similarly, we also need to check surface normals to assess whether new polygon faces have their orientation aligned with the ones we already have. Additionally, with noisy points the algorithm may create small spurious surfaces that need to be removed in a postprocessing step.</p>
+<p>Having an explicit mesh allows us to obtain implicit representations of the object. One popular implicit representation is the <a href="https://en.wikipedia.org/wiki/Signed_distance_function">signed distance function</a> (SDF) which for every 3D point <span class="math">\(\textbf{x}\)</span> returns a scalar <span class="math">\(y\)</span> which represents the distance to the closest point on the object. If <span class="math">\(y\)</span> is positive, then <span class="math">\(\textbf{x}\)</span> lies outside of the object boundary (which itself is assumed to be watertight, so that the object has meaningful internal/external regions), otherwise it is inside it. If <span class="math">\(\textbf{x}\)</span> is exactly on the object surface, then <span class="math">\(y\)</span> is <span class="math">\(0\)</span>.</p>
+<p>By being able to find the closest point on a given surface, we can compute the signed distance function for many regularly-placed query points in a 3D grid. The result will be a big tensor with 3 axes, containing dense <em>volumetric</em> data implicitly representing the 3D scene.</p>
+<p>Note that volumetric data is where we start getting into <a href="https://en.wikipedia.org/wiki/Neural_radiance_field">NeRF</a> territory. To render a pixel from volumetric data, one needs to shoot out a ray from the camera center through the pixel of interest and integrate the colour/shades of the 3D points along the ray, according to their corresponding densities. Unlike surface rendering, which only represents the outer surface of objects, volumetric rendering represents both the surface and the interior of 3D models. This technique is particularly useful for displaying objects that are semitransparent or have varying properties throughout their volume, such as clouds, smoke, fire, or the human body in medical imaging.</p>
+<p>So, suppose we have a volumetric dataset of shape <span class="math">\((X, Y, Z)\)</span> and each entry corresponds to some material density of interest. Medical imaging like CT and MRI scans can produce multiple 2D slices which when stacked result in such a dataset. Similarly, a NeRF model can be evaluated in many points <span class="math">\((x, y, z)\)</span> to produce a learned density field. Once we have the data, we want to find isosurfaces - surfaces whose points have the same value in the volume. The exact value, call it <span class="math">\(\bar{v}\)</span> here is user-selected but for any SDF it makes sense to use set <span class="math">\(\bar{v} = 0\)</span>, as we want to find the exact object surfaces.</p>
+<p>Our datapoints live in a regular 3D grid and we can ennumerate all the grid voxels. Marching cubes, a cornerstone algorithm, works in this manner - it iterates over all voxels and builds triangles from each one independently. Consider one particular voxel. It has 8 vertices at which we have a value. And each value can be above or below our value threshold. If both vertices along an edge have values greater or lower than <span class="math">\(\bar{v}\)</span>, then the surface does not cross this edge - we may be inside or outside of the object but the object boundary does not cross that edge. Since the voxel has 8 vertices and each can be below <span class="math">\(\bar{v}\)</span> or otherwise, there are <span class="math">\(2^8 = 256\)</span> different configurations. These can be ennumerated and stored in a table for easy future lookup. Each configuration corresponds to a small set of triangles aligned with the corresponding points. Some cases are shown in Figure 3.</p>
+<figure>
+    <img class='img' src="/images/marching_cubes.png" alt="Marching cubes" width="1200">
+    <figcaption>Figure 3: Marching cubes. Depending on which data points are above/below the threshold one can build a corresponding triangle set whose vertices are the split points halfway through the voxel edges. The final mesh is constructed using triangles from all the voxels. Image taken from <a href="https://commons.wikimedia.org/wiki/File:MarchingCubes.svg">here</a>.</figcaption>
+</figure>
+
+<p>So, marching cubes proceeds by iterating over the grids and creating triangles according to where the values of the vertices are above or below the threshold <span class="math">\(\bar{v}\)</span>. This usually results in high-quality meshes, at least as long as <span class="math">\(\bar{v}\)</span> is set properly. Otherwise various floater surfaces may show up or the resulting meshes may not be watertight - something which is required for 3D printing or other downstream applications.</p>
+<figure>
+    <img class='big_img' src="/images/marching_cubes_cells2.png" alt="Marching cubes" width="1200">
+    <figcaption>Figure 4: Marching cubes in action. We extract meshes from a volumetric dataset containing scanned cell nuclei. </figcaption>
+</figure>
+
+<!-- The algorithm itself is pretty simple. We are given a volumetric data array of shape $(X, Y, Z)$, with all real numbers.  -->
+
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'], ['$', '$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+    </div>
+  
+  <p class="post-meta">
+    Tag: cs
+  </p>
+
+  </article>
+
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>

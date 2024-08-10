@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>The Case of Spiking Neural Networks | The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+
+
+    <meta name="description" content="Traditional artificial neural networks have attained incredible, even at times super-human, performance on specific well-defined tasks like object detection, recognition, and sequential decision-making. But whether the neurons in our human brains work the same way is questionable. It is generally believed that our neural architectures are not feed-forward, but contain many more loops, with many feedback effects on all levels. Additionally, biological neurons have the temporal dimension naturally built into their workings, whereas the perceptron has no notion of time and cannot distinguish between different orderings of the same sequence of inputs. This post explores spiking neural networks, which address the above concerns and seem to more closely mimic the neurons in the real world." />
+
+    <meta name="tags" content="ai" />
+
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <header class="post-header">
+      <h1 class="post-title p-name" itemprop="name headline">The Case of Spiking Neural Networks</h1>
+      <p class="post-meta">
+        <time class="dt-published" datetime="2022-11-06T07:00:00+02:00" itemprop="datePublished">
+          6 Nov 2022
+        </time>
+      </p>
+
+    </header>
+
+    <div class="post-content">
+      <p>Traditional artificial neural networks have attained incredible, even at times super-human, performance on specific well-defined tasks like object detection, recognition, and sequential decision-making. But whether the neurons in our human brains work the same way is questionable. It is generally believed that our neural architectures are not feed-forward, but contain many more loops, with many feedback effects on all levels. Additionally, biological neurons have the temporal dimension naturally built into their workings, whereas the perceptron has no notion of time and cannot distinguish between different orderings of the same sequence of inputs. This post explores spiking neural networks, which address the above concerns and seem to more closely mimic the neurons in the real world.</p>
+<p>To derive the behaviour of a neuron we can construct an electric circuit from the observed neuron's morphology and solve that circuit. Figure 1 shows a simplified <a href="https://en.wikipedia.org/wiki/Artificial_neuron">neuron</a> with which we can compare. </p>
+<figure>
+    <img class='img' src="/images/Neuron3.svg" alt="neuron" width="1200" style="background-color:white">
+    <figcaption>Figure 1: A simplified schematic of a neuron.</figcaption>
+</figure>
+<p>T
+The neuron is a cell specialized in the transmission of electric pulses. It has a cell body, called <em>soma</em>, which contains the nucleus where most protein synthesis processes occur. There are also multiple <em>dendrites</em> - extensions of the neuron which bring in signals from the other neurons into the body, and an <em>axon</em> which takes information away from the body. The dendrites are covered with <em>synapses</em> which are the specific contact points where the transfer of signals, i.e. electric pulses, between neurons occurs.</p>
+<p>To make an analogy (that may sacrifice correctness in favour of simplicity) with artificial neurons, we can think of it as follows. The dendrites determine how many inputs there are. The synapses represent the actual learnable weights <span class="math">\(w_i\)</span>. The sign and magnitude of the weights represents the excitatory or inhibitory effect they have on the output. The role of the soma is to aggregate the inputs <span class="math">\(x_1, ..., x_N\)</span> by summing up all the modulated signals - outputs from other neurons times weights - and the axon, along with the signal travelling in it <span class="math">\(y\)</span>, represent the output. The non-linearity function <span class="math">\(\sigma\)</span> does not fit particularly well in this picture but we can agree its nature is less biologically-inspired and more of a practical necessity. This forms the standard formula for the perceptron</p>
+<div class="math">$$
+y = \sigma \Big (\sum_{i = 1}^N w_i x_i \Big).
+$$</div>
+<p>To improve over this model we can take a closer look at another component - the <em>membrane</em> surrounding the soma. It is a bilayer of lipid molecules that separates the solutions within and outside of the neuron body. In particular, the membrane acts as a insulator between the two conductive solutions and can thus be modelled as a capacitor. The resulting voltage is measured between the inside and the outside of the membrane. Moreover, the membrane also has ion channels which are pathways that allow various ions (of sodium, chloride, etc.) to flow through it. These are voltage-gated and can be opened or closed depending on the voltage difference across the membrane. As a result, we can model these ion channels as resistors in a circuit.</p>
+<figure>
+    <img class='extra_small_img' src="/images/rc_circuit.svg" alt="RC circuit" width="1200">
+    <figcaption>Figure 2: The simplest circuit model of a neuron - the RC circuit. The input current is $I$. There is a fixed capacitor with capacitance $C$ and a resistor with resistance $R$.</figcaption>
+</figure>
+
+<p>With our circuit defined, we can solve it. The input current splits across the capacitor and the resistor <span class="math">\(I(t) = I_R(t) + I_C(t)\)</span>. For a capacitor, the total charge <span class="math">\(Q(t)\)</span> is equal to the product of the capacitance <span class="math">\(C\)</span> and the current voltage <span class="math">\(U(t)\)</span>, <span class="math">\(Q(t) = C U(t)\)</span>. The total charge changes as <span class="math">\(\frac{d Q(t)}{d t} = C \frac{d U(t)}{dt} = I_C(t)\)</span>. For the resistor, Ohm's law states that if <span class="math">\(U(t)\)</span> is the voltage between two points and <span class="math">\(R\)</span> is the resistance, then the current is <span class="math">\(U(t)/R\)</span>. Hence,</p>
+<div class="math">$$
+I(t) = \frac{U(t)}{R} + C \frac{dU(t)}{dt} \Rightarrow \frac{dU(t)}{dt} = \frac{1}{RC} \big(- U(t) + I(t) R \big).
+$$</div>
+<p>Solving this yields</p>
+<div class="math">$$
+U(t) = I(t) R + \big(U(0) - I(t) R \big ) e^ {-t/(RC)}.
+$$</div>
+<p>This is a very useful controller. The equation above shows that the membrane potential <span class="math">\(U(t)\)</span> depends on the input current <span class="math">\(I(t)\)</span>. If we supply the neuron membrane with a constant current, then the potential <span class="math">\(U(t)\)</span> will change exponentially fast towards the value <span class="math">\(I(t) R\)</span> and will stabilize, because <span class="math">\(I(t)\)</span> is constant. If on the other hand, <span class="math">\(I(t)\)</span> is rapidly changing, then <span class="math">\(U(t)\)</span> will also change rapidly, trying to catch up to <span class="math">\(I(t)R\)</span>. If <span class="math">\(I(t)\)</span> is zero, <span class="math">\(U(t)\)</span> will tend to 0. If <span class="math">\(I(t)\)</span> is oscillating, <span class="math">\(U(t)\)</span> will also oscillate. And if <span class="math">\(I(t)\)</span> is a pulse input, then <span class="math">\(U(t)\)</span> will spike up initially and then quickly decay towards 0.</p>
+<p>If the input current is spiky, with only periodically being different from zero, and for very short amounts of time, then the membrane potential also starts to look spiky through time. In an infinitesimally short period <span class="math">\(dt\)</span> during which <span class="math">\(I(t)\)</span> is non-zero, the rise in <span class="math">\(U(t)\)</span> is almost infinitesimally steep, owing to the rapid change in <span class="math">\(I(t)\)</span>, after which it starts to decay gradually.</p>
+<figure>
+    <img class='small_img' src="/images/ssn_timeseries.svg" alt="SSN Time series" width="1200">
+    <figcaption>Figure 3: The input current signal (left) and the membrane potential it generates (right). The potential decays towards the input current exponentially fast. Here $R=5$, $C=10^{-3}$, $\Delta t = 10^{-3}$, and $\bar{U} = 0.12$. The vertical dashed lines show the time indices at which an output spike occurs. The horizontal dashed line shows the spiking threshold.</figcaption>
+</figure>
+
+<p>So far, the neuron has an adaptive membrane potential but no real output. It is common to model the output as a binary spike which is toggled if the membrane potential reaches a predefined threshold. Additionally, it has been observed that neurons do not fire constantly if their resting potential <span class="math">\(I(t) R\)</span> is above the threshold. This requires adding a cooldown period, or a reset mechanism, which decrements the membrane potential before the neuron can fire again. This is called <a href="https://en.wikipedia.org/wiki/Hyperpolarization_(biology)">hyperpolarization</a>.</p>
+<p>Thus, let the membrane potential threshold be <span class="math">\(\bar{U}\)</span> and the spike variable be <span class="math">\(S(t)\)</span> where</p>
+<div class="math">$$
+S(t) = \begin{cases}
+    1, \text{ if } U(t) &gt; \bar{U} \\
+    0, \text{ otherwise}.
+    \end{cases}
+$$</div>
+<p>To illustrate the whole idea we discretize the differential equation above and implement the spikes and the reset mechanism:</p>
+<div class="math">$$
+U(t+\Delta t) = U(t) + \frac{\Delta t}{RC} \big (I(t) R - U(t) \big) - S(t) \bar{U}
+$$</div>
+<p>The reset mechanism instantly decrements the current potential by the spiking threshold if a spike has occurred. This is one way to model it and it's also possible to directly set the potential to zero. The combination of the simple RC-circuit, the spikes threshold and the reset mechanism is called the leaky-integrate-and-fire model. It was proposed by <a href="https://en.wikipedia.org/wiki/Louis_Lapicque">Louis Lapicque</a> back in 1907. Since then, there have been other models like the adaptive integrate-and-fire where the frequency of spikes decreases even with constant input current, and the Hodgkin–Huxley model which has additional components.</p>
+<p>At this point, we can start using the Lapicque neuron in algorithms. However, it's useful to simplify it a bit. The actual functional form used in practice typically assumes that <span class="math">\(R=1\)</span> and is </p>
+<div class="math">$$U(t + \Delta t) = \beta U(t) + w x(t) - S(t) \bar{U},$$</div>
+<p>where <span class="math">\(\beta\)</span> is the decay rate controlling how fast the membrane potential decays. The input current <span class="math">\(I(t)\)</span> is also replaced with a learnable weight <span class="math">\(w x(t)\)</span> where <span class="math">\(x(t)\)</span> is a binary, indicating spike or no spike in the data. We can now stack multiple such neurons in layers. Suppose the input <span class="math">\(X\)</span> has shape <span class="math">\((T, B, D)\)</span> with <span class="math">\(T\)</span> time steps, <span class="math">\(B\)</span> samples in the batch, and <span class="math">\(D\)</span> dimensions in each sample in each time point. We initialize all the membranes as <span class="math">\(U^{(0)}\)</span>. <span class="math">\(X^{(0)}\)</span> is the data in the first timestep with shape <span class="math">\((B, D)\)</span> which goes through the first layer, outputting <span class="math">\(y^1\)</span> and <span class="math">\(U^{(1)}\)</span>. Both of these go into the second layer, outputting <span class="math">\(y^{(2)}\)</span> and <span class="math">\(U^{(2)}\)</span> and so on. <span class="math">\(X^{(1)}\)</span> is the data from the next timestep which is processed in a similar way.</p>
+<p>When it comes to training, this setup is amenable to <a href="https://en.wikipedia.org/wiki/Backpropagation_through_time">backpropagation through time</a> - the same variation of backpropagation used to train RNNs. Here, we're interested in computing the gradient of the loss with respect to the weights</p>
+<div class="math">$$
+\frac{\partial \mathcal{L}}{\partial W} = \frac{\partial L}{\partial S} \frac{\partial S}{\partial U} \frac{\partial U}{\partial I} \frac{\partial I}{\partial W},
+$$</div>
+<p>where <span class="math">\(S\)</span> is the spike, <span class="math">\(U\)</span> is the membrane potential, <span class="math">\(I\)</span> is the input current, and <span class="math">\(W\)</span> are the weights. The problem, however, is that <span class="math">\(\partial S/\partial U\)</span> is non-differentiable at <span class="math">\(\bar{U}\)</span> and has derivative equal to zero everywhere else. This is sometimes called the dead neuron problem since no actual updates can take place.</p>
+<p>Note that if there was only a discontinuity, a method specialized for handling it, like the subgradient, could be used. Here however, the spike is essentially given by the Heaviside step function, shiften at <span class="math">\(\bar{U}\)</span>, and the derivative with respect to <span class="math">\(U\)</span> is zero almost everywhere. To fix this problem we can approximate <span class="math">\(\partial S / \partial{U}\)</span> by replacing it with a more well-behaved surrogated gradient term.</p>
+<p>There are a few good choices here. One is to simply replace <span class="math">\(\partial S(t) / \partial{U}\)</span> with <span class="math">\(S(t)\)</span>. As a result, neurons which fire at time <span class="math">\(t\)</span> will have their gradients backpropagated because <span class="math">\(S(t) = 1\)</span>. Those which don't fire won't backpropagate. Implementing this in practice requires saving the value of <span class="math">\(S(t)\)</span> during the forward pass, and using it during the backward pass.</p>
+<p>Another common approach is to smooth the Heaviside function during backprop, for example using the fast sigmoid:</p>
+<div class="math">$$
+\begin{align*}
+\tilde{S}(t) &amp;= \frac{U(t) - \bar{U}}{1 + k | U(t) - \bar{U} |}, \\
+\frac{\partial \tilde{S}(t)}{\partial U} &amp;= \frac{1}{(1 + k | U(t) - \bar{U} |)^2}.
+\end{align*}
+$$</div>
+<p>In that case during the forward pass we compute the spike normally using the Heaviside function but save <span class="math">\(U\)</span> so that we're able to compute <span class="math">\(\partial S(t) / \partial{U}\)</span> during backpropagation. Overall, replacing the actual gradient term with something else that is easily computable is strange. But it has become common practice, and the resulting spiking neural networks do <a href="https://arxiv.org/abs/2109.12894">seem to be fairly robust</a> to these kinds of changes.</p>
+<p>To be able to train, we also need to define the loss function and how the output spikes will be interpreted. For a single sample at test time, the usual expected shape is <span class="math">\((T, D)\)</span> and in a classification task with <span class="math">\(C\)</span> classes the output will have shape <span class="math">\((T, C)\)</span>. The target is of shape <span class="math">\((T, 1)\)</span>. One way to determine the prediction is to count the number of spikes in each class across time. To fire the most, we incentivize the correct neuron to have high average membrane potential. This can all be achieved by softmax-ing the membrane potentials at a given step <span class="math">\(t\)</span> and computing the cross-entropy loss:</p>
+<div class="math">$$
+\begin{align*}
+p_i(t) &amp; = \frac{ \exp(U_i(t)) }{ \sum_{j=1}^C \exp(U_j(t))} \\
+\mathcal{L}_{CE}(t) &amp; = \sum_{j = 1}^C y_i(t) \log p_i(t) \\
+\mathcal{L}_{CE} &amp;= \mathbb{E}_{(X, Y) \sim \mathcal{D}} \sum_t \mathcal{L}_{CE}(t)
+\end{align*}
+$$</div>
+<p>That is, as in a typical RNN scenario, the final loss is the mean sequence cross-entropy across all training samples <span class="math">\((X, Y)\)</span> from the dataset distribution <span class="math">\(\mathcal{D}\)</span>. The loss on each sequence is sum of the cross entropy terms across all time steps. The cross-entropy for a single time step is computed from the normalized membrane potentials and the one-hot encoded target vector <span class="math">\(\textbf{y}(t)\)</span>.</p>
+<p>The simple leaky-integrate-and-fire is not the only neuron model that is commonly used in practice. Two variations are worth mentioning here. The first variation is concerned with modelling the synaptic current more accurately. The Lapicque model described above assumes that a spike in the pre-synaptic neuron causes an instantaneous increase in the current passing through the synapse. There are experiments showing that this is not the case and in reality this current increases gradually. We can model this like</p>
+<div class="math">$$
+\begin{align*}
+I_{syn}(t + 1) &amp;= \alpha I_{syn}(t) + w x(t) \\
+U(t + 1) &amp; = \beta U(t) + I_{syn}(t + 1) - S(t) \bar{U}.
+\end{align*}
+$$</div>
+<p>That is, the spike in the pre-synaptic neuron <span class="math">\(x(t)\)</span> causes a gradual, as opposed to instantaneous, increase in the synaptic current <span class="math">\(I_{syn}\)</span>. This is passed to the post-synaptic neuron whose membrane potential <span class="math">\(U(t+1)\)</span> is updated using the new synaptic current. In cases where long-term sparse signals need to be modelled this kind of synaptic model is better suited, compared to the standard Lapicque model. That being said, there is really no concrete evidence that this comparison holds strongly.</p>
+<p>The second variation is based on the so-called alpha neurons which model the membrane potential as a filter applied to the input spike <span class="math">\( U(t + 1) = \sum_i w (\epsilon \ast S(t))\)</span>. Here <span class="math">\(w\)</span> is a weight, <span class="math">\(\epsilon\)</span> is a general filter <span class="math">\(\ast\)</span> is the convolution operation, and <span class="math">\(S(t)\)</span> is the previous spike. Depending on the filter, many different effects can be introduced, including delayed responses, threshold adaptation, and so on.</p>
+<p>Overall, spiking neural networks provide a more realistic, biologically-inspired form of neural computation. Their main selling points are said to be the easy representation of binary spikes in hardware (compared to high precision floats), and their sparsity, which allows cheaper storage and faster computation. It is also more energy-efficient since human sensors process the world in an asynchronous manner, only when a change in the sensor inputs is detected. This leads to lots of avoided processing for those sensors whose inputs don't change. Since spikes suppress any signals that are not strong enough, this makes spiking neural nets particularly well-suited to neuromorphic datasets where we have asynchronous events, along with their timestamps. The downside is that I don't think there has been any clear scenario where spiking neural nets seem to yield strictly better performance than their standard artificial counterparts. It'll be interesting to see how this comparison evolves in the following years.</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'], ['$', '$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+    </div>
+  
+  <p class="post-meta">
+    Tag: ai
+  </p>
+
+  </article>
+
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>

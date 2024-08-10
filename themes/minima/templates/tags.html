@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+{% block content_title %}
+{% endblock %}
+
+
+<header class="post-header">
+<h1 class="post-title p-name" itemprop="name headline">Tags</h1>
+{# <p class="post-meta">
+    <time class="dt-published" datetime="{{ page.date | date_to_xmlschema }}" itemprop="datePublished">
+    {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
+    {{ page.date | date: date_format }}
+    </time>
+    {%- if page.author -%}
+    • <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card" itemprop="name">{{ page.author }}</span></span>
+    {%- endif -%}
+</p> #}
+</header>
+
+{# This div is used for stylistic reasons #}
+<div class="post-content">
+
+  {% for tag, posts in tags|sort_tags %}
+    <h3>{{ tag }}</h3>
+    <ul>
+      {% for post in posts %}
+        <li>
+          <span class='dates_and_tags'>{{ post.date.strftime('%d %b %Y') }}</span>
+          <a class="enum_title" href="{{ post.url }}">
+            <b>{{ post.title }}</b>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endfor %}
+
+</div>
+
+{% endblock content %}

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Phase Transitions in Computation | The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+
+
+    <meta name="description" content="One of my all-time favourite topics in theoretical computer science is that of phase transitions in computational problems. I think these are one of the most beautiful and incredible phenomena because of their mystic and fundamental nature. Unlike in physics, where phase transitions have been known for quite some time now, they are relatively new in computer science, where they first appeared in the 1990s. This post explores some very basic phase transitions in the 3-SAT problem. All content for this post comes from Cristopher Moore and Stephan Mertens' awe-inspiring book The Nature of Computation." />
+
+    <meta name="tags" content="cs" />
+
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <header class="post-header">
+      <h1 class="post-title p-name" itemprop="name headline">Phase Transitions in Computation</h1>
+      <p class="post-meta">
+        <time class="dt-published" datetime="2022-03-05T23:32:03+02:00" itemprop="datePublished">
+          5 Mar 2022
+        </time>
+      </p>
+
+    </header>
+
+    <div class="post-content">
+      <p>One of my all-time favourite topics in theoretical computer science is that of phase transitions in computational problems. I think these are one of the most beautiful and incredible phenomena because of their mystic and fundamental nature. Unlike in physics, where phase transitions have been known for quite some time now, they are relatively new in computer science, where they first appeared in the 1990s. This post explores some very basic phase transitions in the 3-SAT problem. All content for this post comes from Cristopher Moore and Stephan Mertens' awe-inspiring book <a href="https://www.amazon.com/Nature-Computation-Cristopher-Moore/dp/0199233217/ref=sr_1_1?crid=2CWBHWPZCPT26&amp;keywords=nature+of+computation&amp;qid=1648843521&amp;sprefix=nature+of+computation%2Caps%2C169&amp;sr=8-1">The Nature of Computation</a>.</p>
+<p>Phase transitions can be thought of as abrupt qualitative changes to the behaviour and characteristics of a system, dependant on specific values of key parameters in that system. Typical examples of phase transitions in physics are:
+- The transition of matter from a solid state to liquid state (melting) or from a liquid state to a solid state (freezing),
+- The emergence of superconductivity when cooling certain metals,
+- The phenomenon where some materials lose their permanent magnetic properties when heated above a certain temperature.</p>
+<p>Here however, we'll be concerned with computational problems and our phase transitions will be interpreted as a rapid change in the amount of computation needed to find a solution to a given decision problem, or assert that none exists. Importantly, the problem instances will be random instead of the typical worst-case instances chosen by a malevolent adversary. This corresponds to evaluating the average case complexity - averaged across the different possible inputs.</p>
+<h3>Boolean satisfiability</h3>
+<p>The SAT problem is about satisfying boolean conditions. The input is a propositional logic formula in conjunctive normal form (CNF), defined on the boolean variables <span class="math">\(x_1, x_2, ..., x_n\)</span>. I.e., the formula is expressed as a conjunction of many clauses (the conditions), each of which can be satisfied by either of the variables present inside it being true. The goal is to find an assignment of the variables <span class="math">\(x_1, ..., x_n\)</span> for which the formula is true. If each clause contains up to <span class="math">\(k\)</span> variables, we call this a <span class="math">\(k\)</span>-SAT formula. For example, the formula</p>
+<div class="math">$$
+\begin{align}
+\phi(x_1, x_2, x_3, x_4, x_5) =&amp; \ (x_2 \vee \ \neg x_3  \vee \  \neg x_4) \ \wedge \\
+ &amp; \ (x_1 \vee \ x_3  \vee \  x_5) \  \wedge \\
+ &amp; \ (x_2 \vee \  x_3 \vee \ \neg x_1) \  \wedge \\
+ &amp; \ (x_1 \vee \  x_3 \vee \  \neg x_2) \  \wedge \\
+ &amp; \ (x_5 \vee \ \neg x_2 \vee \ \neg x_4) \  \wedge \\
+ &amp; \ (x_1 \vee \ \neg x_2 \vee \ \neg x_5) \  \wedge \\
+ &amp; \ (x_1 \vee \ x_5  \vee \   \neg x_3) \  \wedge \\
+ &amp; \ (x_2 \vee \ x_3  \vee \  \neg x_4) \ 
+\end{align}
+$$</div>
+<p>takes in 5 variables, has 8 clauses and each clause can be satisfied by any of the three variables inside being true. Note that any variable can appear negated. We can verify that one solution is <span class="math">\(x_1 = \text{true}\)</span>, <span class="math">\(x_2 = \text{true}\)</span>, <span class="math">\(x_4 = \text{false}\)</span>. The other two variables - <span class="math">\(x_3\)</span> and <span class="math">\(x_5\)</span> - are irrelevant and can be set to any boolean value.</p>
+<p>Now that we know what the SAT problem is about, we can define a random formula by specifying a uniform distribution over 3-SAT formulas with <span class="math">\(n\)</span> variables and <span class="math">\(m\)</span> clauses. There are <span class="math">\(M = 2^3 {n \choose 3}\)</span> possible clauses because out of <span class="math">\(n\)</span> variables we need to choose 3, and each one of these can be negated. To generate a random formula we sample uniformly <em>with replacement</em> <span class="math">\(m\)</span> clauses out of the possible ones. The parameter governing the solvability of the sampled formula is the density of clauses to variables <span class="math">\(\alpha = \frac{m}{n}\)</span>. We will see that this parameter directly controls the difficulty of any specific SAT instance.</p>
+<p>For solving NP-complete problems like 3-SAT we can use a backtracking algorithm. Specifically, for 3-SAT we can use the <code>DPLL</code> algorithm (which stands for Davis, Putnam, Logemann, Loveland):</p>
+<div class="highlight"><pre><span></span><code>DPLL
+  input: a SAT formula S
+  output: is S satisfiable?
+  begin
+    if S is empty, return true;
+    if S contains an empty clause, return false;
+    select an unset variable x;
+    if DPLL(S[x = true]) = true, return true;
+    if DPLL(S[x = false]) = true, return true;
+    return false;
+  end
+</code></pre></div>
+
+<p>The algorithm operates as follows:</p>
+<ul>
+<li>If the input formula contains no clauses, return trivially true;</li>
+<li>If the input formula contains an empty clause, return false - this would be a trigger for example on the formula <span class="math">\((x_1 \vee x_2) \wedge () \wedge (\neg x_2)\)</span>;</li>
+<li>Otherwise, select a variable and recursively check whether there is a solution when setting that variable to true or false. Setting a variable <span class="math">\(x_i = \text{true}\)</span> allows us to simplify the formula by deleting those clauses where that variable is encounted like <span class="math">\((... \vee x_i \vee ...)\)</span> and remove the literals in those clauses where it's encountered like <span class="math">\((... \vee \neg x_i \vee ...)\)</span>. For example, if we set <span class="math">\(x_2 = \text{true}\)</span> in the formula <span class="math">\((x_1 \vee x_2) \wedge (x_3 \vee \neg x_2)\)</span> we can simplify it to just <span class="math">\((x_3)\)</span>.</li>
+</ul>
+<p>Selecting which variable to set, and to what value, can be done in different ways (some more efficient than others). One way is to:</p>
+<ul>
+<li>set those variables that will satisfy any unit clauses</li>
+<li>set those variables which are "pure" - only appear with one polarity</li>
+<li>if there are no unit clauses or pure variables, choose a variable by prioritizing 2-clauses before 3-clauses.</li>
+</ul>
+<p>The run-time cost of the DPLL algorithm is characterized mainly by the number of recursive calls that it has to make. In what follows, this will be the main metric for measuring the difficulty of SAT problem instances.</p>
+<h3>The Phase Transition</h3>
+<p>Let's call our distribution over random <span class="math">\(k\)</span>-SAT formulas with <span class="math">\(n\)</span> variables and <span class="math">\(m\)</span> clauses <span class="math">\(F_k(n, m)\)</span>. Then we can estimate the average probability of a formula from <span class="math">\(F_k(n, m)\)</span> being solvable by sampling a large number of formulas, solving each one of them with DPLL, and counting the number of instances where a solution exists. In particular we are interested how the probability of being solvable, as well as the number of function calls, depend on the clause-to-variable density <span class="math">\(\alpha\)</span>.</p>
+<p>The figure below shows how the probability of a random 3-SAT formula depends on <span class="math">\(\alpha\)</span> when <span class="math">\(n=5\)</span> and <span class="math">\(n=30\)</span>. Two things are evident:</p>
+<ul>
+<li>The higher <span class="math">\(\alpha\)</span> is, the less likely it is that the formula will be solvable. This is because with more clauses per variable, it becomes more likely that some of the clauses contain variables with opposite polarity which prevents the formula from being satisfied.</li>
+<li>The more variables there are, the sharper is the decrease in the solvability as <span class="math">\(\alpha\)</span> increases. Formulas with <span class="math">\(n=30\)</span> variables become more rapidly unsolvable compared to formulas with <span class="math">\(n=5\)</span> variables. One can verify numerically that the corresponding graphs when <span class="math">\(n=100\)</span> or <span class="math">\(n=200\)</span> will be even steeper - for a large <span class="math">\(n\)</span> and up to some specific <span class="math">\(\alpha_c\)</span>, the formulas will be solvable with high probability and above that <span class="math">\(\alpha_c\)</span> they will be unsolvable with high probability.</li>
+</ul>
+<figure>
+    <img src="/images/solvable5.png" alt="Probability of being solvable" width="1000">
+    <figcaption>Figure 1: The relationship between the clause-to-variable density and the probability of being solvable.</figcaption>
+</figure>
+
+<!-- ![graph](/resources/solvable5.png) -->
+
+<p>If we consider what happens when <span class="math">\(n=\infty\)</span>, we expect to find one critical value of the clause-to-variable ratio <span class="math">\(\alpha_c\)</span> below which a formula is almost surely solvable while above it, it is almost surely unsolvable. This value <span class="math">\(\alpha_c\)</span> would be a critical point and the 3-SAT problem would undergo a qualitative change as it transitions from low to high <span class="math">\(\alpha\)</span>.</p>
+<p>More formally, the conjecture is that for each <span class="math">\(k \ge 3\)</span>, there is a constant <span class="math">\(\alpha_c\)</span> such that</p>
+<div class="math">$$
+\lim_{n \rightarrow \infty} P( F_k(n, m) \text{ is solvable}) = \begin{cases}
+    1 &amp; \text{if } \alpha &lt; \alpha_c(n) \\
+    0 &amp; \text{if } \alpha &gt; \alpha_c(n)
+\end{cases}
+$$</div>
+<p>Unfortunately, this conjecture still remains... a conjecture. The closest we've come to it is a theorem by Friedgut stating that for each <span class="math">\(k \ge 3\)</span>, there is a function <span class="math">\(\alpha_c(n)\)</span> such that, for any <span class="math">\(\epsilon &gt; 0\)</span>,</p>
+<div class="math">$$
+\lim_{n \rightarrow \infty} P( F_k(n, m) \text{ is solvable}) = \begin{cases}
+    1 &amp; \text{if } \alpha &lt; (1 - \epsilon) \alpha_c(n) \\ % &amp; is your "\tab"-like command (it's a tab alignment character)
+    0 &amp; \text{if } \alpha &gt; (1 + \epsilon) \alpha_c(n).
+\end{cases}
+$$</div>
+<p>This theorem is useful but fails to prove that <span class="math">\(\alpha_c(n)\)</span> converges to a constant as <span class="math">\(n \rightarrow \infty\)</span>. Could it be that <span class="math">\(\alpha_c(n)\)</span> just keeps oscillating in some weird way, instead of converging? Wouldn't that be bizarre?</p>
+<h3>Deriving a lower bound on the critical point</h3>
+<p>It is hard to come up with rigorous bounds for <span class="math">\(\alpha_c\)</span>. The best estimates right now state that <span class="math">\(\alpha_c\)</span> is between 3.52 and 4.49. To get a sense of the type of analysis done, in this section we'll prove one not particularly tight lower bound on <span class="math">\(\alpha_c\)</span>.</p>
+<p>Crucially, we rely on the following result:<br>
+<strong>Corollary:</strong> <em>If for some constants</em> <span class="math">\(\alpha^*\)</span> <em>and</em> <span class="math">\(C &gt; 0\)</span></p>
+<div class="math">$$
+\lim_{n \rightarrow \infty} P( F_k(n, m=\alpha^*n) \text{ is solvable}) \ge C,
+$$</div>
+<p><em>then, for any constant</em> <span class="math">\(\alpha &lt; \alpha^*\)</span>,</p>
+<div class="math">$$
+\lim_{n \rightarrow \infty} P( F_k(n, m=\alpha n) \text{ is solvable}) = 1.
+$$</div>
+<p>The above result means that when <span class="math">\(n \rightarrow \infty\)</span>, if a random formula is satisfiable with positive probability at density <span class="math">\(\alpha\)</span>, then formulas with lower density are satisfiable almost surely. Likewise, if the probability of a formula at a given density being solvable is bounded below 1, then this probability is zero at any higher density. This is a nice example of a zero-one law... Kolmogorov would be proud. In any case, this result implies that if we find such a <span class="math">\(\alpha^*\)</span> and assuming our phase transition conjecture is true, then <span class="math">\(\alpha_c &gt; \alpha^*\)</span>.</p>
+<p>Before the actual analysis, it's useful to get a feel for how the runtime depends on the clause-to-variable density. The figure below shows how the number of DPLL calls scales as <span class="math">\(\alpha\)</span> increases.</p>
+<figure>
+    <img src="/images/n_calls5.png" alt="Probability of being solvable" width="1000">
+    <figcaption>Figure 2: The relationship between the clause-to-variable density and the total number of DPLL calls.</figcaption>
+</figure>
+
+<!-- ![graph](/resources/n_calls5.png) -->
+
+<p>Importantly, for small <span class="math">\(\alpha\)</span>, it is very easy to find a satisfying assignment because the clauses are few and most of the variables are not conflicting. The number of recursive calls is linear in the number of variables and the search process essentially comes down to evaluating a single branch of the resulting decision tree. </p>
+<p>On the other extreme, for large <span class="math">\(\alpha\)</span> there are so many clauses per variable that many of them are conflicting each other and the formula is unsatisfiable. However, the more clauses there are, the earlier that contradictions appear in the search process - that is why the runtime eventually starts decreasing as <span class="math">\(\alpha\)</span> increases too much. With too many clauses, the contradictions are so many that the DPLL algorithm starts seeing unsatisfiable subproblems very learning in the search process, resulting in fewer recursive calls.</p>
+<p>When <span class="math">\(\alpha\)</span> is around 4.3 (and <span class="math">\(n=30\)</span>), the running time is maximal, because the number of clauses create enough variable conflicts so that DPLL has to do an exponential amount of backtracking. Contradictions appear not only often, but also at a bigger depth in the search process, compared to when <span class="math">\(\alpha\)</span> is large. Around this range is also the expected critical point <span class="math">\(\alpha_c\)</span>, above which the formula becomes unsatisfiable with high probability.</p>
+<p>Now, to derive the lower bound we model the unit clause (UC) variant of the DPLL algorithm with differential equations. The UC algorithm satisfies any unit clause first and if there are no unit clauses, chooses a random variable and sets it to true or false with equal probability. Most importantly, if it encounters any contradictions, it simply returns "Don't know" without backtracking. Thus, it is essentially evaluating a single decision branch in the tree formed by a proper backtracking algorithm. To define the state variables we choose <span class="math">\(T\)</span> to be the number of variables set to far and <span class="math">\(n-T\)</span> the number of unset ones. <span class="math">\(S_1, S_2, S_3\)</span> are the number of unit clauses, 2-clauses and 3-clauses, respectively.</p>
+<p>The analysis relies on a specific type of conditional randomness. Suppose we start with a formula chosen uniformly at random and we set <span class="math">\(T\)</span> variables, producing a resulting formula with <span class="math">\(S_1, S_2\)</span>, and <span class="math">\(S_3\)</span> clauses. Then, one can be convinced that this resulting formula is still uniformly random, but over those formulas with <span class="math">\(n-T\)</span> variables and with the same respective number of 1, 2, and 3-length clauses. The probabilities that we calculate next all rely on this fact.</p>
+<p>A variable <span class="math">\(x_i\)</span> appears in a given 3-clause with probability <span class="math">\(\frac{3}{n - T}\)</span> (it's slightly larger if the variables in a clause have to be distinct, but this does not matter when <span class="math">\(n \rightarrow \infty\)</span>). There are <span class="math">\(S_3\)</span> 3-clauses and therefore <span class="math">\(x_i\)</span> appears in <span class="math">\(\frac{3 S_3}{n - T}\)</span> clauses. This is also the rate at which 3-clauses disappear.</p>
+<p>When we set <span class="math">\(x_i\)</span> to some boolean value, on average half of the 3-clauses in which <span class="math">\(x_i\)</span> appears disappear and half turn to 2-clauses. Therefore, <span class="math">\(\frac{3 S_3}{2 (n - T)}\)</span> 2-clauses appear on setting <span class="math">\(x_i\)</span>. Similarly, the probability that <span class="math">\(x_i\)</span> belongs to a 2-clause is <span class="math">\(\frac{2}{n - T}\)</span> and 2-clauses disappear at the rate <span class="math">\(\frac{2 S_2}{n - T}\)</span>.</p>
+<p>Thus, we form a system of difference equations:</p>
+<div class="math">$$
+\begin{align}
+\mathbb{E}[\Delta S_3] &amp;= - \frac{3 S_3}{n - T} \\
+\mathbb{E}[\Delta S_2] &amp;= \frac{3 S_3}{2 (n - T)} - \frac{2 S_2}{n - T}. \\
+\end{align}
+$$</div>
+<p>When <span class="math">\(n \rightarrow \infty\)</span>, these can be rescaled using <span class="math">\(s_2 = \frac{S_2}{n}\)</span>, <span class="math">\(s_3 = \frac{S_3}{n}\)</span>, and <span class="math">\(t=\frac{T}{n}\)</span>, producing a system of differential equations:</p>
+<div class="math">$$
+\begin{align}
+\frac{d s_3}{dt} &amp;= - \frac{3 s_3}{1 - t} \\
+\frac{d s_2}{dt} &amp;= \frac{3 s_3}{2 (1 - t)} - \frac{2 s_2}{1 - t}. \\
+\end{align}
+$$</div>
+<p>The initial conditions are <span class="math">\(S_3(0) = m\)</span> and <span class="math">\(S_2(0) = 0\)</span> which after rescaling become <span class="math">\(s_3(0) = \alpha\)</span>, and <span class="math">\(s_2(0) = 0\)</span>. The solution to the system is</p>
+<div class="math">$$
+\begin{align}
+s_3(t) &amp;= \alpha (1 - t)^3 \\
+s_2(t) &amp;= \frac{3}{2} \alpha t (1 - t)^2. \\
+\end{align}
+$$</div>
+<p>The number of 2 and 3-clauses <span class="math">\(S_2\)</span> and <span class="math">\(S_3\)</span> scale as <span class="math">\(\Theta(n)\)</span> - at any point in the algorithm they scale linearly in the number of variables. However, their expected changes are <span class="math">\(O(1)\)</span> which makes them change relatively slow compared to their size. This makes them amenable to this differential equation approach. <span class="math">\(S_1\)</span>, on the other hand, is <span class="math">\(O(1)\)</span> and changes as <span class="math">\(O(1)\)</span>, which forces us to model it with a discrete branching process.</p>
+<p>A variable <span class="math">\(x_i\)</span> appears on average in <span class="math">\(\frac{2 S_2}{n - T}\)</span> clauses and half of them will be turned into unit-clauses when setting <span class="math">\(x_i\)</span>. Therefore the number of unit clauses we create at each step is</p>
+<div class="math">$$ \lambda = \frac{1}{2} \frac{2 S_2}{n - T} = \frac{s_2}{1 - t} = \frac{3}{2} \alpha t(1-t).$$</div>
+<p>Now, the operation of the UC algorithm creates "cascades". If there are no unit clauses, suppose we randomly choose to set <span class="math">\(x_i\)</span>. This creates <span class="math">\(\lambda\)</span> new unit clauses. On the next step we are forced to set a variable that will satisfy any of these unit clauses. This, however, still creates <span class="math">\(\lambda\)</span> unit clauses on average, and so on. The expected number of steps needed to satisfy all the eventual resulting unit clauses, including the first step that set the cascade off, is</p>
+<div class="math">$$ 1 + \lambda + \lambda^2 + \lambda^3 + ... $$</div>
+<p>If <span class="math">\(\lambda &gt; 1\)</span>, then the unit-clauses proliferate exponentially and as soon as we enounter a contradiction where two of them demand different values for the same variable, UC fails. This occurs with constant probability when the number of unit clauses reaches <span class="math">\(\Theta(\sqrt{n})\)</span> (due to the birthday paradox).</p>
+<p>If <span class="math">\(\lambda &lt; 1\)</span>, the total number of unit clauses converges to <span class="math">\(\frac{1}{1 - \lambda}\)</span>. The UC algorithm manages to satisfy all unit clauses, after which it again gets to select a random variable and set it to a random value. Thus, for UC to succeed on average, we need <span class="math">\(\lambda &lt; 1\)</span>. After maximizing over <span class="math">\(t\)</span>, <span class="math">\(\frac{3}{2} \alpha t(1-t)\)</span> is less than 1 if <span class="math">\(\alpha &lt; \frac{8}{3}\)</span>. The probability that UC fails when the branching process is subcritical is still a positive constant, because the probability that two unit clauses contradict each other is <span class="math">\(\Theta(\frac{1}{n})\)</span> and there are <span class="math">\(\Theta(n)\)</span> steps in the algorithm. However, the positive probability of succeeding is enough to use the above corolary to say that the formula is satisfiable with high probability when <span class="math">\(\alpha &lt; \frac{8}{3}\)</span>. In these cases there is also positive probability that a proper DPLL algorithm finds a solution with no backtracking, which becomes exponentially difficult when <span class="math">\(\alpha &gt; \frac{8}{3}\)</span>.</p>
+<p>To recap, when <span class="math">\(\alpha &lt; \frac{8}{3}\)</span>, the probability of UC failing is <span class="math">\(O(1)\)</span> - bounded from above - which means that the probability of UC succeeding is positive. The corollary stated above then implies that</p>
+<div class="math">$$
+\lim_{n \rightarrow \infty} P( F_k(n, m=\alpha n) \text{ is solvable}) = 1, \ \forall \alpha &lt; \frac{8}{3}.
+$$</div>
+<p>And therefore <span class="math">\(\alpha_c \ge \frac{8}{3}\)</span>. More sophisticated variants of DPLL yield better bounds, closer to the presumably true critical point value of approximately <span class="math">\(4.267\)</span>. These constructive proofs fail, though, when backtracking becomes necessary. Other bounds can be obtained using non-constructive proofs which are a different approach altogether.</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'], ['$', '$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+    </div>
+  
+  <p class="post-meta">
+    Tag: cs
+  </p>
+
+  </article>
+
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>

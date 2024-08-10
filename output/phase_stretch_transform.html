@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>The Phase Stretch Transform | The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+
+
+    <meta name="description" content="I have recently discovered PhyCV - an awesome new physics-inspired computer vision library. It contains refreshing new algorithms for various imaging tasks, all of them with a physical justification [1]. This post explores one of these - the phase stretch transform (PST), which can be used to detect edges and corners, or enhance even the faintest visual features in images from poorly-lit environments. It's a very clever technique and getting to know how it works also yields, as a benefit, some basic knowledge in topics like Fourier optics and wave propagation." />
+
+    <meta name="tags" content="cs" />
+
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <header class="post-header">
+      <h1 class="post-title p-name" itemprop="name headline">The Phase Stretch Transform</h1>
+      <p class="post-meta">
+        <time class="dt-published" datetime="2023-02-04T07:00:00+02:00" itemprop="datePublished">
+          4 Feb 2023
+        </time>
+      </p>
+
+    </header>
+
+    <div class="post-content">
+      <p>I have recently discovered <a href="https://github.com/JalaliLabUCLA/phycv">PhyCV</a> - an awesome new physics-inspired computer vision library. It contains refreshing new algorithms for various imaging tasks, all of them with a physical justification [1]. This post explores one of these - the phase stretch transform (PST), which can be used to detect edges and corners, or enhance even the faintest visual features in images from poorly-lit environments. It's a very clever technique and getting to know how it works also yields, as a benefit, some basic knowledge in topics like Fourier optics and wave propagation.</p>
+<p>In general, the phase stretch transform builds on top of other ideas which one should understand. The most basic of these is the notion of a wave - a disturbance that is being propagated through space and time in a given medium. There are many types of waves - acoustic waves, mechanical waves and electromagnetic waves being a few of them. One of the simplest waves is the sine wave, modelled as</p>
+<div class="math">$$
+\Psi(x, t) = A \sin (k x - \omega t + \phi).
+$$</div>
+<p>Here <span class="math">\(x\)</span> is a spatial one-dimensional variable and <span class="math">\(t\)</span> is a temporal variable. <span class="math">\(A\)</span> is called the <em>amplitude</em> of the wave and shows how far a given quantity is from its equilibrium. In the case of acoustic waves, this would be air pressure. In the case of water waves (a type of mechanical waves) the amplitude may be the current height of the wave, as measured from the average. In general the magnitude may depend on the position <span class="math">\((x, t)\)</span>. Everything within the sine function is called the <em>phase</em> and affects the spatio-temporal positioning of the wave. The parameter <span class="math">\(k\)</span> is the wavenumber - a measure of the spatial frequency - and <span class="math">\(\omega\)</span> is the temporal frequency affecting how fast the wave at a fixed space position repeats in time. <span class="math">\(\phi\)</span> is called the phase shift because it further shifts the wave without changing its spatial or temporal frequencies.</p>
+<p>It is useful to represent waves mathematically using complex numbers:</p>
+<div class="math">$$
+\Psi(x, t) = A e^{i(kx - \omega t + \phi)} = A \cos(kx - \omega t + \phi) + i A \sin(kx - \omega t + \phi).
+$$</div>
+<p>For a wave with fixed parameters <span class="math">\((k, \omega, \phi)\)</span> evaluating it at a position <span class="math">\((x, t)\)</span> requires two numbers, the amplitude and the phase, and conveniently, these can be represented as a single complex number. As per <a href="https://en.wikipedia.org/wiki/Euler%27s_formula">Euler's formula</a>, the complex exponential form is just a more convenient way to represent the sum of a cosine and a complex sine. Additionally, transforming the point <span class="math">\((A\cos(kx - \omega t + \phi), A\sin(kx - \omega t + \phi))\)</span> from Cartesian to polar coordinates yields exactly the amplitude and the phase <span class="math">\((A, kx-\omega t + \phi)\)</span>. Note that the real component of the wave value serves to model actual <em>observable</em> quantities from the real world. The fact that it comes from a cosine is not problematic because the cosine function is just a phase-shifted sine.</p>
+<!-- Verify the above paragraph. -->
+
+<p>Various signals like audio samples or images can be considered as a superposition of many individual waves. And the Fourier transform, a tool that is ubiquitous in signal processing, can be used to disentangle the aggregate signal into its individual constituents. In that context, it is a very important insight that phases tend to carry more of the "useful" information, compared to amplitudes. This can be visualized easily using the two-dimensional Fourier transform applied on images.</p>
+<p>Applying the 2D FFT on images works as follows. If the image is single-channel, with size <span class="math">\((H, W)\)</span>, we assume the spatial sampling frequency is <span class="math">\(1.0\)</span> and therefore by <a href="https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem">Nyquist</a> the maximum spatial frequency we can capture is <span class="math">\(0.5\)</span>. So the frequency bins for the height are <span class="math">\(H\)</span>, spread linearly from <span class="math">\(-0.5\)</span> to <span class="math">\(0.5\)</span>. Similarly, those for the width are <span class="math">\(W\)</span>, spread from <span class="math">\(-0.5\)</span> to <span class="math">\(0.5\)</span>. The FTT shows, for two particular frequency bins along the image axes, how much of them is present in the image.</p>
+<p>Figure 1 shows a classic experiment where we take the two-dimensional Fourier transform of one image, and reconstruct it with either the magnitude, or the phase, or both. In essence, the Fourier transform outputs a dense matrix of complex numbers. Their magnitudes, <span class="math">\(\sqrt{x^2 + y^2}\)</span>, and phase angles, <span class="math">\(\tan^{-1}(y/x)\)</span>, are plotted for visualization. The plot of the magnitudes is commonly called the Fourier <em>spectrum</em>. Applying the inverse 2D FFT on the magnitudes only produces an almost entirely dark image, whereas reconstructing from the phases produces the main contours of the objects from the original image.</p>
+<figure>
+    <img class='big_img' src="/images/fourier_reconstructions2.png" alt="Fourier reconstructions" width="1200">
+    <figcaption>Figure 1: Various outputs from the Fourier transform. The input image is in the top left. The second and third images contains the magnitude and phase from the Fourier transform. The second row contains reconstructions using the inverse Fourier transform. The magnitude images have been log-scaled for visual clarity. When reconstructing from phases only, the absolute value of the real components are plotted for better contrast.</figcaption>
+</figure>
+
+<p>Reconstructing with the actual magnitudes and a set of random phases, or with the actual phases and a set of random magnitudes does not change the output noticeably. Or even mixing the magnitudes and phases of two different images will produce a blurry image with visible contours coming from the image from which the phases were taken. All of this shows that for visual signals, where most of human perception is based on edges, corners and contours, the phases of the waves are more important than the magnitudes.</p>
+<p>This is the first hint that <strong>by modifying the phases</strong> we can change the shapes of the objects in the image and potentially <strong>enhance any edges or visually impaired features</strong>.</p>
+<p>Moving on, we now consider how waves can form superpositions. This is useful when dealing with the phase stretch transform. Suppose we have two cosine waves with only slightly different spatial and temporal frequencies:</p>
+<div class="math">$$
+\Psi_A(x, t) = A \cos(k_1 x - \omega_1 t + \phi) \\
+\Psi_B(x, t) = A \cos(k_2 x - \omega_2 t + \phi).
+$$</div>
+<p>Using a trigonometric identity we can express their sum as </p>
+<div class="math">$$
+\begin{align}
+\Psi_{A + B} =  &amp; A \cos(k_1 x - \omega_1 t + \phi) + A \cos(k_2 x - \omega_2 t + \phi) \\ 
+ = &amp; 2 A \cos \big (\frac{k_1 - k_2}{2}x - \frac{\omega_1 - \omega_2}{2}t \big )  \cos \big ( \frac{k_1 + k_2}{2}x - \frac{\omega_1 + \omega_2}{2}t + \phi \big )
+\end{align} 
+$$</div>
+<p>As can be seen from Figure 2 the aggregate wave has a complicated shape. The component <span class="math">\(2 A \cos \big (\frac{k_1 - k_2}{2}x - \frac{\omega_1 - \omega_2}{2}t \big )\)</span> is called the <em>envelope</em> because it tightly surrounds the aggregate wave at any point <span class="math">\((x, t)\)</span>. The other, higher-frequency wave is called the <em>carrier</em> wave (or sometimes the <em>ripples</em>) because it carries the useful signal of the envelope and is being <a href="https://en.wikipedia.org/wiki/Amplitude_modulation">modulated</a> by it.</p>
+<p>If we release a small object into a current flowing like the waves here, we can measure two different velocities - the phase velocity and the group velocity.
+The phase velocity is the velocity (in meters per second or any other units) with which any particular frequency component of the wave travels. It is given by <span class="math">\(\nu_p = \omega / k\)</span> - angular change per unit of time divided by angular change per unit of space. In contrast, the group velocity is the velocity with which the envelope of the wave propagates through space, and is given by <span class="math">\(\nu_g = \partial \omega / \partial k\)</span> (in the continuous case).</p>
+<figure>
+    <img class='big_img' src="/images/envelope.png" alt="Fourier reconstructions" width="1200">
+    <figcaption>Figure 2: A superposition of two waves with slightly differing frequencies. </figcaption>
+</figure>
+
+<p>The waves discussed here are unrealistic because they extend infinitely in time and space. In reality, many waves are <em>localized</em> - their amplitudes are non-zero only in some region of space, and decay to zero outside of that region. These waves are called <a href="https://en.wikipedia.org/wiki/Wave_packet"><em>wave packets</em></a> or <em>impulses</em> because they are a superposition of many (potentially infinite) monochromatic waves which add up constructively in a given region and cancel out anywhere else. This is what makes a wave packet localized.</p>
+<p>We can construct such wave packets using infinitely many individual single-frequency waves in a way similar to the Fourier series. If we start with an initial wave space profile of <span class="math">\(\Psi(x, t=0) = \Psi(x)\)</span>, we are interested in what <span class="math">\(\Psi(x, t)\)</span> is for a general <span class="math">\(t\)</span>, i.e. how the wave packet evolves. Skipping the derivation, our general wave packet is given by</p>
+<div class="math">$$
+\begin{aligned}
+\Psi(x, t) &amp; = \frac{1}{\sqrt{2 \pi}} \int_\infty^\infty g(k) e^{i(kx - \omega(k) t)} dk \\
+g(k) &amp; = \frac{1}{\sqrt{2 \pi }} \int_\infty^\infty \Psi(x, 0) e^{-i k x} dx \\
+\end{aligned}
+$$</div>
+<p>This is pretty intuitive. We take the Fourier transform of the initial wave at time <span class="math">\(t=0\)</span> to obtain the power of the frequencies indexed by <span class="math">\(k\)</span>. Then for each of them, we have a wave with amplitude <span class="math">\(g(k)\)</span> and phase <span class="math">\(kx - \omega(k) t\)</span>. Note that what exactly <span class="math">\(\omega(k)\)</span> looks like depends on how the wave packet interacts with the medium. Specific wave equations will yield different <span class="math">\(\omega(k)\)</span>.</p>
+<p>In vacuum, an electromagnetic wave has a constant <span class="math">\(\omega\)</span>, independent of <span class="math">\(k\)</span>. This means that all monochromatic waves travel at the same speed and as a result, the phase velocity is equal to the group velocity. The envelope travels as fast as the individual waves and its shape is constant. This is not the case in some specific mediums, for example optical fiber, where individual waves have different phase velocities. What happens to the envelope of a wave packet if some waves travel faster than others? The envelope "shapeshifts" - it gets stretched or squished. This is called dispersion.</p>
+<figure>
+    <img class='big_img' src="/images/dispersion.png" alt="Fourier reconstructions" width="1200">
+    <figcaption>Figure 3: Wave packets travelling in a non-dispersive and dispersive environments. Only the real part is plotted. On the left, the envelope keeps the same shape through time. On the right, the envelope broadens as time increases. It diffuses due to dispersion. </figcaption>
+</figure>
+
+<p>Additional insights can be gained by exploring how an electromagnetic pulse, like light, propagates in a dispersive medium, like a fiber. This will be useful to showcase how optical dispersion in fiber changes the phases of the waves. Wave propagation is a complicated topic and the cornerstone here is the <a href="https://www.pmoptics.com/Pulse_Propagation.html">following</a> partial differential equation:</p>
+<div class="math">$$
+i \frac{\partial A }{\partial z} + \frac{i \alpha}{2} A - \frac{\beta_2 }{2} \frac{\partial^2 A}{\partial t^2 } + \gamma |A|^2 A = 0.
+$$</div>
+<p>This equation is fundamental and deserves some explanation:</p>
+<ul>
+<li>We can imagine a one-dimensional horizontal fiber of length <span class="math">\(L\)</span>. The variable <span class="math">\(z\)</span> is the spatial distance from the start of the fiber, and ranges from <span class="math">\(0\)</span> to <span class="math">\(L\)</span>. The variable <span class="math">\(t\)</span> is the time and shows how various quantities change through time.</li>
+<li>Suppose the input signal is <span class="math">\(f(t)\)</span>. As it travels through the fiber it's modified by various fiber characteristic effects into the output signal <span class="math">\(y(t)\)</span>. Our main interest is in estimating what is <span class="math">\(y(t)\)</span> and how <span class="math">\(f(t)\)</span> changes into it.</li>
+<li><span class="math">\(A(z, t)\)</span> is the amplitude of the envelope at position <span class="math">\(z\)</span> and time <span class="math">\(t\)</span>.</li>
+<li><span class="math">\(\alpha\)</span> is an <em>attenuation</em> parameter and is related to how much information is lost in the fiber. The entire term <span class="math">\(i \alpha A /2\)</span> represents the loss at the current amplitude.</li>
+<li><span class="math">\(\beta_2\)</span> is called the <a href="https://en.wikipedia.org/wiki/Group_velocity_dispersion"><em>group velocity dispersion</em> (GVD)</a> parameter. It relates to how the pulse travelling through the fiber broadens due to <a href="https://en.wikipedia.org/wiki/Dispersion_(optics)">dispersion</a>. This happens because in a dispersive medium the <a href="https://en.wikipedia.org/wiki/Phase_velocity">phase velocity</a> of individual monochromatic waves depends on the wavelength and hence the shape of the <a href="https://en.wikipedia.org/wiki/Wave_packet">pulse</a>, itself being a combination of possibly many waves, is broadened as some of the waves start to travel <a href="https://en.wikipedia.org/wiki/Group_velocity">faster than the pulse itself</a>. </li>
+<li>The <span class="math">\(\gamma\)</span> parameter controls the nonlinearity term <span class="math">\(\gamma\|A\|^2 A\)</span> and represents the <a href="https://en.wikipedia.org/wiki/Kerr_effect">Kerr effect</a>, one of many nonlinear effects that could arise in optical fibers. These are mainly caused by the fact that the polarization density depends nonlinearly on the electric field of the light.</li>
+</ul>
+<p>It's worth mentioning that if <span class="math">\(\alpha = 0\)</span> we get the <a href="https://en.wikipedia.org/wiki/Nonlinear_Schr%C3%B6dinger_equation">Nonlinear Schrödinger Equation</a> (NLSE), where the role of the spatial and temporal variables have been swapped. In general, the pulse propagation equation does not have a close-form analytical solution. In practice it's solved numerically using finite differences or the so-called <a href="https://en.wikipedia.org/wiki/Split-step_method">Split-step Fourier</a> method which is at least an order of magnitude faster.</p>
+<p>To understand the phase stretch transform we have to solve the pulse propagation equation. However, we'll simplify considerably by assuming that the fiber is lossless, <span class="math">\(\alpha = 0\)</span>, and that there are no nonlinearities. This leaves only the dispersion term and makes the resulting equation resemble the <a href="https://en.wikipedia.org/wiki/Heat_equation">heat equation</a> in functional form:</p>
+<div class="math">$$
+\frac{\partial A}{\partial z} = - i \frac{\beta_2}{2} \frac{\partial^2 A}{\partial t}.
+$$</div>
+<p>The shortest solution is to transform both sides of the equality into frequency space and solve the equation there. 
+For simplicity, let's consider this Fourier transform form (other conventions are also possible)
+<span class="math">\(
+\tilde{f}(\omega) = \int_{-\infty}^\infty f(x) e^{-i\omega x} dx\)</span>
+and
+<span class="math">\(
+f(x) = (2\pi)^{-1}\int_{-\infty}^\infty \tilde{f}(\omega) e^{i\omega x} d\omega.\)</span></p>
+<p><span class="math">\(A\)</span> consists of two variables, <span class="math">\(z\)</span> and <span class="math">\(t\)</span>. We apply the Fourier transform along the <span class="math">\(t\)</span> dimension, after which we get</p>
+<div class="math">$$
+\frac{\partial }{\partial z}\tilde{A}(z, \omega) = -(i \omega)^2 i \frac{\beta_2}{2} \tilde{A}(z, \omega) = i \omega^2 \frac{\beta_2}{2} \tilde{A}(z, \omega).  
+$$</div>
+<p>Here <span class="math">\(\tilde{A}(z, \omega)\)</span> is the transformed amplitude and <span class="math">\(\omega\)</span> is the angular frequency. The equalities above hold due to the derivative property of the Fourier transform. In any case, we can solve this ODE, and use the transformed boundary condition <span class="math">\(\tilde{A}(0, \omega) = \tilde{f}(\omega)\)</span> to obtain a solution in the frequency domain </p>
+<div class="math">$$
+\tilde{A}(z, \omega) = \tilde{f}(\omega) e^{i \frac{\beta_2}{2} z \omega^2}.
+$$</div>
+<p>The general solution then uses the inverse Fourier transform and is</p>
+<div class="math">$$
+A(z, t) = \frac{1}{2 \pi} \int_{\infty}^\infty \tilde{f}(\omega ) e^{i \frac{\beta_2}{2} z \omega^2} e^{i \omega t} d\omega
+$$</div>
+<p>By setting <span class="math">\(z = L\)</span> we obtain the output signal at the end of the fiber:</p>
+<div class="math">$$
+y(t) = \frac{1}{2 \pi} \int_{-\infty}^\infty \tilde{f}(\omega) e^{i \frac{\beta_2}{2} L \omega^2} e^{i \omega t} d\omega.
+$$</div>
+<p>This shows that in a dispersive lossless fiber medium with no nonlinearities the output signal is essentially the same, except that it is modified in frequency space by the term <span class="math">\(\exp (i \beta_2 L \omega^2 /2 )\)</span> which results from the dispersion. Since multiplication by complex exponentials changes the phases of the waves, what happens is that the dispersive fiber warps the signal and its contents. This happens by changing the phases of the original input function <span class="math">\(f(t)\)</span> in the frequency domain. Note that the amplitude is not changed.</p>
+<p>At this point, we can change the complex exponential term (equal to the system's <a href="https://en.wikipedia.org/wiki/Transfer_function">transfer function</a>) to do something useful. In images, this would be for example to enhance any present edges by adding additional phase to those frequencies which are high, as edges tend to have higher spatial frequency. Additionally, although the solution above does not change the amplitude, in practice it makes sense to do so in the form of a low-pass filter. Its necessity stems from the possibility that any noise in the image may also get enhanced from the phase-addition operation and hence, to avoid this, it may be useful to blur the image first. Based on this, one can define the <em>time stretch operation</em> as</p>
+<div class="math">$$
+\mathbb{S}\{ f(t) \} = \int_{-\infty}^\infty \mathcal{F}\{f(t)\} e^{i \phi(\omega)} \tilde{L}(\omega) e^{i \omega t} d \omega.
+$$</div>
+<p>Here <span class="math">\(\mathcal{F}\)</span> is the one-dimensional Fourier transform mapping the original input signal <span class="math">\(f(t)\)</span> from time domain to frequency domain <span class="math">\(\tilde{f}(\omega)\)</span>, <span class="math">\(\tilde{L}(\omega)\)</span> is the low-pass filter which in the frequency domain is a multiplication, and <span class="math">\(e^{i \phi(\omega)}\)</span> is the phase filter that serves to stretch the phases based on their frequencies. It is called a time stetching operation because by changing the phases of the individual waves making up the wave packet we are stretching or squishing its envelope in time. In fact, this has found incredible applications [2].</p>
+<p>Finally, with images we do not have any time and any frequencies present are spatial. Additionally, digital images are inherently discrete. Based on these two observations one can define the phase stretch transform (PST), which is basically the two-dimensional, discrete spatial version of the previous operation:</p>
+<div class="math">$$
+\mathbb{S}\{ E_i[n, m]\} = \frac{1}{MN} \sum_{v = 0}^{N-1} \sum_{u = 0}^{M-1} \text{FFT}^2 \{ E_i(n, m) \} \tilde{K}(u, v) \tilde{L}(u, v) e^{i \frac{2 \pi}{M} um} e^{i \frac{2 \pi}{N } vn }, \\
+\text{PST}\{E_i[n, m]\} = \measuredangle \mathbb{S}\{E_i[n, m] \}.
+$$</div>
+<p>So the stretching operation applies a phase filter <span class="math">\(\tilde{K}\)</span> and a low-pass filter <span class="math">\(\tilde{L}\)</span> in the frequency domain, returning a complex number for every combination of pixel coordinates <span class="math">\(n\)</span> and <span class="math">\(m\)</span>. The PST in that location is simply the phase, or angle with respect to the real axis, of that complex number. At this point the edges, corners, and features have been enhanced. We can further normalize the phases so they're in the range <span class="math">\([0, 1]\)</span> or apply <a href="https://en.wikipedia.org/wiki/Mathematical_morphology">morphological operations</a> in order to:</p>
+<ol>
+<li>Set the pixels corresponding to non-edges to 0 using thresholding,</li>
+<li>Thin out or thicken the edges using erosion/dilation techniques.</li>
+</ol>
+<p>The most important thing not discussed so far is what the phase kernel <span class="math">\(\tilde{K}(u, v)\)</span> looks like. It has to change the phase, so it has the form of <span class="math">\(e^{i \phi(u, v)}\)</span>, but for the actual function <span class="math">\(\phi(u, v)\)</span> there are many possibilities. We want to add more phase to those points with large frequencies <span class="math">\(u\)</span> and <span class="math">\(v\)</span>, so it's sensible to have a univariate function based on the magnitude <span class="math">\(r = \sqrt{u^2 + v^2}\)</span>. So we need to specify the function <span class="math">\(\phi(r)\)</span>, operating in polar coordinates. The authors of the phase stretch transform propose the following function:</p>
+<div class="math">$$
+\phi(r) = S \frac{Wr \arctan (Wr) - 0.5 \log (1 + (Wr)^2 )}{Wr_{max} \arctan (Wr_{max}) - 0.5 \log ( 1 + (Wr_{max})^2)}.
+$$</div>
+<p>Let's unpack. The function <span class="math">\(x \arctan x - 0.5 \log(1 + x^2)\)</span> is the integral of the <span class="math">\(\arctan\)</span> function. Why do we care about that? Because it's useful for <span class="math">\(\phi(r)\)</span> to have a linear or sublinear derivative and the <span class="math">\(\arctan\)</span> function is linear around 0 and sublinear (flattens out) far from it. At this point I have searched quite a lot on why exactly it makes sense to have <span class="math">\(\phi\)</span> have at most linear derivatives, but none of the authors, in any of the papers give a satisfactory explanation for this. In signal processing, it's useful for a filter to change the phase of the input signal in a linear way with respect to the frequency, which leads to a constant delay of the output signal and no distortion. Here, however the linear phase derivative seems hard to interpret intuitively.</p>
+<p>In any case, there is a parameter <span class="math">\(r_{max}\)</span> which is the maximum magnitude of the frequencies in polar coordinates and <span class="math">\(S\)</span> and <span class="math">\(W\)</span> are edge-detection hyperparameters. Specifically, <span class="math">\(S\)</span> is called the <em>strength</em> parameter because it affects the overall range of the phase kernel <span class="math">\(\phi\)</span>. <span class="math">\(W\)</span> is called the <em>warp</em> parameter because it affects the curvature of the phase derivative:</p>
+<ul>
+<li>If <span class="math">\(W \rightarrow 0\)</span>, the phase derivative becomes linear and the phase kernel <span class="math">\(\phi(r)\)</span> becomes quadratic</li>
+<li>If <span class="math">\(W \rightarrow \infty\)</span>, the phase derivative flattens out and is bounded, and <span class="math">\(\phi(r)\)</span> becomes more and more linear.</li>
+</ul>
+<p>So overall there are 4 hyperparameters:</p>
+<ol>
+<li>The bandwidth of the low-pass filter, this being typically the standard deviation <span class="math">\(\sigma\)</span> of a Gaussian filter.</li>
+<li>The strength of the phase kernel, <span class="math">\(S\)</span>. Experimentally, a higher <span class="math">\(S\)</span> better handles noise in the image, but also leads to reduced spatial resolution for edge detection.</li>
+<li>The warp of the phase kernel, <span class="math">\(W\)</span>. Experimentally, a higher <span class="math">\(W\)</span> produces sharper, more clear-cut edges but also increases edge noise, producing edges where there are none.</li>
+<li>The way to do morphological processing on the features. This can be as simple as setting a threshold to binarize the image.</li>
+</ol>
+<p>Let's take a look at how the algorithm works in more detail. Figure 4 shows the first part of the pipeline, where we apply a low-pass filter to blur the initial image. The image is first converted into frequency space. There the Gaussian filter is applied by multiplying it with the spectrum (the alternative would be to do a convolution in image-space). After that, the image is reconstructed using the inverse Fourier transform, producing a blurrier and denoised version.</p>
+<figure>
+    <img class='img' src="/images/low_pass_filter.png" alt="Fourier reconstructions" width="1200">
+    <figcaption>Figure 4: The effects of the low-pass filter. The original image (top left) is converted into the frequency domain (top right). There, the spectrum is multiplied by a Gaussian filter (bottom right) producing a modified spectrum where the contributions of the higher frequencies have been decreased. Finally, the inverse Fourier transform is taken to produce the filtered reconstruction (bottom left). </figcaption>
+</figure>
+
+<p>More concretely, we compute the 2D FFT of the initial image, <span class="math">\(\tilde{E}(u, v) = \text{FFT}^2\{ E[n, m]\}\)</span>. Then the frequencies <span class="math">\(u\)</span> and <span class="math">\(v\)</span> are converted to polar coordinates, from which we use only the magnitude <span class="math">\(r_{i,j} = \sqrt{u_i^2 + v_j^2}\)</span>. For the low pass filter, we can use a Gaussian filter, whose functional form in the spatial and frequency domain is</p>
+<div class="math">$$
+g(x) = \frac{1}{\sqrt{2 \pi} \sigma } e^{\frac{x^2}{2 \sigma^2}} \iff \tilde{g}(f) = e^{-f^2 / (2 \sigma^2)}
+$$</div>
+<p>The filter is evaluated in frequency space for all magnitudes <span class="math">\(r_{ij}\)</span>, producing a grid of multiplicative factors, shown in the bottom right plot of Figure 4. As we can see, the values are non-zero only for the smallest frequencies (traditionally plotted in the center of the image). This means that by multiplying it with the spectrum we "extinguish" the effect that any high frequencies might have in the image. And as a result, the inverse 2D FFT produces a blurrier and denoised image.</p>
+<p>The low-pass filter modifies only the amplitudes of the waves. Next, we have to apply the phase stretching. The frequencies are again converted into polar coordinates and only the magnitude <span class="math">\(r_{ij}\)</span> is used. Using the hyperparameters <span class="math">\(S\)</span> and <span class="math">\(W\)</span>, we compute the phase kernel <span class="math">\(\phi(r)\)</span> which is shown in the first image of Figure 5. Importantly, the phase kernel has low values close to 0 for the smallest frequencies - those in the center, as is customary to plot spectrum-like 2D grids. The higher frequencies receive a higher phase, up to the limit <span class="math">\(S\)</span>. The warping parameter <span class="math">\(W\)</span> controls how fast the added phase increases radially.</p>
+<figure>
+    <img class='extra_big_img' src="/images/pst.png" alt="Fourier reconstructions" width="1200">
+    <figcaption>Figure 5: The PST and its effect on the image. The phase kernel (left) is applied to the image, producing an image with enhanced features (middle). Then, to extract the edges, one can binarize the image or apply morphological operations (right). The parameters used are $S=0.5$, $W=20$, $\sigma=0.1$ and a quantile threshold of $0.85$. </figcaption>
+</figure>
+
+<p>Having computed the phase kernel <span class="math">\(\phi(r)\)</span> we multiply <span class="math">\(e^{i \phi(r)}\)</span> with the 2D Fourier spectrum of the filtered image, take the inverse 2D FFT, and normalize the result to be in <span class="math">\([0, 1]\)</span>. The resulting features are shown in the second image of Figure 5. The transform is now complete and any edges or corners have been enhanced. For the sake of better visualisation, we can binarize the image. Here we compute the 85-th percentile of the feature values and set all pixels with intensity below that value to <span class="math">\(0\)</span>. Similarly those with intensity values above the threshold are set to <span class="math">\(1\)</span>. This produces the final black-and-white image.</p>
+<p>Our testing image of the <a href="https://commons.wikimedia.org/wiki/File:MSL_Sol_3070_-_MAHLI.jpg">Curiosity rover</a> contains <em>a lot</em> of edges and as a result the final image is full of detail. If one wants to obtain only a semantic subset of the edges (e.g. those of the rover, but not of the rocks) tweaking the hyperparameters may not help much if both the desired and undesired edges have similar phase strengths. Nonetheless, with a bit of tuning and visual inspection one can easily achieve good and sharp edges without any added noise or edge tear.</p>
+<h3>References</h3>
+<p>[1] Zhou, Y., MacPhee, C., Suthar, M., Jalali, B. <a href="https://arxiv.org/abs/2301.12531">PhyCV: The First Physics-inspired Computer Vision Library</a> <em>arXiv</em> preprint arXiv:2301.12531 (2023).<br>
+[2] Mahjoubfar, A., Churkin, D., Barland, S. et al. <a href="https://www.nature.com/articles/nphoton.2017.76">Time Stretch and Its Applications</a> <em>Nature Photon</em> 11, 341–351 (2017).<br>
+[3] Asghari, M. H. and Jalali, B. <a href="https://pubmed.ncbi.nlm.nih.gov/25878656/">Edge Detection in Digital Images Using Dispersive Phase Stretch Transform</a>. <em>International Journal of Biomedical Imaging</em> (2015).<br>
+[4] Asghari, M. H. and Jalali, B. <a href="https://ieeexplore.ieee.org/document/7032125">Physics-inspired image edge detection</a> <em>IEEE Global Conference on Signal and Information Processing</em> pp. 293-296 (2014).   </p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'], ['$', '$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+    </div>
+  
+  <p class="post-meta">
+    Tag: cs
+  </p>
+
+  </article>
+
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>

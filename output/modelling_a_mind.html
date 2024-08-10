@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Modelling a Mind | The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+
+
+    <meta name="description" content="Coming up with a functional model of consciousness has been, and still is, a very hard and elusive task. The difficult part is dealing with the "hard problem of consciousness" which is about explaining the existence of qualia - e.g. the experience of hearing the birds chirping, the feeling of joy, the association between a beautiful sunny day and pleasure. To me it is obvious that, in order to seriously tackle the problem of understanding how human experience works, we need to come up with proper technical terms and ideas that describe these phenomena in an objective manner. This would trivialize the concept of human experience but I feel that it's a necessary step. Ultimately, as soon as you break down the jigsaw puzzle into its smallest parts, it loses its magical wonder at the expense of a huge increase in our understanding. We are trivialization machines." />
+
+    <meta name="tags" content="ai" />
+    <meta name="tags" content="rl" />
+
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <header class="post-header">
+      <h1 class="post-title p-name" itemprop="name headline">Modelling a Mind</h1>
+      <p class="post-meta">
+        <time class="dt-published" datetime="2022-05-18T16:00:00+02:00" itemprop="datePublished">
+          18 May 2022
+        </time>
+      </p>
+
+    </header>
+
+    <div class="post-content">
+      <p>Coming up with a functional model of consciousness has been, and still is, a very hard and elusive task. The difficult part is dealing with the "hard problem of consciousness" which is about explaining the existence of <em>qualia</em> - e.g. the experience of hearing the birds chirping, the feeling of joy, the association between a beautiful sunny day and pleasure. To me it is obvious that, in order to seriously tackle the problem of understanding how human experience works, we need to come up with proper technical terms and ideas that describe these phenomena in an objective manner. This would trivialize the concept of human experience but I feel that it's a necessary step. Ultimately, as soon as you break down the jigsaw puzzle into its smallest parts, it loses its magical wonder at the expense of a huge increase in our understanding. We are trivialization machines.</p>
+<p>I've had my mind set for some time now on creating a simple RL agent having an architecture inspired by that of the human mind.
+I want to test whether with such an architecture the agent will be able to learn at all, and if yes, how will it perform compared to other more established approaches.</p>
+<p>Importantly, at this stage I've purposefully left language completely out of the picture. Language is basically an encoding of concepts with the purpose of getting your message across to the other person. I think it's safe to say that although it's language that helps in demonstrating our consciousness, language itself does not make us conscious. Therefore, it makes sense to ask <em>"What does a conscious agent which cannot talk look like?"</em>. In other words, the point of building a simple conscious agent is not to solve the <a href="https://en.wikipedia.org/wiki/Turing_test">Turing test</a> from the first try, but rather to test whether it works at all.</p>
+<figure>
+    <img class='img' src="/images/mind.svg" alt="Mind architecture" width="1200">
+    <figcaption>Figure 1: A basic computational architecture of the mind. The blue boxes indicate inputs exogenous to the mind itself. The green boxes are predictors which learn various relationships.</figcaption>
+</figure>
+
+<p>Figure 1 above is an initial draft of the architecture. It consist of various predictors each with its own purpose.</p>
+<ul>
+<li>
+<p>One type of inputs to the mind of the agent are the <strong>sensory signals from the outside world</strong>. The signals coming from the outside world are, in the case of humans, what we see, hear, and smell. They contain patterns from the environment in which the body of the agent exists. In the case of Atari agents, the sensory inputs would be the image frames. In the case of robots they would be various readings from LIDARs, heat sensors, and cameras.</p>
+</li>
+<li>
+<p>A second type of inputs is any quantity of interest that comes from the body of the agent, not the environment surrounding it. With humans, this would be <strong>any physiological or psycological need or desire</strong> - e.g. hunger, thirst, and the need for social approval. These are generated by the body of the agent - which is a proper dynamic system with complex interactions and feedback loops between its components. For example, the feeling of hunger can be thought of as an alarm signal resulting from the various feedback loops in the human's digestive system. This alarm signal then becomes an input to the mind of the agent where it is processed.</p>
+</li>
+<li>
+<p>An <strong>input processor</strong> is a function which takes in the large noisy streams of sensory information and processes them, producing low-dimensional latent representations of the sensory input. With humans this function would loosely correspond to the vastly distributed central nervous system which processes the electric signals coming from all over the body.</p>
+</li>
+<li>
+<p>A <strong>concept buffer</strong> stores the mental representations of the important objects, ideas, phenomena that a person encounters throughout their life. The concept buffer is continuously updated as one learns more skills and concepts. Importantly, it could also store the concept of the of the <em>self</em> - a person who looks like you and behaves like you. The concept buffer is also linked to the language. Every concept in the buffer, apart from its learned mental representation, can have a label associated with it, which is a word used to refer to that concept. E.g. "dog" refers to the concept of an animal that barks, while "me" or "I" refers to the mental concept of a person who behaves like me and looks like me. Most probably there is no difference between recursive and non-recursive labels.</p>
+</li>
+<li>
+<p>An <strong>attention model</strong> is responsible for what we perceive in any given point in time. If you are like me, you constantly have thoughts in your head, whether they are memories, imagined future scenarios, or just objects from your surroundings. The attention model is what drives the thoughts in your head and is most closely associated with consciousness and wakefulness. It attends over the concepts you have amassed, the current state from the processed inputs, and possibly even itself. The feeling of consciousness could be described as the memory of the last concept/pattern that the attention model attended.</p>
+</li>
+<li>
+<p>A <strong>dynamics predictor</strong> is a function that learns the dynamics of the environment, It leans to predict the next state and to simulate state trajectories (what we call imagination or memories), irrespective of whether the agent has taken any meaningful action in the current time or not. Various emotional states like surprise, curiosity, and fear result from here, which can become drivers of the agent's decisions later on.</p>
+</li>
+<li>
+<p>A <strong>policy</strong> is an abstract component mapping the current state of the surroundings into actions - electrical signals that trigger muscle responses. This is the standard RL action-selection function.</p>
+</li>
+</ul>
+<p>Based on all of these components, a simplified control loop for the mind is:</p>
+<ol>
+<li>Process the sensory inputs, recognize any known patterns;</li>
+<li>Propose new patterns for storing as concepts;</li>
+<li>Integrate the proposals into the concept buffer, removing or updating other concepts if necessary;</li>
+<li>Predict the next state based on hypothetical actions (imagination)</li>
+<li>Focus attention on sensory inputs or known concepts.</li>
+<li>Produce an action.</li>
+</ol>
+<p>Note that with just a processor and a policy, you get a primitive <em>reptilian brain</em> based on instincts. By adding a dynamics predictor and the difference between the current state and its expectation, you get a <em>limbic brain</em>. Finally, with the addition of concepts and attention you get a <em>neocortex</em>, capable of reasoning.</p>
+<p>Regarding the practical implementation of this mind, I think the processor, dynamics predictor, and policy can be built using artificial neural networks. The attention model can be an <a href="https://en.wikipedia.org/wiki/Attention_(machine_learning)">attention layer</a>. The concept buffer is tricky because it would involve having a storage component for patterns (e.g. vectors) that is updated in a learnable way and is outside of the networks. Perhaps a stateful component that is continuously updated can be used.</p>
+<p>It might be necessary that all components are capable of handling time-series. In that case, a deep learning approach will require LSTMs, GRUs, or temporal transformers. It is also likely that the agent should have a model-based mind that can plan ahead and choose its actions accordingly.</p>
+<p>Ultimately, this mental architecture will require compromises when it comes to implementation. Nonetheless, I will try to build it as closely as possible to the idea here. I'm sure it's performance will yield a lot of precious insights and intuition after that.</p>
+    </div>
+  
+  <p class="post-meta">
+    Tags: ai, rl
+  </p>
+
+  </article>
+
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>

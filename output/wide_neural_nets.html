@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Infinitely Wide Neural Networks | The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+
+
+    <meta name="description" content="Deep neural networks seem to break the common U-shaped bias-variance risk curve. Current state-of-the-art networks have significantly more parameters than dataset samples, and yet still perform surprisingly well on the test set. We can't really say they're overfitting. So what's going on? This post explores recent results and insights around over-parameterized networks and their supposedly different training regimes. In particular, a lot of intuition can be gained from analyzing what happens in networks with infinitely many units in the hidden layers." />
+
+    <meta name="tags" content="ai" />
+
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <header class="post-header">
+      <h1 class="post-title p-name" itemprop="name headline">Infinitely Wide Neural Networks</h1>
+      <p class="post-meta">
+        <time class="dt-published" datetime="2022-09-14T16:00:00+02:00" itemprop="datePublished">
+          14 Sep 2022
+        </time>
+      </p>
+
+    </header>
+
+    <div class="post-content">
+      <p>Deep neural networks <em>seem</em> to break the common U-shaped bias-variance risk curve. Current state-of-the-art networks have significantly more parameters than dataset samples, and yet still perform surprisingly well on the test set. We can't really say they're overfitting. So what's going on? This post explores recent results and insights around over-parameterized networks and their supposedly different training regimes. In particular, a lot of intuition can be gained from analyzing what happens in networks with infinitely many units in the hidden layers.</p>
+<h3>Bayesian Inference</h3>
+<p>The first major limiting result is that infinitely wide neural networks are Gaussian processes. A Gaussian process is a stochastic process such that any finite collection of random variables from it, have a joint Gaussian distribution. Intuitively, we can think of it like a probability distribution on functions <span class="math">\(f(x)\)</span>, such that if one selects a number of points <span class="math">\(\{x_1, ..., x_N\}\)</span>, then the corresponding sampled values <span class="math">\(\{f(x_1), ..., f(x_N)\}\)</span> come from a multidimensional normal distribution with mean vector <span class="math">\(\{m(x_1), ..., m(x_N) \}\)</span> and a <span class="math">\(N \times N\)</span> covariance matrix <span class="math">\(\Sigma\)</span> containing the covariances between <span class="math">\(f(x_i)\)</span> and <span class="math">\(f(x_j)\)</span>, for <span class="math">\(1 \le i, j \le N\)</span>.</p>
+<p>In practice, instead of specifying the covariance matrix for any finite set of variables, we use a kernel function <span class="math">\(k(\cdot, \cdot)\)</span> which takes in a pair of elements <span class="math">\(x\)</span> and <span class="math">\(x'\)</span> and computes their covariance <span class="math">\(k(x, x')\)</span>:</p>
+<div class="math">$$
+\begin{align}
+f(x) \sim GP(m(x), k(\cdot, \cdot)) \Leftrightarrow &amp; \\ 
+{\small \begin{bmatrix}
+f(x_1) \\
+\vdots \\
+f(x_N) \\
+\end{bmatrix}
+} \sim &amp; \ \mathcal{N} \Big(
+    \mu = {\small \begin{bmatrix}
+    m(x_1) \\
+    \vdots \\
+    m(x_2) \\
+    \end{bmatrix}},
+    \Sigma = {\small \begin{bmatrix}
+    k(x_1, x_1) &amp; \cdots &amp; k(x_1, x_N) \\
+    \vdots &amp; \ddots &amp; \vdots \\
+    k(x_N, x_1) &amp; \cdots &amp; k(x_N, x_N) \\
+    \end{bmatrix}}
+    \Big )
+\end{align}$$</div>
+<p>A Gaussian process is completely specified by its mean function <span class="math">\(m(x)\)</span> and its kernel function <span class="math">\(k(\cdot, \cdot)\)</span>. Hence, to describe the GP generated by a infinitely wide neural network we'll have to specify its mean and kernel.</p>
+<p>Suppose we have a network with <span class="math">\(L\)</span> layers and the number of units in layer <span class="math">\(l\)</span> is <span class="math">\(n^l\)</span>. We'll annotate the pre-activations as <span class="math">\(\textbf{z}^l\)</span> and the post-activations (after applying a nonlinearity) with <span class="math">\(\textbf{y}^l\)</span>, with the convention that the input is <span class="math">\(\textbf{x} = \textbf{y}^0\)</span>. The first hidden layer is <span class="math">\(\textbf{z}^0\)</span>. After we apply the element-wise activation <span class="math">\(\phi(\cdot)\)</span>, we get <span class="math">\(\textbf{y}^{l + 1} = \phi(\textbf{z}^l)\)</span>. The weights for layer <span class="math">\(l\)</span> are initialized randomly from <span class="math">\(\mathcal{N}(0, \frac{\sigma^2_w}{n^l})\)</span> and those for the biases from <span class="math">\(\mathcal{N}(0, \sigma^2_b)\)</span>.</p>
+<p>The random initialization of the parameters of the network induces a probability distribution on its outputs. Sampling different parameters will produce different outputs for the same inputs. Likewise, we can talk about the function being modelled as also coming from a probability distribution over functions. This distribution is hard to characterize. However, the main point is that in a network with infinitely many hidden units, this distribution over functions becomes a Gaussian process. Let's see how this happens.</p>
+<p>Considering layer <span class="math">\(l\)</span> we note that its weights <span class="math">\(\textbf{W}^l\)</span> and biases <span class="math">\(\textbf{b}^l\)</span> are random Gaussian variables. If we condition on the previous activations <span class="math">\(\textbf{y}^l\)</span>, then the pre-activations <span class="math">\(\textbf{z}^l\)</span> are just a linear map of the independent Gaussian random variables from the weights and the biases. As a result, the pre-activations are also independent and Gaussian. This is true even with finitely wide layers.</p>
+<div class="math">$$
+\textbf{z}^l|\textbf{y}^l \sim GP(\textbf{0}, \sigma^2_2 K^l + \sigma^2_b)
+$$</div>
+<p><span class="math">\(K^l\)</span> is the second moment matrix of previous activations and <span class="math">\(K^l(\textbf{x}, \textbf{x}') = \frac{1}{n^l}\sum_{i = 1}^{n^l} y_i(\textbf{x}) y_i(\textbf{x}')\)</span>.<br>
+What does it mean that <span class="math">\(\textbf{z}^l | \textbf{y}^l\)</span> is a Gaussian process? It means that if we pick two inputs <span class="math">\(\textbf{x}\)</span> and <span class="math">\(\textbf{x}'\)</span>, and we propagate them up to layer <span class="math">\(l\)</span>, then we'll get <span class="math">\(\textbf{y}^l(x)\)</span> and <span class="math">\(\textbf{y}^l(x')\)</span>. These two values will have a covariance given by <span class="math">\(K^l(\textbf{x}, \textbf{x}')\)</span>. Conditioning on <span class="math">\(\textbf{y}^l(\textbf{x})\)</span> and <span class="math">\(\textbf{y}^l(\textbf{x}')\)</span>, we can sample various weights for <span class="math">\(\textbf{W}^l\)</span> and <span class="math">\(\textbf{b}^l\)</span>, and the distribution on the resulting function <span class="math">\(\textbf{z}^l\)</span> will be a Gaussian process.</p>
+<p>We can also say that <span class="math">\(\textbf{z}^l\)</span> depends on <span class="math">\(K^l\)</span>, so technically <span class="math">\(\textbf{z}^l \| K^l\)</span> is a Gaussian process with zero mean and the same kernel. Now, we condition <span class="math">\(K^l\)</span> on the previous pre-activations <span class="math">\(\textbf{z}^{l-1}\)</span>:</p>
+<div class="math">$$
+K^l(\textbf{x}, \textbf{x}') = \frac{1}{n^l} \sum_{i = 1}^{n^l} y^l_i(\textbf{x}) y^l_i(\textbf{x}') = \frac{1}{n^l} \sum_{i = 1}^{n^l} \phi(z_i^{l-1}(\textbf{x})) \phi(z_i^{l-1}(\textbf{x}'))
+$$</div>
+<p>Since <span class="math">\(\textbf{z}^{l - 1} \| K^{l - 1}\)</span> is a GP, then <span class="math">\(K^l(\textbf{x}, \textbf{x}')\)</span> is calculated by sampling <span class="math">\(n^l\)</span> pairs of points <span class="math">\(z_i^{l-1}(\textbf{x})\)</span> and <span class="math">\(z_i^{l-1}(\textbf{x}')\)</span>, applying <span class="math">\(\phi(\cdot)\)</span>, multiplying them, and averaging. And here's the crucial part. If <span class="math">\(n^l \rightarrow \infty\)</span>, then the result of this averaging becomes deterministic (as we are averaging over infinitely many samples), and <span class="math">\(K^l(\textbf{x}, \textbf{x}') = \mathbb{E}[\phi(\textbf{z}^{l-1}(\textbf{x})) \phi(\textbf{z}^{l-1}(\textbf{x}'))]\)</span>. Even better, this can be calculated analytically for some specific activations like <span class="math">\(\text{ReLU}\)</span>, <span class="math">\(\text{GeLU}\)</span>, and <span class="math">\(\text{erf}\)</span>. Thus <span class="math">\(K^l \| K^{l-1}\)</span> becomes deterministic as <span class="math">\(n^l \rightarrow \infty\)</span>.</p>
+<p>At this point, if all layer widths go to infinity, we can recursively define <span class="math">\(K^l\)</span> as an exact deterministic calculation of <span class="math">\(K^0\)</span> assuming we can solve the expectation integrals above. <span class="math">\(K^0(\textbf{x}, \textbf{x}')\)</span> is simply <span class="math">\(\frac{1}{n^0} \sum_{i = 1}^{n^0} x_i x'_i\)</span> and based on it, we can compute the kernel function of the network output. The Gaussian process resulting from the last layer of an infinite width neural network is called the <em>Neural Network Gaussian Process</em> (NNGP). It's zero centered, and its kernel function is defined recursively, as described above. </p>
+<p>Figure 1 shows how for a fixed architecture, adding more hidden units makes the finite outputs more Gaussian-like. The random weights induce a distribution on output functions. By sampling different sets of weights, we can sample the corresponding output functions. Likewise, we can look at the distribution of outputs for specific fixed inputs. As the hidden layers become wider, this distribution converges to a Gaussian.</p>
+<figure>
+    <img class='extra_big_img' src="/images/gabor_relu_horizontal.png" alt="Gabor-Relu NNGP" width="1200">
+    <figcaption>Figure 1: The Gabor-Relu NNGP. We investigate a 3-layer network. All layers are linear. After the first layer we apply a Gabor activation and after the second one - a ReLU activation. The input data is one dimensional. The columns show how 4, 500, and infinite hidden units in the first two layers affect the predictions. The rows show various sampled functions and their outputs for two fixed inputs.</figcaption>
+</figure>
+
+<p>Most reasonable network architectures define a NNGP with its own kernel and once we have the kernel, we can do predictions. Let <span class="math">\(\textbf{X}\)</span> be the training set, <span class="math">\(\textbf{X}_*\)</span> the test set, <span class="math">\(\textbf{Y}\)</span> the training labels, and <span class="math">\(k(\cdot, \cdot)\)</span> the kernel function. The standard posterior predictive distribution from a GP is given by</p>
+<div class="math">$$
+\textbf{Y}_* | \textbf{X}, \textbf{X}_*, \textbf{Y} \sim \mathcal{N} \Big(k(\textbf{X}_*, \textbf{X})k(\textbf{X}, \textbf{X})^{-1}\textbf{Y}, \Sigma \Big)\\
+\text{where } \Sigma = k(\textbf{X}_*, \textbf{X}_*) - k(\textbf{X}_*, \textbf{X})k(\textbf{X}, \textbf{X})^{-1}k(\textbf{X}, \textbf{X}_*).
+$$</div>
+<p>Prediction from the NNGP in this way corresponds to exact Bayesian inference. However, this is not the only interpretation. It can be proven that an infinitely wide network trained with gradient descent to minimize the MSE loss but with all layers except the last one frozen (fixed at initialization), converges to a function sampled from the NNGP posterior [1]. To rephrase, if we train only the last layer of the network infinitely long, then the distribution of its output functions will converge to the exact corresponding NNGP.</p>
+<p>What happens if we train all layers, not only the last one? There are exciting recent results answering this question.</p>
+<h3>Gradient Descent</h3>
+<p>Let's set some notation. Let <span class="math">\(f(\cdot, \theta)\)</span> represent a neural network with parameters <span class="math">\(\theta\)</span>, flattened across all layers. We have a standard supervised seeting where the output on training sample <span class="math">\(\textbf{x}\)</span> is <span class="math">\(f(\textbf{x}, \theta)\)</span>, the corresponding label is <span class="math">\(y\)</span>, and the loss on that sample is <span class="math">\(\ell(f(\textbf{x}, \theta), y)\)</span>, which could be the mean squared loss, binary cross entropy loss, or any other loss function. The training set contains <span class="math">\(N\)</span> samples, <span class="math">\(\textbf{X} = \{\textbf{x}_1, \textbf{x}_2, ..., \textbf{x}_N \}\)</span>, along with their corresponding labels <span class="math">\(Y = \{y_1, y_2, ..., y_N \}\)</span>.</p>
+<p>The loss that we are minimizing is averaged across all samples in the training set:</p>
+<div class="math">$$
+J = \frac{1}{N} \sum_{i = 1}^N \ell(f(\textbf{x}_i, \theta), y_i).
+$$</div>
+<p>With gradient descent we minimize <span class="math">\(J\)</span> by repeatedly computing the gradient <span class="math">\(\nabla_\theta J\)</span> and taking a small step <span class="math">\(\eta\)</span> in the opposite direction from it. The gradient of the loss function with respect to the parameters is given by</p>
+<div class="math">$$
+\nabla_\theta J = \frac{1}{N} \sum_{i = 1}^N \nabla_\theta f(\textbf{x}_i, \theta) \nabla_f \ell(f(\textbf{x}_i, \theta), y_i).
+$$</div>
+<p>If the step size <span class="math">\(\eta\)</span> is infinitesimally small, we can actually model the change in the weights <span class="math">\(\theta\)</span> through time as a derivative, instead of a sequence of discrete updates:</p>
+<div class="math">$$
+\frac{d\theta}{dt} = - \frac{1}{N} \sum_{i = 1}^N \nabla_\theta f(\textbf{x}_i, \theta) \nabla_f \ell(f(\textbf{x}_i, \theta), y_i).
+$$</div>
+<p>This is called continuous gradient descent, or even <em>gradient flow</em>. It simply shows that if the learning rate is <em>very</em> small and we let the neural network train for a very long time, the instantaneous change in the parameters depends on the gradient of the loss function at the current parameters, averaged across the training samples. This is how the network evolves in parameter space. But we can also look at how it evolves in function space.</p>
+<p>Let's fix a single sample <span class="math">\(\textbf{x}\)</span> and look at how the network output for <span class="math">\(\textbf{x}\)</span> changes with time. That is, we want to calculate <span class="math">\(\frac{df(\textbf{x}, \theta)}{dt}\)</span>. This derivative is given by the chain rule.</p>
+<div class="math">$$
+\frac{df(\textbf{x}, \theta)}{dt} = \frac{df(\textbf{x}, \theta)}{d\theta} \frac{d\theta}{dt} = - \frac{1}{N} \sum_{i = 1}^N  \nabla_\theta f(\textbf{x}, \theta)^T \nabla_\theta f(\textbf{x}_i, \theta) \nabla_f \ell(f(\textbf{x}_i, \theta), y_i).
+$$</div>
+<p>The main quantity of interest here is <span class="math">\(\nabla_\theta f(\textbf{x}, \theta)^T \nabla_\theta f(\textbf{x}_i, \theta)\)</span>, which is called the <em>neural tangent kernel</em> (NTK) [2]. This is a very important quantity because it directly shows how the network evolves in function space under gradient descent.</p>
+<p>Let's write the NTK between two data points <span class="math">\(\textbf{x}\)</span> and <span class="math">\(\textbf{x}'\)</span> as <span class="math">\(\Theta(\textbf{x}, \textbf{x}') = \nabla_\theta f(\textbf{x}, \theta)^T \nabla_\theta f(\textbf{x}', \theta)\)</span>. It is the dot product between the gradients of the network output w.r.t. the parameters evaluated at <span class="math">\(\textbf{x}\)</span> and <span class="math">\(\textbf{x}'\)</span>, and is therefore symmetric, as all kernels should be. It depends on <span class="math">\(\theta\)</span> and hence, as <span class="math">\(\theta\)</span> changes, the NTK changes. Since all the weights and biases <span class="math">\(\theta\)</span> are initialized randomly, the NTK is also random.</p>
+<p>Similar to the NNGP case, under infinitely wide layers, the NTK also becomes deterministic and constant [2, 3]. Thus, infinitely wide networks have a NTK that does not change with time and is deterministic, completely independent of the weights initialization. Similar to the NNGP kernel, it can be computed recursively. Let's indicate this constant NTK evaluated on the training set with <span class="math">\(\Theta(\textbf{X}, \textbf{X}) = \Theta_\infty\)</span>. It has the usual kernel matrix shape of <span class="math">\(N \times N\)</span> where <span class="math">\(N\)</span> is the number of training samples, assuming the network output dimension is 1.</p>
+<p>With a deterministic and constant NTK, we can solve for the training dynamics. Let's write the predictions on all training samples <span class="math">\(\textbf{X}\)</span> simply as <span class="math">\(f(\theta)\)</span>. Then, under gradient descent, we have to solve</p>
+<div class="math">$$
+\frac{df(\theta)}{dt} = -\eta \Theta_\infty \nabla_f \ell(f(\theta), Y).
+$$</div>
+<p>Depending on the loss function, this may not have an analytical solution and we may need to use an ODE solver. However, with a squared error loss <span class="math">\(\frac{1}{2}(f(\theta) - Y)^T(f(\theta) - Y)\)</span>, things simplify considerably and we can get an exact solution to the training dynamics:</p>
+<div class="math">$$
+\frac{df(\theta)}{dt} = -\eta \Theta_\infty (f(\theta)- Y) \\
+f(\theta) = f(\theta(0)) e^{-\eta \Theta_\infty t} + (I - e^{-\eta \Theta_\infty t}) Y.
+$$</div>
+<p>At <span class="math">\(t = 0\)</span>, we simply get <span class="math">\(f(\theta(0))\)</span>. As <span class="math">\(t \rightarrow \infty\)</span>, an infinite network fits all training samples perfectly, i.e. <span class="math">\(f(\theta) \rightarrow Y\)</span>. It converges exponentially fast and even allows us to estimate the output function at finite training times by simply plugging in the corresponding <span class="math">\(t\)</span>.</p>
+<p>Apart from the guaranteed convergence to the target labels, infinite networks have other interesting aspects when training with gradient descent. It has been observed empirically that with larger models the final weights after training are not that different compared to the starting weights, and yet the network manages to learn the relationships well. It seems that with many parameters, the output function can change rapidly by changing all the weights only marginally, an effect called <em>lazy training</em> [4].</p>
+<p>The fact that weights stay close to their initial values implies that very large and over-parameterized networks are well explained by their first-order approximation around the initial weights.</p>
+<div class="math">$$
+f(\textbf{x}, \theta(t)) \approx f(\textbf{x}, \theta(0)) + \nabla_\theta f(\textbf{x}, \theta(t))^T (\theta(t) - \theta(0))  
+$$</div>
+<p>In fact, there is a very powerful theorem stating that that under some slight assumptions, the difference between the output of the linearized network and the non-linearized one scales as <span class="math">\(O(1/\sqrt{n})\)</span>, where <span class="math">\(n\)</span> is the number of units in the hidden layers [1]. Same for the difference between the starting and ending parameters, and the difference between the NTK at time <span class="math">\(t\)</span> and at time <span class="math">\(0\)</span>. This proves that large width networks are well-approximated by their linearized versions.</p>
+<p>A single network, infinitely wide or not, still models random functions because the initial weights are sampled randomly. The distribution of the weights induces a distribution over networks trained with gradient descent. Luckily, this distribution is known and computable, as long as the width goes to infinity. Specifically, the predictions on a finite set of test points have a multivariate Gaussian distribution, with a specific mean vector and covariance matrix all dependent on the NTK <span class="math">\(\Theta_\infty\)</span>.</p>
+<p>This allows us to talk about the distribution of infinite width networks with a given architecture, trained with gradient descent. To marginalize out the initial weights, one can even predict with an infinite ensemble of such infinite networks. Figure 2 compares the predictions from NNGP and from an infinite ensemble of infinite networks trained with gradient descent infinitely long. Yes, computing this is entirely possible [5, 6].</p>
+<figure>
+    <img class='big_img' src="/images/nngp_ntk_preds.svg" alt="NNGP, NTK predictions" width="1200">
+    <figcaption>Figure 2: A comparison of the predictions from NNGP and NTK dynamics on a toy task. The shading shows a 95% confidence interval around the mean predictions. There are 10 training points - considerably fewer than the 100 testing points. As a result, both the Bayesian inference from NNGP and the NTK fail to predict well on the test set. Both predict very well on the training set.</figcaption>
+</figure>
+
+<p>Note that this specific Gaussian distribution (of the outputs of an infinite network trained with gradient descent) does not have a posterior interpretation, like the one from NNGP. Curiously, we can get a posterior interpretation by simply using the NTK <span class="math">\(\Theta_\infty\)</span> in the GP predictive formula. This would correspond to training functions of the type <span class="math">\(f(\textbf{x}, \theta) + \delta(\textbf{x})\)</span> where <span class="math">\(\delta(\cdot)\)</span> is a random untrainable function that just adds a controlled amount of variance [7].</p>
+<p>In any case, the two kernels NTK and NNGP offer insights into what happens when the layer widths are infinite and how this affects gradient descent. This is a beautiful little niche area of deep learning which <em>may</em> prove to be quite useful in the upcoming years. I'm looking forward to seeing whether it can be tied to other topics like generalization or optimal architecture search.</p>
+<h3>References</h3>
+<p>[1] Lee, J. and Xiao, L. et al. <a href="https://arxiv.org/abs/1902.06720">Wide Neural Networks of Any Depth Evolve as Linear Models Under Gradient Descent</a> arXiv preprint arXiv:1902.06720 (2019).<br>
+[2] Jacot, A., Gabriel, F., Hongler, C. <a href="https://arxiv.org/abs/1806.07572">Neural Tangent Kernel: Convergence and Generalization in Neural Networks</a> arXiv preprint arXiv:1806.07572 (2018).<br>
+[3] Arora, S. et al. <a href="https://arxiv.org/abs/1904.11955">On Exact Computation with an Infinitely Wide Neural Net</a> arXiv preprint arXiv:1904.11955 (2019).<br>
+[4] Chizat, L., Oyalon, E., Bach, F. <a href="https://arxiv.org/abs/1812.07956">On Lazy Training in Differentiable Programming</a> arXiv preprint arXiv:1812.07956 (2018).<br>
+[5] Novak, R. et al. <a href="https://arxiv.org/abs/1912.02803">Neural Tangents: Fast and Easy Infinite Neural Networks in Python</a> arXiv preprint arXiv:1912.02803 (2019).<br>
+[6] Novak, R., Sohl-Dickstein, J. and Schoenholz, S. <a href="https://arxiv.org/abs/2206.08720">Fast Finite Width Neural Tangent Kernel</a> arXiv preprint arXiv:2206.08720 (2022).<br>
+[7] He, B., Lakshminarayanan, B. and Teh, Y. W. <a href="https://arxiv.org/abs/2007.05864">Bayesian Deep Ensembles via the Neural Tangent Kernel</a> arXiv preprint arXiv:2007.05864 (2020).<br>
+[8] Weng, L. <a href="https://lilianweng.github.io/posts/2022-09-08-ntk/">Some math behind neural tangent kernel</a> Lil’Log (Sep 2022).<br>
+[9] <a href="https://rajatvd.github.io/NTK/">Understanding the Neural Tangent Kernel</a> Rajat's Blog.  </p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'], ['$', '$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+    </div>
+  
+  <p class="post-meta">
+    Tag: ai
+  </p>
+
+  </article>
+
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>

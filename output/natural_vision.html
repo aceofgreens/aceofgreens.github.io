@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Natural Vision, An Overview | The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+
+
+    <meta name="description" content="Computer vision has been progressing at a breakneck speed. Most of the improvements are quite technical and it's easy to get lost in all the myriad research directions. Here instead, we explore natural vision which offers interesting and intuitive insights on how visual perception is achieved in humans. This post covers various aspects related to human vision - the geometry, the morphology of the eye, the eye movements, and the interpretation of visual inputs by the brain. After all, if we want to build superhuman visual systems, we need to know what we're up against." />
+
+
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <header class="post-header">
+      <h1 class="post-title p-name" itemprop="name headline">Natural Vision, An Overview</h1>
+      <p class="post-meta">
+        <time class="dt-published" datetime="2023-07-24T07:00:00+02:00" itemprop="datePublished">
+          24 Jul 2023
+        </time>
+      </p>
+
+    </header>
+
+    <div class="post-content">
+      <p>Computer vision has been progressing at a breakneck speed. Most of the improvements are quite technical and it's easy to get lost in all the myriad research directions. Here instead, we explore natural vision which offers interesting and intuitive insights on how visual perception is achieved in humans. This post covers various aspects related to human vision - the geometry, the morphology of the eye, the eye movements, and the interpretation of visual inputs by the brain. After all, if we want to build superhuman visual systems, we need to know what we're up against.</p>
+<p>Vision is the most important sense that humans possess. It gives the most information about the environment, in sufficiently high semantic resolution, allowing us to navigate and plan. It is so fundamental that our thoughts are often represented as visual patterns. You can't really think of an elephant without picturing one in your mind. The human visual system is one of the most complicated systems out there. Approximately 30-40% of the human brain is directly or indirectly involved in processing visual information.</p>
+<p>The first eyes started to evolve approximately 500 million years ago in trilobites. These ancient creatures had calcite-based eye lenses which directly facilitated the fossilization of the creatures and their subsequent study. Calcite itself has excellent optical properties and is perfectly suited for focusing light, but is relatively inflexible, making it unsuitable for the dynamic focusing mechanism used by many modern animals. There may be other animals which have utilized vision even before trilobites, like jellyfish, but it is difficult to say how far back in time. What is certain is that all animals which can see have <em>rhodopsin</em>, a peculiar molecule that is fundamental to vision.</p>
+<p><a href="https://en.wikipedia.org/wiki/Rhodopsin">Rhodopsin</a> is a crucial molecule for vision under low-light conditions. It is composed of a protein called opsin and a light-sensitive compound called retinal, which changes shape when exposed to light, triggering a series of <a href="https://en.wikipedia.org/wiki/Visual_phototransduction">chemical reactions</a> that ultimately create an electrical signal. In humans this signal is then transmitted to the brain, enabling us to see. The chemical properties of rhodopsin's reactivity to photons is what allows all animals to process light and therefore see.</p>
+<p>Not all animals have good eyesight. <a href="https://en.wikipedia.org/wiki/Sponge">Sponges</a> (Porifera) don't have eyes at all. <a href="https://en.wikipedia.org/wiki/Cnidaria">Radially symmetrical animals</a> (Cnidaria) like sea anemones, corals, and jellyfish have only primitive photoreceptors. <a href="https://en.wikipedia.org/wiki/Bilateria">Bilaterally symmetrical animals</a> (Bilateria) tend to produce animals with comparatively stronger eyesight. Of them the best eyes can generally be found in <a href="https://en.wikipedia.org/wiki/Arthropod">arthropods</a> (<a href="https://en.wikipedia.org/wiki/Chelicerata">chelicerates</a>, <a href="https://en.wikipedia.org/wiki/Insect">insects</a>, <a href="https://en.wikipedia.org/wiki/Crustacean">crustaceans</a>), <a href="https://en.wikipedia.org/wiki/Cephalopod">cephalopod</a> <a href="https://en.wikipedia.org/wiki/Mollusca">molluscs</a> (octopus, squid, cuttlefish), and <a href="https://en.wikipedia.org/wiki/Chordate">chordata</a> <a href="https://en.wikipedia.org/wiki/Vertebrate">vertebrates</a>.</p>
+<p>In terms of actual photosensitive cellular architectures, there are two main types. Rhabdomeric photoreceptors are typically found in invertebrates like insects and crustaceans. The light-sensing part of the cell is made up of tightly packed microvilli (small projections on the cell surface) where the phototransduction machinery is located. The other type are ciliary photoreceptors, found most commonly in vertebrates. The rod and cone cells in humans are types of ciliary photoreceptors. The photoreceptive parts of these cells are located on modified cilia (hair-like structures on the cell surface) and these receptors are generally responsible for vision across a range of light conditions, from dim to bright light. The ciliary photoreceptors in vertebrates work via a hyperpolarization mechanism, meaning that when they are activated by light, the electrical charge inside the photoreceptor cells decreases.</p>
+<p>It only takes a single photoreceptor cell to provide useful behaviour benefits. Consider that using a single photoreceptor an animal can tell day from night and by steering left and right, can tell the rough direction of the light source. Evolution has produced many improvements over this. Two types of eye designs have become stable - single chambered and compound eyes.</p>
+<p>Single-chambered eyes have their receptors in a single concavity. They have evolved in the following architectures: </p>
+<ol>
+<li>A <strong>pigment cup</strong> eye places the receptors in a concave depression in the tissue, which allows the basic sensing of light direction, self-movement, and orientation to landmarks. Flatworms and annelids have simple cup eyes.</li>
+<li>A <strong>pinhole</strong> eye is a pigment cup eye where the aperture of the cup is almost closed. This allows a primitive form of imaging, but otherwise reduces the amount of light that enters the eye which often limits resolution. The abalone, some giant clams, and the <a href="https://en.wikipedia.org/wiki/Nautilus">Nautilus</a> have pinhole eyes.</li>
+<li>A <strong>lens</strong> improves over the pinhole eye by still mapping a single point in 3D to a single photoreceptor but without reducing the amount of light going in.</li>
+<li>A <strong>corneal</strong> eye contains a protective <em>cornea</em> that in the case of land-animals became a refractive structure which took the role of the lens. This allowed the formation of dynamic accommodation capabilities in animals. The octopus, squid, cuttlefish, and the jumping spiders have extraordinary vision capabilities based on corneal eyes.</li>
+</ol>
+<p><a href="https://en.wikipedia.org/wiki/Compound_eye">Compound eyes</a> are made up of many small, repeating units known as <a href="https://en.wikipedia.org/wiki/Ommatidium">ommatidia</a>. Animals with compound eyes, like the Antarctic krill, have many independent eyes - each with a pigmented tube and a lense collecting light withing a narrow field of view. In the <em>apposition</em> subtype (e.g. in ants and bees) the individual ommatidia are independent and the overal image is formed by the apposition of the contributions from all individual receptors. The light entering one ommatidium doesn't mix with light entering other ommatidia. This results in a clearer, more detailed image but requires stronger light to function effectively. In contrast, <em>superposition</em> eyes (e.g. in moths) combine or 'superpose' light from several ommatidia before it reaches the photoreceptor cells. This results in greater sensitivity and enables better vision in low-light conditions, but at the expense of image detail.</p>
+<p>The optical components of an eye have physical limitations to which the different animals have to adapt. The most popular such limitations are:</p>
+<ol>
+<li><strong>Spherical aberration</strong> occurs when a spherical surface bends light rays that strike off-center more or less than those that strike close to the center. As a result the focal point becomes a focal "region" and the image becomes blurry. Various marine animals have evolved eyes where the proteins farther away from the center of the eye are diluted with more water, thus producing a gradient in the refractive index and somewhat alleviating the aberration.</li>
+<li><strong>Chromatic aberration</strong> occurs when the focal length depends on the wavelength and thus some colors are bent more than others. Animals can deal with this by having different photoreceptors placed at different distances from the lense, or by having more complicated irregular lenses. In an artificial setting one can use a doublet lense made of two glass layers with different dispersions so that the individual aberration effects cancel out.</li>
+<li><strong>Diffraction</strong>, or the interference and bending of light waves around corners, ultimately serves as an unavoidable limit to the resolution of the images in the eye. In the eye, light has to pass through the pupil, which acts as an opening. This results in diffraction and leads to the formation of <a href="https://en.wikipedia.org/wiki/Airy_disk">Airy disks</a>. The central bright disk contains the majority of the light, and the size of this disk determines the smallest detail that the eye can resolve. If two points of light are so close together that their Airy disks overlap significantly, the eye will not be able to distinguish them as separate points. This is known as the diffraction limit. The width of the Airy disk is given by <span class="math">\(\lambda / D\)</span>, the wavelength divided by the aperture diameter. Hence, everything else being constant, a larger pupil size improves resolution.</li>
+<li><strong>Dim light</strong> poses a particular challenge to vision because the quality of the produced image depends not on the sophistication of the machinery of the eye, but simply on the quantity of photons that hit it. Light arrives as indivisible quants that are either absorbed by the rhodopsin or not. And in dark environments this signal becomes more and more sparse. It is only natural that our reconstructions suffer as well. The key to night vision is to get as much light onto the image as possible, and to pool the signals from many receptors across both space and time. With the first, the goal would be to increase the ratio of the aperture to focal length, <span class="math">\(D/f\)</span>. Cats and dogs have larger lenses than humans, while the giant squid has bigger eyes in general. With the second, some vertebrates can change the neural connexions in the retina, thereby increasing the number of pooling photoreceptors corresponding to a single pixel. In general, vision in the dark requires more computation and is slower.</li>
+</ol>
+<figure>
+    <img class='extra_big_img' src="/images/aberrations.svg" alt="aberrations" width="1200" style="background-color:white">
+    <figcaption>Figure 1: A normal focusing lense, a lense displaying sphrerical aberration, and one displaying chromatic aberration.</figcaption>
+</figure>
+
+<h3>Human Vision</h3>
+<p>Human vision mostly inherits the evolution and peculiarities of the first jawed fishes that evolved from their chordate ancestors. The lens projects 3D information onto an almost 2D retina of rods and cones. The cornea, which in land animals separates air from fluid, is responsible for about <span class="math">\(2/3\)</span> of the light bending. The lense in humans is not spherical but rather flattened and can be moved around by the surrounding ciliary muscles to focus on objects at different distances. This process is called accommodation. As we age the elasticity of the lense decreases steadily. At age 1 the minimum focus distance is aroung 5cm from the eye, while at age 55 it increases to about an arm's length. Myopia and hyperopia occur when the eye's optical system is not strong enough to accommodate the lense to near and far objects.</p>
+<p>The iris, characteristically colored in blue, green, or brown, controls the pupil diameter, or the aperture of the eye. In bright light the pupil closes down to 2mm and in the dark it opens up to 8mm. This control is part of the autonomic nervous system which is unconscious and can be itself modified by various chemical substances. The white sclera that surrounds the iris allows us to judge the direction of another's gaze with high precision which is important for social interaction.</p>
+<p>The retina contains photosensitive rod and cone cells. The former provide vision in low light settings, while the latter provide colour. The actual information processing is done by building up a voltage difference in each cell with respect to the outside, and transmitting this voltage to the subsequent bipolar cells which can detect increases or decreases in the light. From there, the signals are passed to the ganglion cells which respond to circular patterns (receptive fields) in local contrast. The ganglion cells produce all-or-none action potentials which are transported across long axons and collected into the <em>optic nerve</em>. This is the main pathway, receptop-bipolar-ganglion. In reality, there are additional types of cells which process the signals along this pathway.</p>
+<p>Since the optic nerve connects to the retina, it needs to displace some of the photoreceptors, creating a small spot with no photoreceptors and hence no vision. This is called a blind spot. We don't notice it because the blind spots in our two eyes don't overlap in our visual field and the brain uses the information from one eye to fill in the blind spot of the other eye. One can notice the blind spot when he closes one of his eyes and moves an object across his field of view until it disappears and reappears again.</p>
+<p>The retina is not uniform. Both the cornea and the lense have a single axis and the image is best resolved where this axis meets the retina. The corresponding region in the retina is called a <em>fovea</em> and it has the highest concentration of cone cells. It is from here that we get all our information about colour and detail. The region outside of the fovea can be thought to be responsible for peripheral vision only. In fact, the human peripheral vision is bad - we can get a sense of object motion and contours, but we can't really resolve details. Try to resolve letters in a word one or two away from the one you're looking at now and you'll be convinced.</p>
+<figure>
+    <img class='small_img' src="/images/photoreceptor_distribution.png" alt="photoreceptor_distribution" width="1200" style="background-color:white">
+    <figcaption>Figure 2: Distribution of rods and cones along a line passing through the fovea and the blind spot of a human eye. Image taken from <a href="https://en.wikipedia.org/wiki/Retina#/media/File:Human_photoreceptor_distribution.svg">here</a>.</figcaption>
+</figure>
+
+<h3>Eye Movements</h3>
+<p>It takes about 20 ms for a retinal cone to respond to a change in the intensity. In angular space this is about 1 degree per second. Hence, anything moving faster that that will not be properly resolved. Turns out that when we scan a scene, we don't move our gaze (the region of the 3D scene in which we focus) in a smooth way, because that will introduce a lot of motion blur. Instead, humans as well as all other vertebrates, employ a <em>saccade-and-fixate</em> strategy. <a href="https://en.wikipedia.org/wiki/Saccade">Saccades</a> are quick movements of the eyes lasting about 30ms that change the gaze. Inbetween each saccade, there is fixation where the cones resolve all the details. In this sense, human vision is recurrent and iterative.</p>
+<p>Our eyes move with respect to our head. But our head moves with respect to the body. Therefore, to stabilize the gaze on a fixed 3D point, the eye needs to compensate for the movement of the head. The <a href="https://en.wikipedia.org/wiki/Vestibulo%E2%80%93ocular_reflex">vestibulo-ocular reflex</a> handles this by training the eye to move inbetween saccades in a way opposite to that of the head, so that in fact you are able to fixate a single 3D point while the head is moving.</p>
+<p>Apart from saccades and fixation, there is also <a href="https://en.wikipedia.org/wiki/Smooth_pursuit">smooth pursuit</a> and <a href="https://en.wikipedia.org/wiki/Vergence">vergence</a> movements. Smooth pursuit is a voluntary and occurs when the eye is tracking an object that doesn't move with more than 15 degrees per second, after which the eye movements will become increasingly saccadic. Interestingly, smooth tracking cannot occur on imaginary objects, presumably because there is no external signal to trigger the various retinal machinery. Vergence is the only eye movement where the two eyes move in opposite directions. It happens when a fixated object moves in depth. Finally, there is also a <em>lot</em> of complexity related to how the commands from the cerebral cortex translate to the muscles which move the eyes.</p>
+<p>It is generally unknown what determines where we look at next. Novel objects in view will almost always trigger saccades, but apart from that it is believed that the eye movements are not reflexive, but are governed by a <a href="https://en.wikipedia.org/wiki/Eye_tracking">plan for moving the fovea around</a> to those parts of the scene likely to yield the most relevant information. Similarly in the vision-to-motor-control loop, gaze is typically ahead of each motor action by about a second. Be it in copying text, reading music notes, driving, or any other common action, the eye movement system directs gaze in a prospective way, to those regions which are relevant to the task. And in those tasks where time is critical, like ball sports, saccadic movements are performed based on the expected position of the object of interest.</p>
+<h3>Depth</h3>
+<p>The image produced by the retina is, <em>rougly</em>, a projection of the 3D scene onto a 2D plane. Necessarily, with only one eye, some information is lost. Simply, the depth of each pixel, i.e. the distance of the 3D point corresponding to that pixel to the image plane, is unavailable in images. With two eyes explicit depth information is available, as long as the two eyes have overlapping fields of view. To perceive depth animals have evolved to interpret various binocular and monocular cues.</p>
+<p><a href="https://en.wikipedia.org/wiki/Binocular_disparity">Binocular disparity</a>, is a critical binocular cue for depth perception that arises due to the horizontal separation between the two eyes. Owing to this separation, each eye produces a slightly distinct image of the environment, resulting in two disparate retinal images. Essentially, a 3D point is projected into two different retinal points, relative to the centers of the two foveas. The horizontal difference between these coordinates is the disparity. It is large if the 3D point is close to the eyes, and small otherwise. This is the main visual pattern that allows depth estimation.</p>
+<p>And the perceived depth is relative. Suppose there are two 3D points with different depths, and both eyes are focused on the closer point. Then the retinal disparity is proportional to <span class="math">\(D/V^2\)</span> where <span class="math">\(D\)</span> is the depth difference between the two points and <span class="math">\(V\)</span> is the absolute difference between the focused point and the center between the two eyes. Thus, disparity alone does not provide absolute depth information, only relative depth with respect to the object which is focused. However, if the two eyes are converged on the closer object, the angle between their axes gives a fair measure of the absolute distance <span class="math">\(V\)</span>. From there, the relative distance can be calibrated. It is <a href="https://en.wikipedia.org/wiki/Random_dot_stereogram">not necessary</a> for a known object to be recognized in the scene in order to perceive depth.</p>
+<p>It is impossible to compute exact depth from a single image. However, nothing prevents the brain from hallucinating depth and combining its estimates with factual knowledge about how big different objects are. The actual <em>monocular depth estimation</em> relies on many learned visual patterns - relative size, perspective, texture, elevation, occlusions, etc. All of them serve to guide the brain in estimating the depth for each object in the visual feed.</p>
+<p>Another important depth cue comes from motion, where it's called <a href="https://en.wikipedia.org/wiki/Optical_flow">optical flow</a>. Objects closer to the eye move faster across the retina than distant objects. If we are moving forward with constant velocity and no rotation, then the objects moving across the retina trace out trajectories across space and time. At any point in time, a single pixel moves according to a <em>flow field</em> consistent with our motion in the scene. This flow field has a distant point (pole) from which the flow, represented as velocity arrows, originates. This point is the current heading direction. The velocity of the seen objects depends on how much their movement is aligned with our heading direction and how close they are to the pole. Furthermore, the flow field allows for calculation of time-to-impact and <em>looming</em> effects, all of which are useful for decision-making and actuation.</p>
+<p>The biggest question is how does the brain backproject all the depth cues such that a consistent 3D representation of the world is formed. It is currently unclear how to even state the problem...</p>
+<h3>Colour</h3>
+<p>Light does not have objective colour. Light is just photons of different energies or waves of different wavelengths. The colours we perceive are completely subjective. In the human retina there are rod cells and three types of cone cells. The <a href="https://en.wikipedia.org/wiki/Spectral_sensitivity">sensitivity distribution</a> of all of these cells overlaps considerably in some regions. The rods are maximally sensitive to blue-green light (about 498 nm) and are not involved in colour vision. The cones are sensitive to short, middle, and long-wavelengths (S, M, L) . These correspond to blue-violet (419 nm), apple-green (531 nm), and yellow-green (558 nm). Note that it has been long known, and verified experimentally that pretty much all real-world colours that we see can be created by mixing red, green, and blue (RGB). This is a fact that relies on the subjective way humans see colour. The observation that our L cones are not maximally sensitive to exactly red should not be shocking. Red is simply defined as that colour which activates the L cones fairly well, but does not trigger the M cones at all.</p>
+<p>Consider that a given light will trigger all three types of cones to different extents. We can represent the particular <em>hue</em> as the triplet containing the <a href="https://en.wikipedia.org/wiki/LMS_color_space">percentages that each cone is activated</a>. If the light level decreases, the hue does not change, only the lightness changes. This motivates the disentanglement of colour and intensity. Moreover, to understand intuitively that it is the cone ratios that define hues, consider what happens with only a single cone. With a single cone, there can be two different wavelengths that trigger the cone to the same extent, thus making coloured vision impossible. </p>
+<p>Colour information is not represented simply as responses from the (S, M, L) cones. The ganglion cells mentioned above have a <a href="https://en.wikipedia.org/wiki/Opponent_process">colour opponent</a> structure where there are two colour channels - one responding e.g. positively to red (L), negatively to green (M), and another positively to blue (S), negatively to yellow (L + M). There is also a luminance channel formed from the summed responses of the red (L) and green (M) channels. This is how the image leaves the ganglion cells and reaches the cortex where the heavy pattern recognition starts.</p>
+<p>Colours require specialized mathematical treatment. The colour of a mixture of lights of different wavelengths is additive. If you shine red light and green light together into your eyes, both the L and the M cones in your eyes are stimulated. The signals from these cones are then sent to the brain, which interprets this combination as yellow, even though there are no L + M cones in the eyes. On the other hand, mixing pigments requires modeling subtractive colours. This is because pigments absorb what they don't reflect. If we mix yellow and blue pigments, we get green because green is the only light that is reflected back from both pigments. In general different mathematical models exist based on different aspects like additivity, perceptual uniformity, and linearity.</p>
+<figure>
+    <img class='small_img' src="/images/spectral_sensitivities.png" alt="spectra" width="1200" style="background-color:white">
+    <figcaption>Figure 2: Normalized responsivity spectra of the human cone cells. The x-axis shows the wavelength in nanometers. The y-axis shows the sensitivity as a percentage of the maximum for each cone cell. Image taken from <a href="https://en.wikipedia.org/wiki/Spectral_sensitivity#/media/File:Cones_SMJ2_E.svg">here</a>.</figcaption>
+</figure>
+
+<h3>Interpretation</h3>
+<p>The path through photoreceptors, bipolar cells, ganglion cells, and optic nerve is only the beginning of the <a href="https://en.wikipedia.org/wiki/Visual_system">visual pathway</a>. The optic nerves from each eye split into two, cross each other and two-by-two proceed into the <a href="https://en.wikipedia.org/wiki/Lateral_geniculate_nucleus_">lateral geniculate nucleus</a> (LGN), deep within the thalamus. The splitting and crossing occurs so that the two images can be brought together in the cortex where depth can be calculated. After the LGN, the signals are relayed to the <a href="https://en.wikipedia.org/wiki/Visual_cortex">primary visual cortex</a>, or <span class="math">\(V_1\)</span>, inside of the occipital lobe of the cerebral cortex.</p>
+<p>Here, inside <span class="math">\(V_1\)</span> starts the massively parallelized pattern processing. <span class="math">\(V_1\)</span> is a region of the brain where individual signals localized on the retina are mapped to individual corresponding neurons, this process being called <a href="https://en.wikipedia.org/wiki/Retinotopy">retinotopy</a>. The neurons here are organized into six functionally distinct layers stacked on top of each other and do not respond to concentric receptive fields like in the retinal ganglion cells, but rather to lines, edges, and similar patterns across different orientations. How each neuron has decided which patterns to look for within its receptive field is called <em>neuronal tuning</em> and it may include preferential attention towards patterns from one particular eye (<em>occular dominance</em>). Those neurons which have similar tuning properties tend to cluster together into <a href="https://en.wikipedia.org/wiki/Cortical_column">hypercolumns</a>, also called cortical columns, spanning all six layers of <span class="math">\(V_1\)</span> and standing perpendicular to the cortical surface. The colour information which is available from the colour-opponent cells in the retina is sequestered in "blobs" that also go through the hypercolumns. How colour information is utilized is still uncertain though. All in all, one hypercolumn corresponds to one pixel in the processed image.</p>
+<p>The currently dominating belief for what happens after <span class="math">\(V_1\)</span> is the <a href="https://en.wikipedia.org/wiki/Two-streams_hypothesis">two-stream hypothesis</a>. It states that after <span class="math">\(V_1\)</span>, the signals are relayed to two different pathways. The first, called the <em>ventral</em> stream leads to the temporal lobe which deals with the "what" question of object detection and visual identification. The second pathways is called the <em>dorsal</em> stream and leads to the parietal lobe where it answers the "where" question of object localization. The hypothesis was modified in 1990 to associate the ventral stream with perception, and the dorsal one with control of actions. At this point multiple other regions in the brain may get triggered with the processed visual input. The motor cortex may react to the localization signals from the dorsal stream and may direct the muscles towards some goal. The amygdala may react to patterns of fearful and angry faces from the ventral stream. The hippocampus may be prompted to constructs and utilize mental maps for self-localization or to translate them into egocentric coordinates for better navigation.</p>
+<h3>Conclusion</h3>
+<p>Clearly, human vision is a complicated matter. We have evolved complex systems which manage to squeeze out the maximum efficiency and performance possible. There are so many open problems that it might be daunting to even think about them. Yet, there are also many opportunities for borrowing ideas from natural vision into existing computer vision solutions. I expect this will be highly beneficial. What a time to be alive. For a more comprehensive overview I recommend <a href="https://academic.oup.com/book/738">this</a> book, as it's the one I've based this post on.</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'], ['$', '$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+    </div>
+  
+  <p class="post-meta">
+  </p>
+
+  </article>
+
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+
+<header class="post-header">
+<h1 class="post-title p-name" itemprop="name headline">Tags</h1>
+</header>
+
+<div class="post-content">
+
+    <h3>cs</h3>
+    <ul>
+        <li>
+          <span class='dates_and_tags'>11 Apr 2024</span>
+          <a class="enum_title" href="functional_dl.html">
+            <b>Functional Deep Learning</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>12 Mar 2024</span>
+          <a class="enum_title" href="marching_cubes.html">
+            <b>Marching Cubes and Co</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>10 Feb 2024</span>
+          <a class="enum_title" href="basic_information_theory.html">
+            <b>Information, Codes, and Content</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>03 Dec 2023</span>
+          <a class="enum_title" href="deep_learning_at_scale.html">
+            <b>Deep Learning at Scale</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>13 Sep 2023</span>
+          <a class="enum_title" href="mpeg.html">
+            <b>Video Coding and MPEG</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>22 Apr 2023</span>
+          <a class="enum_title" href="gradient_descent.html">
+            <b>Some Deep Learning Optimizers</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>04 Mar 2023</span>
+          <a class="enum_title" href="steganography_and_jpeg.html">
+            <b>Steganography & JPEG</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>04 Feb 2023</span>
+          <a class="enum_title" href="phase_stretch_transform.html">
+            <b>The Phase Stretch Transform</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>21 Jan 2023</span>
+          <a class="enum_title" href="radon_saves.html">
+            <b>Radon Saves</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>15 Oct 2022</span>
+          <a class="enum_title" href="bloom_filters.html">
+            <b>Bloom and Cuckoo</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>05 Sep 2022</span>
+          <a class="enum_title" href="the_category_of_types.html">
+            <b>The Category of Types</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>08 Jul 2022</span>
+          <a class="enum_title" href="abstraction_and_state.html">
+            <b>Abstraction and State</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>01 Jun 2022</span>
+          <a class="enum_title" href="principles_of_induction.html">
+            <b>Principles of Optimal Induction</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>11 May 2022</span>
+          <a class="enum_title" href="the_ising_model.html">
+            <b>The Ising Model</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>27 Apr 2022</span>
+          <a class="enum_title" href="markov_chain_mixing_times.html">
+            <b>Markov Chain Mixing Times</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>05 Mar 2022</span>
+          <a class="enum_title" href="phase_transitions_in_computation.html">
+            <b>Phase Transitions in Computation</b>
+          </a>
+        </li>
+    </ul>
+    <h3>econ</h3>
+    <ul>
+        <li>
+          <span class='dates_and_tags'>06 Apr 2024</span>
+          <a class="enum_title" href="private_law_and_defense.html">
+            <b>Private Legislation and Defense</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>29 Dec 2023</span>
+          <a class="enum_title" href="free_banking.html">
+            <b>Free Banking</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>27 May 2023</span>
+          <a class="enum_title" href="nozick_minimal_state.html">
+            <b>Nozick's Night-Watchman State</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>28 Nov 2022</span>
+          <a class="enum_title" href="an_austrian_perspective.html">
+            <b>An Austrian Perspective</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>01 Aug 2022</span>
+          <a class="enum_title" href="on_the_merits_of_weighted_voting.html">
+            <b>On the Merits of Weighted Voting</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>15 Jun 2022</span>
+          <a class="enum_title" href="a_tour_de_force_of_the_economy.html">
+            <b>A Tour de Force of the Economy</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>20 Mar 2022</span>
+          <a class="enum_title" href="the_sociology_of_taxation.html">
+            <b>The Sociology of Taxation</b>
+          </a>
+        </li>
+    </ul>
+    <h3>ultra-rationalism</h3>
+    <ul>
+        <li>
+          <span class='dates_and_tags'>18 Feb 2024</span>
+          <a class="enum_title" href="on_societal_development.html">
+            <b>On Societal Development</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>15 Aug 2023</span>
+          <a class="enum_title" href="the_great_charade.html">
+            <b>The Great Charade</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>08 Jun 2023</span>
+          <a class="enum_title" href="on_consciousness.html">
+            <b>On Consciousness</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>27 May 2023</span>
+          <a class="enum_title" href="nozick_minimal_state.html">
+            <b>Nozick's Night-Watchman State</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>28 Nov 2022</span>
+          <a class="enum_title" href="an_austrian_perspective.html">
+            <b>An Austrian Perspective</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>26 Nov 2022</span>
+          <a class="enum_title" href="rationality_is_scarce.html">
+            <b>Rationality Is Scarce</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>01 Aug 2022</span>
+          <a class="enum_title" href="on_the_merits_of_weighted_voting.html">
+            <b>On the Merits of Weighted Voting</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>26 Jul 2022</span>
+          <a class="enum_title" href="goals_and_meaning.html">
+            <b>Goals and Meaning</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>19 May 2022</span>
+          <a class="enum_title" href="why_do_beetles_love_life.html">
+            <b>Why Do Beetles Love Life?</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>20 Mar 2022</span>
+          <a class="enum_title" href="the_sociology_of_taxation.html">
+            <b>The Sociology of Taxation</b>
+          </a>
+        </li>
+    </ul>
+    <h3>rl</h3>
+    <ul>
+        <li>
+          <span class='dates_and_tags'>08 Jun 2023</span>
+          <a class="enum_title" href="on_consciousness.html">
+            <b>On Consciousness</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>26 Jul 2022</span>
+          <a class="enum_title" href="goals_and_meaning.html">
+            <b>Goals and Meaning</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>18 May 2022</span>
+          <a class="enum_title" href="modelling_a_mind.html">
+            <b>Modelling a Mind</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>08 Apr 2022</span>
+          <a class="enum_title" href="thoughts_after_imol.html">
+            <b>Thoughts After IMOL</b>
+          </a>
+        </li>
+    </ul>
+    <h3>ai</h3>
+    <ul>
+        <li>
+          <span class='dates_and_tags'>23 Jun 2024</span>
+          <a class="enum_title" href="llama_3.html">
+            <b>Llama-3, A Deep Dive</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>11 Apr 2024</span>
+          <a class="enum_title" href="functional_dl.html">
+            <b>Functional Deep Learning</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>04 Feb 2024</span>
+          <a class="enum_title" href="diffusion_models.html">
+            <b>Generative Models: Diffusion</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>03 Dec 2023</span>
+          <a class="enum_title" href="deep_learning_at_scale.html">
+            <b>Deep Learning at Scale</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>22 Aug 2023</span>
+          <a class="enum_title" href="ssl_algorithms_in_vision.html">
+            <b>SSL Algorithms in Vision</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>08 Jun 2023</span>
+          <a class="enum_title" href="on_consciousness.html">
+            <b>On Consciousness</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>22 Apr 2023</span>
+          <a class="enum_title" href="gradient_descent.html">
+            <b>Some Deep Learning Optimizers</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>06 Nov 2022</span>
+          <a class="enum_title" href="snn.html">
+            <b>The Case of Spiking Neural Networks</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>14 Sep 2022</span>
+          <a class="enum_title" href="wide_neural_nets.html">
+            <b>Infinitely Wide Neural Networks</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>26 Jul 2022</span>
+          <a class="enum_title" href="goals_and_meaning.html">
+            <b>Goals and Meaning</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>01 Jun 2022</span>
+          <a class="enum_title" href="principles_of_induction.html">
+            <b>Principles of Optimal Induction</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>19 May 2022</span>
+          <a class="enum_title" href="why_do_beetles_love_life.html">
+            <b>Why Do Beetles Love Life?</b>
+          </a>
+        </li>
+        <li>
+          <span class='dates_and_tags'>18 May 2022</span>
+          <a class="enum_title" href="modelling_a_mind.html">
+            <b>Modelling a Mind</b>
+          </a>
+        </li>
+    </ul>
+
+</div>
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>

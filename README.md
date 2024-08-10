@@ -1,58 +1,16 @@
-This is the repository for **The Critical Section** blog.  
-To see all the contents please switch to the `gh-pages` branch.
+We're migrating the blog from Jekyll to Pelican because Jekyll requires Ruby.
 
-## Structure
-The repository is structured as follows:
-```
-.
-├── 404.html
-├── about.markdown
-├── assets
-│   ├── main.scss
-│   └── minima-social-icons.svg
-├── _config.yml
-├── _drafts
-├── Gemfile
-├── Gemfile.lock
-├── _includes
-│   ├── footer.html
-│   ├── header.html
-│   └── head.html
-├── index.md
-├── _layouts
-│   ├── default.html
-│   ├── home.html
-│   ├── page.html
-│   └── post.html
-├── _posts
-├── posts_page.md
-├── README.md
-├── _sass
-│   ├── minima
-│   │   ├── _base.scss
-│   │   ├── _layout.scss
-│   │   └── _syntax-highlighting.scss
-│   └── minima.scss
-└── tags_page.md
-```
+### Requirements
+- `sassc` - the sass compiler which builds `.css` files from `.scss`.
+- `pelican==4.8.0` or above
 
-The file `404.html` contains HTML code to handle HTTP 404 errors.
+### Additional plugins
+- `pelican-render-math` - used to [render math](https://github.com/pelican-plugins/render-math).
 
-The file `about.markdown` represents the **About** page of the blog.
+### Serving
+To serve locally, clone the repo, run `make html` which populates the `output` folder. Then run `make serve` to serve it.
 
-The file `index.md` represents the **Home** page of the blog.
+Alternatively, run `make devserver` which will both serve and regenerate the blog whenever a change is detected.
 
-The file `posts_page.md` represents the **Posts** page of the blog.
-
-The file `tags_page.md` represents the **Tags** page of the blog.
-
-The directory `_includes` contains various HTML files for handling the structure and content of the footer, header, and head parts of the site.
-
-The directory `_layouts` contains HTML files defining the structure of posts and pages.
-
-The directories `_posts` and `_drafts` contain Markdown files for the individual posts (not listed in the directory tree).
-
-The directories `_sass` contains the CSS styles used throughout the blog.
-
-The file `_config.yml` contains the main configurations of the site.
-
+### File structure
+The posts are in `content`. Pages are in `content/pages`. Theme templates are in `themes/minima`.

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+
+
+
+<p style="padding-top: 30px;">
+Recent posts:
+</p>
+
+<ul>
+
+    <li>
+      <span class="dates_and_tags">23 Jun 2024 </span>
+      
+      
+      <a class="enum_title" href="llama_3.html"><b>Llama-3, A Deep Dive</b></a>
+      
+      <p>
+      In this post we explore Llama-3, a popular LLM. Because of its open-source nature and its compact architecture, it serves as a great example for studying how LLMs work and what are the main research directions around optimizing their use-cases. We focus mainly on the architecture as it literally affects all other aspects of the model - how it is used, how it is optimized, and how it can be modified.
+      </p>
+      <br>
+    </li>
+
+
+    <li>
+      <span class="dates_and_tags">28 Apr 2024 </span>
+      
+      
+      <a class="enum_title" href="notes_from_a_holiday.html"><b>Notes From a Holiday</b></a>
+      
+      <p>
+      I've previously mentioned the curiosity itch, which prompts you to explore new ideas and try out new things. Turns out, this curiosity can be very much manifested in the desire to explore other countries and to seek reasonable adrenaline-filled activities beyond the mundane day-to-day. I've had quite a few amazing journeys already, and this post is about one recent road trip from Denmark to Spain which was full of exciting stuff.
+      </p>
+      <br>
+    </li>
+
+
+    <li>
+      <span class="dates_and_tags">11 Apr 2024 </span>
+      
+      
+      <a class="enum_title" href="functional_dl.html"><b>Functional Deep Learning</b></a>
+      
+      <p>
+      JAX, the functional automatic differentiation library from Google, has established itself as a highly useful deep learning tool. It stands in stark contrast with the OOP approach of Torch and offers an interesting perspective to how deep learning systems can be built in an entirely functional approach. In reality, the boundaries between Torch and Jax are blurry, as nowadays <code>flax</code> has features which look like the OOP style of Torch, while <code>functorch</code> mimics the features of Jax. Nonetheless, Jax was the first of its kind and still carries heavy momentum when it comes to new projects implemented with it. Let's explore it a bit.
+      </p>
+      <br>
+    </li>
+
+
+    <li>
+      <span class="dates_and_tags">06 Apr 2024 </span>
+      
+      
+      <a class="enum_title" href="private_law_and_defense.html"><b>Private Legislation and Defense</b></a>
+      
+      <p>
+      Legislation and military defense have long been described as hallmark purposes for the state's existence. Yet we know that a free market usually produces goods and services more efficiently than any entity not constrained by the competitive pressure. So can't the free market also produce legislation and defense? Famous economists from the Austrian school claim this is possible. In this post we'll explore the main theoretical arguments in favour of this scheme.
+      </p>
+      <br>
+    </li>
+
+
+    <li>
+      <span class="dates_and_tags">12 Mar 2024 </span>
+      
+      
+      <a class="enum_title" href="marching_cubes.html"><b>Marching Cubes and Co</b></a>
+      
+      <p>
+      The field of computer graphics contains some very nice and insightful algorithms. I wish I had explored them earlier, but it's still not that late. This post describes <em>marching cubes</em> - a ultra-simple algorithm for the extraction of a triangular mesh from a 3D field. This algorithm is widely applicable in all kinds of graphics applications, whether it is volumetric rendering of CT scans in healthcare, or tunnel/cave mapping in an industrial setting. It also combines well with the growingly-popular deep learning NeRF models. There it can be used to render a mesh from the 3D reconstruction.
+      </p>
+      <br>
+    </li>
+
+</ul>
+
+
+<figure>
+    <img src = "/images/margulis_graph.svg" alt="Expander Graph" width="1000">
+    <figcaption>Figure 1: An expander - a most curious sparse graph with strong connectivity properties.<br>Every subset of less than half the total number of vertices has a proportionally large boundary of edges.</figcaption>
+</figure>
+
+
+ 
+<div class="post-content e-content content" itemprop="articleBody"></div> 
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>

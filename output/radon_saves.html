@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Radon Saves | The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+
+
+    <meta name="description" content="Have you ever wondered how computed tomography (CT) scans work? How is it possible that by blasting some "lasers" in the direction of a person's head we can determine with impressive accuracy the intricate geometry and shape of that person's brain? CT scans offer a unique curious mathematical problem and represent, in my opinion, one of the most interesting topics in applied math. This post explores the main mathematical contraption involved - the Radon transform - and how it's used to recover distinct 2D images from aggregated signals." />
+
+    <meta name="tags" content="cs" />
+
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <header class="post-header">
+      <h1 class="post-title p-name" itemprop="name headline">Radon Saves</h1>
+      <p class="post-meta">
+        <time class="dt-published" datetime="2023-01-21T07:00:00+02:00" itemprop="datePublished">
+          21 Jan 2023
+        </time>
+      </p>
+
+    </header>
+
+    <div class="post-content">
+      <p>Have you ever wondered how computed tomography (CT) scans work? How is it possible that by blasting some "lasers" in the direction of a person's head we can determine with impressive accuracy the intricate geometry and shape of that person's brain? CT scans offer a unique curious mathematical problem and represent, in my opinion, one of the most interesting topics in applied math. This post explores the main mathematical contraption involved - the Radon transform - and how it's used to recover distinct 2D images from aggregated signals.</p>
+<p>Tomography is the process of obtaining a visual representation of an object from multiple individual slices from it. It allows for the construction of realistic 3D models whose individual parts have the correct proportions and a high resolution of details. It is used extensively in healthcare and medical applications where it's able to provide invaluable information about the state and shape of the patient's internal organs.</p>
+<p>Computed tomography, also called computerized tomography is a technique to do tomography from X-ray slices. The CT scanner consists of the following main components:</p>
+<ul>
+<li>An X-ray tube which converts electricity into X-ray waves. It generates out X-rays into a fairly wide sector and is able to rotate around the object of interest, so that the waves can penetrate it from all directions.</li>
+<li>Multiple X-ray detectors located on the other side of the X-ray generators. They are able to capture the X-rays and measure how attenuated they are. As the X-rays travel they gradually lose their intensity (calculated as the flux of the wave divided by the period), depending on the type of materials they pass through. The X-ray starts with high intensity, travels through the medium and exits with significantly less energy. The detectors measure the difference in energy - how attenuated the ray is. This gives precious information on the density of the material the ray has gone through.</li>
+<li>A gantry which holds the X-ray generator and the detectors. This is typically a moving and rotating frame where the components are attached. By rotating and moving along the height of the object different axial (horizontal), sagittal (longitudinal) or coronal (frontal) slices can be obtained.</li>
+</ul>
+<p>The main aspect of theoretical interest is that, for each X-ray, the detector in which it falls, captures the total loss of energy of the ray. Thus from a single measurement we cannot determine where exactly the energy decreased most, how many different types of tissues it went through, and what their densities were. In a sense, what we only see is the sum aggregated from many interactions. The question is how can we reconstruct the inner geometry of the medium from these aggregates - a difficult inverse problem.</p>
+<figure>
+    <img class='small_img' src="/images/radon_setup_2.png" alt="The Radon transform and reconstruction" width="1200">
+    <figcaption>Figure 1: The computed tomography setup. The generator shoots out X-rays which go through the tissue, losing energy in the process. The detector measures their ending energy. We want to observe the real cross-section of the object, but only have access to aggregated projections across different angles.</figcaption>
+</figure>
+
+<p>For the sake of discussion, suppose the real image of the given slice is given by the function <span class="math">\(f(\textbf{x}) = f(x, y)\)</span>, where <span class="math">\(x\)</span> and <span class="math">\(y\)</span> are the spatial coordinates and <span class="math">\(f(x, y)\)</span> is the pixel intensity. A single X-ray travels as a line <span class="math">\(L\)</span> and, simplifying a bit, we observe the integral of the function across that line</p>
+<div class="math">$$
+Rf(L) = \int_L f(\textbf{x}) |d\textbf{x}|
+$$</div>
+<p>This is actually a transform - a higher order object that takes in functions in one domain and maps them to functions in another. Here the input is a function <span class="math">\(f(x, y)\)</span> taking in spatial coordinates <span class="math">\(x\)</span> and <span class="math">\(y\)</span> and the output is a function from the space of all lines to the reals. More concretely this function takes in a concrete line, and returns the integral of <span class="math">\(f(x, y)\)</span> across this line. This transform is called the Radon transform and is central to the topic of computerized tomographies. If <span class="math">\(X \times Y\)</span> is the space of all images and <span class="math">\(L\)</span> the space of all one-dimensional lines, then the signature is:</p>
+<div class="math">$$
+R: (X \times Y \rightarrow \mathbb{R}) \rightarrow (L \rightarrow \mathbb{R})
+$$</div>
+<p>We can define a line using the equation <span class="math">\(x \cos \phi + y \sin \phi = r\)</span>. This corresponds to a line that is perpendicular to the one going through the origin at an incline of <span class="math">\(\phi\)</span>, and has a distance to the origin of <span class="math">\(r\)</span>. In particular varying the tuple <span class="math">\((\phi, r)\)</span> can produce all lines in the two-dimensional space.</p>
+<p>The tuple <span class="math">\((\phi, r)\)</span> also defines a point on the circle with radius <span class="math">\(r\)</span>. The <span class="math">\(x\)</span> and <span class="math">\(y\)</span> coordinates of the tangent line at that point can be parameterized as</p>
+<div class="math">$$
+\begin{bmatrix}
+z \sin \phi + r \cos \phi \\
+ -z\cos \phi + r \sin \phi
+\end{bmatrix}
+$$</div>
+<p>Here <span class="math">\(z\)</span> is the distance from the tangent point with coordinates <span class="math">\((r\cos \phi, r \sin \phi)\)</span>. If <span class="math">\(z\)</span> is 0, we get the tangent point, if <span class="math">\(z\)</span> is not 0 we move along the tangent line.</p>
+<p>With these parametrizations we can write the Radon transform as</p>
+<div class="math">$$
+g(\phi, r) = \iint f(x, y) \delta(x \cos \phi + y \sin \phi - r) dx dy.
+$$</div>
+<p>That is, integrate over all of <span class="math">\(x\)</span> and <span class="math">\(y\)</span>, but null out the value if not on the line defined by <span class="math">\((\phi, r)\)</span>.</p>
+<p>Similarly, this is equivalent to moving along the line directly and integrating only the points on it</p>
+<div class="math">$$
+g(\phi, r) = \int_{-\infty}^\infty f(x(z), y(z)) dz = \int_{-\infty}^\infty f(z \sin \phi + r \cos \phi, -z\cos \phi + r \sin \phi) dz.
+$$</div>
+<p>So how might we compute the Radon transform for a given image <span class="math">\(f(x, y)\)</span>?</p>
+<ol>
+<li>First, the image has to be padded to a square. This is easily achieved by adding zero rows and columns such that the the non-zero pixels of the actual image stay roughly in the center of the resulting square image.</li>
+<li>Create an array of <span class="math">\(N\)</span> angles to parameterize the different inclinations for the lines - <span class="math">\((\phi_1, \phi_2, ..., \phi_N)\)</span>. These should span the range from 0 to 180 degrees.</li>
+<li>Initialize a matrix to store the Radon transform results. This should have as many rows as the padded image and as many columns as the angles. This matrix is called a sinogram.</li>
+<li>For each of the angles, rotate the image by that amount.
+The rotation can be achieved by using a similarity matrix. The translations in the third column ensure that the centre <span class="math">\((c_x, c_y)\)</span> does not change when rotating. Then, sum the pixel intensities across the rows and store the aggregated values in the corresponding column in the sinogram matrix.</li>
+</ol>
+<div class="math">$$
+\begin{bmatrix}
+\cos \phi &amp; -\sin \phi &amp; c_x(1-\cos\phi) + c_y \sin \phi\\
+\sin \phi &amp; cos \phi &amp; c_y(1 - \cos \phi) - c_x \sin \phi\\
+0 &amp; 0 &amp; 1\\
+\end{bmatrix}
+$$</div>
+<p>At the end we are left with a matrix containing the integrals for the various <span class="math">\((\phi, r)\)</span> lines, where the <span class="math">\(\phi\)</span> angles has been defined manually and the distances <span class="math">\(r\)</span> comes from the pixels along the side of the image.</p>
+<p>So this is what the X-ray detectors collect after many rotations. However, What we really care about is the reconstruction of the original image from the sinogram. Since in reality we don't have access to the original image, but only the sinogram, we need to reverse the Radon transform to reconstruct the original image.</p>
+<p>To understand how this can be done, first list down the 1D and 2D Fourier transforms:</p>
+<div class="math">$$
+\begin{aligned}
+\hat{f}(\xi) &amp; = \int_{-\infty}^\infty f(x)e^{-2 \pi i \xi x} dx \\
+\hat{f}(\xi_x, \xi_y) &amp; = \iint_{-\infty}^\infty f(x, y) e^{-2\pi i (\xi_x x + \xi_y y)} dx dy
+\end{aligned}
+$$</div>
+<p>Now, let's take the Radon transform <span class="math">\(g(\phi, r)\)</span> and apply a one-dimensional Fourier transform on it, along the radius <span class="math">\(r\)</span>, holding <span class="math">\(\phi\)</span> fixed. We get</p>
+<div class="math">$$
+\begin{aligned}
+\hat{g}(\phi, \xi) &amp; = \int_{-\infty}^\infty g(\phi, r)e^{-2 \pi i \xi r} dr \\
+&amp; = \iiint f(x, y) \delta(x \cos \phi + y \sin \phi - r)  e^{-2 \pi i \xi r} dx dy dr \\
+&amp; = \iint f(x, y) e^{-2 \pi i \xi (x \cos \phi + y \sin \phi)} dx dy
+\end{aligned}
+$$</div>
+<p>Here <span class="math">\(\xi\)</span> is the frequency variable corresponding to <span class="math">\(r\)</span>. The change from the second to the third line comes from the sifting property of the Dirac delta function: when integrating across <span class="math">\(r\)</span>, we know that all contributions where <span class="math">\(r \ne x\cos \phi + y \sin \phi\)</span> will be zero and hence we can just evaluate the inner function at <span class="math">\(r = x\cos \phi + y \sin \phi\)</span>. In any case, one can recognize that line three is actually the two-dimensional Fourier transform evaluated at <span class="math">\(\xi \cos \phi\)</span> and <span class="math">\(\xi \sin \phi\)</span>. And this is not a coincidence, it results from the <a href="https://en.wikipedia.org/wiki/Projection-slice_theorem">Fourier slice theorem</a>, stating that the one-dimensional Fourier transform of a single Radon projection is equal to the two-dimensional Fourier transform of the original image evaluated on the line on which the projection was taken.</p>
+<p>We have established that by taking one-dimensional convolutions on the Radon projections, we obtain points from the two-dimensional Fourier transform on the original image. The next logical step would be to reconstruct the image with the inverse Fourier transform.</p>
+<p>For the two dimensional case the inverse is given by</p>
+<div class="math">$$
+f(x, y) = \iint F(u, v) e^{2 \pi i (u x + v y)} du dv.
+$$</div>
+<p>Let's change to polar coordinates. We set <span class="math">\(u = r \cos \phi\)</span> and <span class="math">\(v = r \sin \phi\)</span>. The determinant of the Jacobian of the transformation is then</p>
+<div class="math">$$
+\det 
+\begin{bmatrix}
+\cos \phi &amp; -r \sin \phi \\
+\sin \phi &amp; r \cos \phi\\
+\end{bmatrix}
+= r
+$$</div>
+<p>and the inverse Fourier transform becomes</p>
+<div class="math">$$
+f(x, y) = \iint F(\phi, r) e^{2 \pi i r(x \cos \phi + y \sin \phi)} |r| dr d\phi.
+$$</div>
+<p>Here <span class="math">\(r\)</span> and <span class="math">\(\phi\)</span> are placeholder variables and should only showcase the general functional form. By substituting them with <span class="math">\(\xi\)</span>, the frequency along the original <span class="math">\(r\)</span> dimension, and <span class="math">\(\phi\)</span>, the angle, we can get the inverse 2D transform for our particular problem:</p>
+<div class="math">$$
+f(x, y) = \iint \hat{g}(\phi, \xi) e^{2 \pi i \xi(x \cos \phi + y \sin \phi)} |\xi| d \xi d\phi.
+$$</div>
+<p>Then, the general strategy of reconstructing the image at point <span class="math">\((x, y)\)</span> is the following: for every line passing through <span class="math">\((x, y)\)</span>, each with its own angle <span class="math">\(\phi\)</span>, compute the inverse one-dimensional Fourier transform along the frequency dimension <span class="math">\(\xi\)</span> (this would be the inner integral), evaluate it at <span class="math">\((x, y)\)</span>, and add the resulting values together (corresponding to the outer integral). In practice adding the values for position <span class="math">\((x, y)\)</span> would require interpolation between them because <span class="math">\(x \cos \phi + y \sin \phi\)</span> would rarely be an exact integer coordinate. </p>
+<p>There is a problem however. Since often more lines intersect at the center of the image, the center of our reconstruction will be brighter, and possibly blurrier. This can be fixed, and surprisingly, the solution comes out of the function itself.
+The term <span class="math">\(|\xi|\)</span> is called a <em>ramp</em> filter because it filters out low frequency signals. It deblurs the image and makes the edges sharper. Here, it is in the frequency domain and is multiplied to the other function, but it can also be applied in the spatial domain <a href="https://en.wikipedia.org/wiki/Convolution_theorem">as a convolution</a>. In fact, in the spatial domain it corresponds to a wavelet.</p>
+<figure>
+    <img class='extra_big_img' src="/images/radon.png" alt="The Radon transform and reconstruction" width="1200">
+    <figcaption>Figure 2: The original image is on the left. The sinogram (Radon transform) is in the middle. The reconstruction is on the right. The shapes of the images and of the sinogram do not match due to required padding during the operations.</figcaption>
+</figure>
+
+<p>This general strategy of applying the projections back in the image is fast and works well in practice. When combined with the filtering step using the ramp (or any other) filter, it's called <a href="https://en.wikipedia.org/wiki/Tomographic_reconstruction#Back_Projection_Algorithm">filtered back projection</a>. When applying the projections back in the spatial domain, they overlap in those regions where <span class="math">\(f(x, y)\)</span> is high and thus interact constructively. Empty regions in the original image do receive some erroneous signal when back projecting but this is more or less fixed by the use of the filter.</p>
+<h3>References</h3>
+<p>Images used: <a href="https://commons.wikimedia.org/wiki/File:CT_of_a_normal_brain_(thumbnail).png">here</a> and <a href="https://commons.wikimedia.org/wiki/File:CT_of_a_normal_brain,_axial_17.png">here</a> <br>
+<a href="https://www.clear.rice.edu/elec431/projects96/DSP/bpanalysis.html">Image Projections and the Radon Transform</a>  <br>
+<a href="http://www.owlnet.rice.edu/~elec539/Projects97/cult/node2.html">Filtered Back Projection</a></p>
+<!-- https://commons.wikimedia.org/wiki/File:CT_of_a_normal_brain_(thumbnail).png -->
+
+<!-- Image taken from here https://commons.wikimedia.org/wiki/File:CT_of_a_normal_brain,_axial_17.png -->
+
+<!-- % We start with a circle of radius $r$. If we fix an angle $\phi$, this defines a point $P$ on the circle with coordinates $(r \cos \phi, r \sin \phi)$. Any point in 2D can be defined using a combination of $(r, \phi)$, where $r$ is the distance of the point to the origin and $\phi$ is the angle between the vector $(r \cos \phi, r \sin \phi)$ and the $x$-axis. -->
+
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'], ['$', '$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+    </div>
+  
+  <p class="post-meta">
+    Tag: cs
+  </p>
+
+  </article>
+
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>

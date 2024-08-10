@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>The Category of Types | The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+
+
+    <meta name="description" content="One of the most important problems in computer science is that of program verification - proving the correctness of the algorithm in a formal, mathematical way. In order to be sure that our solution is implemented correctly, we need to have mathematical guarantees of its properties. Thus, it's common to represent programs using mathematical objects. Some of these are very high-level, like finite state machines. Others are more concerned with the interpretation of the individual statements in the programming language. This post explores the curious and absurdly abstract theory of categories and its use cases when considering programming types." />
+
+    <meta name="tags" content="cs" />
+
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <header class="post-header">
+      <h1 class="post-title p-name" itemprop="name headline">The Category of Types</h1>
+      <p class="post-meta">
+        <time class="dt-published" datetime="2022-09-05T16:00:00+02:00" itemprop="datePublished">
+          5 Sep 2022
+        </time>
+      </p>
+
+    </header>
+
+    <div class="post-content">
+      <p>One of the most important problems in computer science is that of program verification - proving the correctness of the algorithm in a formal, mathematical way. In order to be sure that our solution is implemented correctly, we need to have mathematical guarantees of its properties. Thus, it's common to represent programs using mathematical objects. Some of these are very high-level, like finite state machines. Others are more concerned with the interpretation of the individual statements in the programming language. This post explores the curious and absurdly abstract theory of categories and its use cases when considering programming types.</p>
+<p>Viewing programming types as a category is a perspective-changing warp and requires knowing some category theory, so we begin with that. The ingredients of a <em>category</em> are:</p>
+<ul>
+<li>Objects, or points, these are the objects we'll consider. Let's denote them with <span class="math">\(A\)</span>, <span class="math">\(B\)</span>, <span class="math">\(C\)</span>, ...</li>
+<li>Morphisms, or arrows between points, these are the relationships between the objects. We denote the morphism <span class="math">\(f\)</span> between <span class="math">\(A\)</span> and <span class="math">\(B\)</span> as <span class="math">\(f: A \rightarrow B\)</span>.</li>
+</ul>
+<p>Right, but a collection of objects with arbitrary morphisms between them is far too general and can represent literally anything. A category has more structure coming from the following restrictions on the morphisms:</p>
+<ul>
+<li>Every object has an identity morphism, relating it to itself. For example, the identity morphism of ofject <span class="math">\(C\)</span> is <span class="math">\(1_C\)</span> - an arrow from object <span class="math">\(C\)</span> to <span class="math">\(C\)</span> itself.</li>
+<li>Morphisms compose. If <span class="math">\(f: A \rightarrow B\)</span> and <span class="math">\(g: B \rightarrow C\)</span>, then there exists a morphism <span class="math">\(h\)</span> such that <span class="math">\(h: A \rightarrow C\)</span>. We denote <span class="math">\(h\)</span> as <span class="math">\(g \circ f\)</span>.</li>
+<li>Morphisms satisfy the identity law - if <span class="math">\(f: A \rightarrow B\)</span>, then <span class="math">\(f \circ 1_A = f\)</span> and <span class="math">\(1_B \circ f = f\)</span>.</li>
+<li>Composition is associative, i.e. <span class="math">\(f \circ (g \circ h) = (f \circ g) \circ h\)</span>.</li>
+</ul>
+<p>With these requirements in place, we can now mention the most useful category, <span class="math">\(\textbf{Set}\)</span>, the category of sets. Here, the objects are standard sets and the morphisms are functions from one set to another. The composition of morphisms is the standard composition of functions, which is associative and satisfies the identity law. For example, let's look at two objects, <span class="math">\(\mathcal{S}_1 = \{1, 2, 3\}\)</span> and <span class="math">\(\mathcal{S}_2 = \{4, 5, 6 \}\)</span>. One morphism between them is <span class="math">\(f_1: \mathcal{S}_1 \rightarrow \mathcal{S}_2\)</span> such that <span class="math">\(f_1(x) = 4, \forall x \in \mathcal{S}_1\)</span>. Another one is <span class="math">\(f_2(x) = 5, \forall x \in \mathcal{S}_1\)</span>. Obviously, there can be multiple morphisms between any two objects.</p>
+<p>In the context of programming, we can form the category of data types, whose objects are the individual types, and whose morphisms are functions between types. A type is, intuitively, a collection of values. The type <span class="math">\(\textbf{Bool}\)</span> contains the values <span class="math">\(\text{true}\)</span> and <span class="math">\(\text{false}\)</span>. In reality, all types contain also the special value <span class="math">\(\perp\)</span>, indicating that the function may not return due to runtime errors, exceptions, unbounded loops or infinite recursion, but we'll ignore this. As an example, take the types <span class="math">\(\textbf{String}\)</span> and <span class="math">\(\textbf{Int}\)</span>. The morphisms from <span class="math">\(\textbf{String}\)</span> to <span class="math">\(\textbf{Int}\)</span> represent all the functions taking in a string and returning an integer.</p>
+<p>A most basic object in the category of types is the <span class="math">\(\textbf{Void}\)</span> type, representing a collection with no values. Note that this is not C++'s <code>void</code> type. To describe this object, we specify its incoming and outgoing arrows. The incoming arrows are constructors because they represent functions with return type <span class="math">\(\textbf{Void}\)</span>. The outgoing arrows are destructors, or transformers, because they represent functions which output any other type <span class="math">\(\textbf{A}\)</span> from <span class="math">\(\textbf{Void}\)</span>.</p>
+<p>Type <span class="math">\(\textbf{Void}\)</span> cannot be constructed because it has no values. As a result, no function returning a value of type <span class="math">\(\textbf{Void}\)</span> can be defined, so there are no incoming arrows (apart from the identity one). It has outgoing arrows going to all other objects, because it can be transformed into any other type <span class="math">\(\textbf{A}\)</span>. These function can be defined but never called, because to call it, we need to provide it with a value of type <span class="math">\(\textbf{Void}\)</span>, of which there are none. It also resembles the fact that any conditional statement is true, if what you condition on is false (sometimes called a vacuous statement).</p>
+<p>The unit type <span class="math">\(()\)</span>, or <span class="math">\(\textbf{Unit}\)</span>, represents a collection with only one possible value - a dummy variable that can be renamed, replaced with a placeholder or even elided. This is the C++ type <code>void</code> or Python's <code>None</code>. The unit type has exactly one incoming arrow from all other types because there is only one value of type <span class="math">\(\textbf{Unit}\)</span>. To produce a unit from an integer, we just discard the integer and returning the only possible unit value. Type <span class="math">\(\textbf{Unit}\)</span> has many outgoing morphisms. The number of morphisms from unit to integer is equal to the number of different integers. Note that this allows us to identify each integer according to its morphism from the unit type.</p>
+<p>The properties of the <span class="math">\(\textbf{Unit}\)</span> and <span class="math">\(\textbf{Void}\)</span> types are captured in the following graph.</p>
+<figure>
+    <img class='small_img' src="/images/basic_types.svg" alt="Basic types" width="1200">
+    <figcaption>Figure 1: The types $\textbf{Void}$ and $\textbf{Unit}$. Arrows indicate individual morphisms. $\textbf{Void}$ doesnt' have any incoming morphisms because no function can return a value from the empty set. It has many outgoing morphisms representing functions which cannot be implemented in practice. Type $\textbf{Unit}$ has a single incoming morphism from all other types and multiple outgoing morphisms to all other types, except $\textbf{Void}$. </figcaption>
+</figure>
+
+<p>Another important type is the product type, represented as pairs and tuples. The product of types <span class="math">\(\textbf{A}\)</span> and <span class="math">\(\textbf{B}\)</span> is the tuple <span class="math">\((\textbf{A}, \textbf{B})\)</span>. Technically, there are many product types because there are many possible pairs and tuples. The incoming morphisms take elements of two possibly different types and return an element of the corresponding pair type. The transformer elements are called projections and simply return the first or second element. Product types have a natural correspondence with the <span class="math">\(\text{AND}\)</span> logical operator. </p>
+<p>An analogy to product types are sum types. The sum type of <span class="math">\(\textbf{String}\)</span> and <span class="math">\(\textbf{Int}\)</span> is <span class="math">\(\text{Union}[\textbf{String}, \textbf{Int}]\)</span> - the collection of values of all strings and integers. In Python's type annotations a sum type would be represented as <code>Union[str, int]</code> or <code>str|int</code>. To construct a value of type <code>str|int</code> we need to be given a value of either <code>str</code> or <code>int</code>. To transform a value of <code>str|int</code> into, say, <code>bool</code>, we need to do case matching and use a morphism from <code>str</code> to <code>bool</code> or one from <code>int</code> to <code>bool</code>. Lastly, sum types correspond to the logical operator <span class="math">\(\text{OR}\)</span>. There is a deep and beautiful correspondence between types and logical proposition called the Curry-Howard isomorphism but this is a separate topic.</p>
+<p>The concept of a monoid plays a significant role in category theory. A monoid is a set of elements <span class="math">\(S\)</span>, with an operation <span class="math">\(\bullet: S \times S \rightarrow S\)</span> such that:</p>
+<ul>
+<li><span class="math">\(\bullet\)</span> is associative, <span class="math">\(a \bullet (b \bullet c) = (a \bullet b) \bullet c, \forall a, b, c \in S\)</span> </li>
+<li>there exists an element <span class="math">\(e\)</span> in <span class="math">\(S\)</span> for which <span class="math">\(e \bullet a = a \bullet e = a, \forall a \in S\)</span>.</li>
+</ul>
+<p>As an example, the real numbers with <span class="math">\(\bullet\)</span> being multiplication form a monoid where <span class="math">\(1\)</span> is the multiplicative unit. They also form a separate monoid under summation where the unit is 0. This is valid also for integers, rational, and complex numbers.</p>
+<p>The product and sum types discussed so far are extra useful because they allow us to combine types together. If we look at the product type as an operation taking in two types and outputting a third one, this operation behaves a lot like multiplication:</p>
+<ul>
+<li>It is associative, up to an isomorphism - <span class="math">\((\textbf{A}, (\textbf{B}, \textbf{C})) \cong ((\textbf{A}, \textbf{B}), \textbf{C})\)</span>. This means that while these two types are different, they contain the same information, and there is a pair of mutually-inverse morphisms that can rearrange these tuples.</li>
+<li>The unit type <span class="math">\(()\)</span> acts as a multiplicative unit, i.e. <span class="math">\((\text{Unit}, \text{A}) \cong \text{A} \cong (\text{A}, \text{Unit})\)</span>.</li>
+</ul>
+<p>Thus, the category of types is a monoidal category because we have a monoid in types, under the product operation. This is also the case with regard to constructing sum types:</p>
+<ul>
+<li>Constructing sum types is an associative operation up to an isomorphism, <span class="math">\(\text{Union}[\text{A}, \text{Union}[\text{B}, \text{C}]] \cong \text{Union}[\text{Union}[\text{A}, \text{B}], \text{C}]\)</span>.</li>
+<li>The <span class="math">\(\textbf{Void}\)</span> type acts as an additive zero, <span class="math">\(\text{Union}[\textbf{Void}, \text{A}] \cong \text{A} \cong \text{Union}[\text{A}, \textbf{Void}]\)</span>.</li>
+</ul>
+<p>What this implies is that we can define an algebra of types where types can be summed and multiplied to yield new types. For example, the polymorphic type <span class="math">\(\text{Option}[\text{A}]\)</span> can be defined as <span class="math">\(\text{Union}[(), \text{A}]\)</span>. Similarly, the list type can be defined recursively as <span class="math">\(\text{List}[\text{A}] = \text{Union}[(), (\text{A}, \text{List}[\text{A}])]\)</span>, and so on. In this way one can add all kinds of trees, maps, and structures. One can even compute identities like <span class="math">\(a \times (b + c) = a \times b + a \times c\)</span> on types, up to an isomorphism. I find it amazing how we can obtain an incredible abundance of types from only a small set of initial building blocks.</p>
+<p>But there's still something missing - function types. Let's pick two types <span class="math">\(\mathbf{A}\)</span> and <span class="math">\(\mathbf{B}\)</span>. It can be proven than the collection of morphisms between <span class="math">\(\mathbf{A}\)</span> and <span class="math">\(\mathbf{B}\)</span> is itself an object in our category of types. This object represents the function type of all functions from <span class="math">\(\textbf{A}\)</span> to <span class="math">\(\textbf{B}\)</span>. Its incoming arrows, or constructors, are <code>lambda</code> expressions. Its outgoing arrows are <code>eval</code> statements. We can also mention that function types correspond to <span class="math">\(\Rightarrow\)</span>, implication in logic.</p>
+<p>From here, unfortunately, the theory about our type system only goes deeper. A <em>functor</em> is a mapping between entire categories. It takes in one category and outputs another one, while preserving the structure of the first.</p>
+<div class="math">$$
+F: \mathcal{C}_1 \rightarrow \mathcal{C}_2 \\
+F[X] = Y, \  X\in \mathcal{C}_1, Y \in \mathcal{C}_2 \\
+F[f] = f', \  f \in \mathcal{C}_1, f' \in \mathcal{C}_2\\
+$$</div>
+<p>Since a category consists of objects and morphisms, the functor takes in objects in the first category and outputs objects in the second one. Similarly, it takes in morphisms in the first category and outputs morphisms in the second one. If <span class="math">\(f: \textbf{A} \rightarrow \textbf{B}\)</span> is a morphism, then it is mapped to <span class="math">\(F[f]: F[\textbf{A}] \rightarrow F[\textbf{B}], \forall \textbf{A}, \textbf{B} \in \mathcal{C}_1\)</span>.</p>
+<p>Functors are very useful because they allow us to translate one category to another in a meaningful way. In the context of types, however, what we're more concerned is endofunctors, which are simply mappings between the same category. Note that while a morphism <span class="math">\(f:\textbf{A} \rightarrow \textbf{B}\)</span> is a function taking in a value of type <span class="math">\(\textbf{A}\)</span> and outputting one with type <span class="math">\(\textbf{B}\)</span>, functors take in entire types as input and produce entire types as output.</p>
+<p>Parametrically polymorphic type definitions are candidates for being functors. Take for example the option type, defined as <span class="math">\(\text{Option}[\textbf{A}] = \text{Union}[(), \textbf{A}]\)</span>. This is not a type, but rather a type constructor because <span class="math">\(\textbf{A}\)</span> represents any type. Only when we specify an <span class="math">\(\textbf{A}\)</span>, like <span class="math">\(\textbf{Int}\)</span>, we get a concrete type, like <span class="math">\(\text{Option}[\textbf{Int}]\)</span>. That's how it maps objects to objects. But how does it map morphisms to morphisms?</p>
+<p>If <span class="math">\(f\)</span> is a morphism between types <span class="math">\(A\)</span> and <span class="math">\(B\)</span>, then <span class="math">\(F[f]\)</span> is a mapped morphism between types <span class="math">\(F[a]\)</span> and <span class="math">\(F[b]\)</span>, which is a function taking a value <span class="math">\(x\)</span> of type <span class="math">\(\text{Option}[\textbf{A}]\)</span> and outputting a value <span class="math">\(y\)</span> of type <span class="math">\(\text{Option}[\textbf{B}]\)</span>. This function is defined, intuitively, as follows: if <span class="math">\(x\)</span> is <span class="math">\(()\)</span>, return <span class="math">\(()\)</span>, otherwise return <span class="math">\(f(x)\)</span>. You can check that this definition of <span class="math">\(F[f]\)</span> preserves composition and identity. Therefore, the type constructor <span class="math">\(\text{Option}[\textbf{A}]\)</span> together with <span class="math">\(F[f]\)</span> form a functor.</p>
+<figure>
+    <img class='extra_small_img' src="/images/functor.svg" alt="Functor" width="800">
+    <figcaption>Figure 2: An endofunctor transforming types to types and morphisms to morphisms.</figcaption>
+</figure>
+
+<p>Just like a functor is a mapping between categories, we can define a mapping between functors. This is called a <em>natural transformation</em>. If we fix two functors <span class="math">\(F_1\)</span> and <span class="math">\(F_2\)</span> from category <span class="math">\(\mathcal{C}_1\)</span> to category <span class="math">\(\mathcal{C}_2\)</span> and fix object <span class="math">\(\textbf{A} \in \mathcal{C}_1\)</span>, then after applying the two functors we get two objects <span class="math">\(F_1(\textbf{A})\)</span> and <span class="math">\(F_2(\textbf{A})\)</span> in category <span class="math">\(\mathcal{C}_2\)</span>. The natural transformation between <span class="math">\(F_1\)</span> and <span class="math">\(F_2\)</span> maps <span class="math">\(F_1(\textbf{A})\)</span> to <span class="math">\(F_2(\textbf{A})\)</span>, but this is an existing morphism in <span class="math">\(\mathcal{C}_2\)</span>. So the natural transformation between <span class="math">\(F_1\)</span> and <span class="math">\(F_2\)</span> takes an object <span class="math">\(\textbf{A}\)</span> in <span class="math">\(\mathcal{C}_1\)</span> and returns a morphism in <span class="math">\(\mathcal{C}_2\)</span>.</p>
+<p>As an example, fix two functors, <span class="math">\(F_1[\textbf{A}] = \text{List}[\textbf{A}]\)</span> and <span class="math">\(F_2[\textbf{A}] = \text{Tuple}[\textbf{A}]\)</span>, which in the category of types are type constructors. If we set <span class="math">\(\textbf{A}\)</span> to <span class="math">\(\textbf{Int}\)</span>, the natural transformation between them returns a function taking in a value of type <span class="math">\(\text{List}[\textbf{Int}]\)</span> and outputting a value of type <span class="math">\(\text{Tuple}[\textbf{Int}]\)</span>. If <span class="math">\(\textbf{A}\)</span> is <span class="math">\(\textbf{Bool}\)</span>, we get a function with signature <span class="math">\(\text{List}[\textbf{Bool}] \rightarrow \text{Tuple}[\textbf{Bool}]\)</span>. This shows that the natural transformation between these two functors is a polymorphic function with signature <span class="math">\(\text{List}[\textbf{A}] \rightarrow \text{Tuple}[\textbf{A}]\)</span>. This is the power of natural transformations, they represent polymorphic functions.</p>
+<p>We said above that functors mapping objects and morphisms from one category to itself are called endofunctors. Interestingly, the collection of all endofuctors in category <span class="math">\(\mathcal{C}\)</span> forms another category <span class="math">\(\mathcal{C}'\)</span>. The objects of <span class="math">\(\mathcal{C}'\)</span> are the endofunctors in <span class="math">\(\mathcal{C}\)</span> and the morphisms of <span class="math">\(\mathcal{C}'\)</span> are the corresponding natural transformations in <span class="math">\(\mathcal{C}\)</span>.</p>
+<!-- Consider rephrasing -->
+
+<p>In this "magical" category, consider the binary operation of composing two endofunctors. This is always possible since endofunctors map categories to themselves. Similarly, there is always an identity endofunctor mapping types to themselves. So the category of endofunctors, with the operation of composition, is a monoidal category. Now, within this monoidal category <span class="math">\(\mathcal{C}'\)</span> where objects are endofunctors, there exist particular objects which together with particular morphisms form a monoid under the operation of endofunctor composition. Such objects are <em>monads</em> in the original category <span class="math">\(\mathcal{C}\)</span>.</p>
+<p>A monad in <span class="math">\(\mathcal{C}\)</span> is an endofunctor <span class="math">\(T: \mathcal{C} \rightarrow \mathcal{C}\)</span> together with two natural transformations <span class="math">\(\eta: 1_C \rightarrow T\)</span> and <span class="math">\(\mu: T \circ T \rightarrow T\)</span> such that:</p>
+<ul>
+<li><span class="math">\(\mu\)</span> acts as a binary operator for composition,</li>
+<li><span class="math">\(\eta\)</span> acts as a unit under composition.</li>
+</ul>
+<p>There is a subtle detail. Endofunctors form a monoidal category under composition. But a monoid object is an object within this category together with <span class="math">\(\eta\)</span> and <span class="math">\(\mu\)</span> such that <span class="math">\(\mu\)</span> acts as a "multiplication" operator and <span class="math">\(\eta\)</span> as the identity. That's why <span class="math">\(\mu\)</span> has the signature <span class="math">\(T \circ T \rightarrow T\)</span>, where <span class="math">\(\circ\)</span> comes from the enclosing monoidal category. This explains the famous definition: a monad in <span class="math">\(\mathcal{C}\)</span> is a monoid object in the category of endofunctors of <span class="math">\(\mathcal{C}\)</span>.</p>
+<p>In a programming context the monad <span class="math">\(\text{M}\)</span> consists of:</p>
+<ul>
+<li>A type constructor <span class="math">\(\textbf{A} \rightarrow \text{M}[\textbf{A}]\)</span> which takes in and outputs entire types</li>
+<li>A polymorphic function <code>bind</code> (sometimes called <code>flatmap</code>) with signature <span class="math">\((\text{M}[\textbf{A}], \textbf{A} \rightarrow \text{M}[\textbf{B}])\rightarrow \text{M}[\textbf{B}]\)</span>,</li>
+<li>A polymorphic function <code>unit</code> (sometimes called <code>return</code>) with signature <span class="math">\(\textbf{A} \rightarrow \text{M}[\textbf{A}]\)</span>.</li>
+</ul>
+<p>The function <code>bind</code> takes in a monad instance and a function <span class="math">\(f\)</span>, returning a monad. Since a monad is a functor, we can compose it with itself. Suppose <span class="math">\(T\)</span> is given by <span class="math">\(\textbf{A} \rightarrow \text{M}[\textbf{A}]\)</span>. Then using the composition from the enclosing monoidal category, <span class="math">\(T^2 = T \circ T\)</span> would be <span class="math">\(\textbf{A} \rightarrow \text{M}[\text{M}[\textbf{A}]]\)</span>. In contrast, the function <code>bind</code> is special because it allows us to compose two functors while returning only <span class="math">\(\text{M}[\textbf{A}]\)</span>, that's why it's called <code>flatmap</code>. It works by extracting the inner value from the input monad, applying <span class="math">\(f\)</span> to it, along with any additional computation, and repackaging it into another monad. The function <code>unit</code> simply takes in a value and wraps it in the monadic type <span class="math">\(\textbf{M}\)</span>. </p>
+<p>The conditions on <code>bind</code> and <code>unit</code> to keep the monadic structure can be expressed as:</p>
+<ul>
+<li><code>unit</code> is a left identity for <code>bind</code>, i.e. <code>bind(unit(x), f) = f(x)</code>,</li>
+<li><code>unit</code> is a right identity for <code>bind</code>, i.e. <code>bind(ma, unit) = ma</code>, where <code>ma</code> is an instance of the <span class="math">\(\text{M}[\textbf{A}]\)</span> type, for some concrete <span class="math">\(\textbf{A}\)</span>,</li>
+<li><code>bind</code> is associative, i.e. <code>bind(bind(ma, f), g) = bind(ma, lambda x: bind(f(x), g))</code>, for some functions <code>f</code>, <code>g</code>, and an instance <code>ma</code>.</li>
+</ul>
+<p>In essence, monads allow us to capture function composition and embellish it with additional functionality. This is mighty powerful and can be used to turn the impure real world functions with side effects, which may crash or raise exceptions, into pure "mathematical"-like functions, without losing the compositional nature of our solution.</p>
+<p>Beyond monads, other aspects from category theory become less and less grounded in reality and frankly, I don't really have the patience to learn them if I cannot relate them to something from the real world. To see how deep the rabbit hole goes, <a href="https://bartoszmilewski.com/2014/10/28/category-theory-for-programmers-the-preface/">Category Theory for Programmers</a> is a good book, and the one on which I've based this post.</p>
+<!-- Add that some things are purposefully left out, definitions of natural transformations, sum types, product types, function types. -->
+
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'], ['$', '$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+    </div>
+  
+  <p class="post-meta">
+    Tag: cs
+  </p>
+
+  </article>
+
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>

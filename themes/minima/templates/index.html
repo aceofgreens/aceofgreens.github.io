@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+{% block content_title %}
+{% endblock %}
+
+
+{# {% for article in articles_page.object_list %}
+        <article>
+                <header> <h2><a href="{{ SITEURL }}/{{ article.url }}" rel="bookmark" title="Permalink to {{ article.title|striptags }}">{{ article.title }}</a></h2> </header>
+                <section>{{ article.summary }}</section>
+                <footer>
+                    <p>Published: <time datetime="{{ article.date.isoformat() }}"> {{ article.locale_date }} </time></p>
+                    <address>By
+                    {% for author in article.authors %}
+                        <a href="{{ SITEURL }}/{{ author.url }}">{{ author }}</a>
+                    {% endfor %}
+                    </address>
+                </footer>
+        </article>
+{% endfor %}
+
+{% if articles_page.has_other_pages() %}
+    {% include 'pagination.html' %}
+{% endif %} #}
+
+
+<p style="padding-top: 30px;">
+Recent posts:
+</p>
+
+<ul>
+  {% for post in articles[:5] %}
+
+    <li>
+      <span class="dates_and_tags">{{post.date.strftime('%d %b %Y')}} </span>
+      
+      
+      <a class="enum_title" href="{{ post.url }}"><b>{{ post.title }}</b></a>
+      
+      <p>
+      {{ post.summary | smart_quotes }}
+      </p>
+      <br>
+    </li>
+
+  {% endfor %}
+</ul>
+
+
+<figure>
+    <img src = "/images/margulis_graph.svg" alt="Expander Graph" width="1000">
+    <figcaption>Figure 1: An expander - a most curious sparse graph with strong connectivity properties.<br>Every subset of less than half the total number of vertices has a proportionally large boundary of edges.</figcaption>
+</figure>
+
+
+{# Here we add some empty space to be consistent with Jekyll. #} 
+<div class="post-content e-content content" itemprop="articleBody"></div> 
+
+{% endblock content %}
