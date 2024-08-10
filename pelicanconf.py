@@ -5,6 +5,7 @@ LINKEDIN_USERNAME = None
 # SITEURL = ''
 
 PATH = 'content'
+OUTPUT_PATH = 'docs'
 PAGE_PATHS = ['pages'] # Relative to PATH
 PAGE_SAVE_AS = "{slug}.html" # How pages are saved
 PAGE_URL = "{slug}.html"

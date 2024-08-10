@@ -138,21 +138,6 @@ Hello! It&#39;s nice to meet you. Is there something I can help you with, or wou
 <span class="p">},</span>
 </code></pre></div>
 
-<p>And again</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-    <span class="n">name</span><span class="p">:</span>  <span class="s2">&quot;truncate messages&quot;</span><span class="p">,</span>
-    <span class="n">limit</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">msgs</span><span class="p">:</span> <span class="p">[]</span><span class="n">api</span><span class="o">.</span><span class="n">Message</span><span class="p">{</span>
-        <span class="p">{</span><span class="n">Role</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="n">Content</span><span class="p">:</span> <span class="s2">&quot;You&#39;re a test, Harry!&quot;</span><span class="p">},</span>
-        <span class="p">{</span><span class="n">Role</span><span class="p">:</span> <span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="n">Content</span><span class="p">:</span> <span class="s2">&quot;I-I&#39;m a what?&quot;</span><span class="p">},</span>
-        <span class="p">{</span><span class="n">Role</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="n">Content</span><span class="p">:</span> <span class="s2">&quot;A test. And a thumping good one at that, I&#39;d wager.&quot;</span><span class="p">},</span>
-    <span class="p">},</span>
-    <span class="n">expect</span><span class="p">:</span> <span class="n">expect</span><span class="p">{</span>
-        <span class="n">prompt</span><span class="p">:</span> <span class="s2">&quot;A test. And a thumping good one at that, I&#39;d wager. &quot;</span><span class="p">,</span>
-    <span class="p">},</span>
-<span class="p">}</span>
-</code></pre></div>
-
 <p>Of course, there are many more things that can be optimized when it comes to serving these models - the context can be artificially extended using <a href="https://arxiv.org/pdf/2401.01325">Self-Extend</a>, the model can be heavily quantized to take up less memory, optimized formats like <code>gguf</code> can be used for faster loading, speculative decoding can be used to generate multiple tokens at once, and so on. All exciting stuff we'll leave for the future. </p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
