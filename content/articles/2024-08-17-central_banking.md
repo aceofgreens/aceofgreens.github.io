@@ -5,7 +5,7 @@ Tags: econ
 slug: central_banking
 ---
 
-From the previous article on [free banking](https://aceofgreens.github.io/free_banking.html), we saw how a competitive market for loans and deposits will result in virtually no inflation and a fixed money supply. In this post we'll enter the belly of the beast and see how central banking is designed to eliminate the constaints that keep inflation in check. This is a very important topic for understanding financial systems and once again, almighty Rothbard will guide us.
+From the previous article on [free banking](https://aceofgreens.github.io/free_banking.html), we saw how a competitive market for loans and deposits will result in virtually no inflation and a fixed money supply. In this post we'll enter the belly of the beast and see how central banking is designed to eliminate the constraints that keep inflation in check. This is a very important topic for understanding financial systems and once again, almighty Rothbard will guide us.
 
 We start with a contrived, but concrete scenario. Person P deposits \$1000 in currency (physical money like coins and banknotes) in bank A. He receives a piece of paper called a "certificate of deposit" worth \$1000 which is liquid enough and is accepted by society *as money*. While this is supposed to be a proper demand deposit, bank A then decides to lend \$800 of these. It does so by printing another certificate of deposit worth \$800 and "giving it" to a new person Q by creating an account for Q in its own books. At this point the total demand deposits are worth \$1800 but the actual reserves are only \$1000. The money supply has increased by \$800. Now person Q spends the money and buys something from person R. If R is a client of the same bank A, then the balance of account Q has to be reduced and the balance of account R has to be increased. This happens easily since bank A simply rewrites the certificates of deposit. But if R is a client of a different bank B, then B, being a competitor of A, will demand from A money in specie and A will have to pay from its reserves. Suppose it does so and its reserves end up \$200. At this point, if the original person P decides to withdraw his deposit, bank A will become insolvent and will go bankrupt.
 
@@ -14,7 +14,7 @@ Thus, as long as we have competing banks with clients partitioned between them, 
 A central bank (CB) can be considered an institution with the following properties:
 
 - It and only it, is allowed to issue new bank notes or cash. All other privately-owned commercial banks are only allowed to issue demand liabilities in the form of checking deposits.
-- Even when the banking system remains on the gold standard, virtually all bank holdings of gold are centralized into the central bank. This a classic requirement.
+- Even when the banking system remains on the gold standard, virtually all bank holdings of gold are centralized into the central bank. This is a classic requirement.
 
 Consider what happens when a client of a commercial bank wants to cash in his deposit. The commercial bank is not permitted to issue these banknotes, only the central bank can. Therefore, the commercial bank needs to obtain Central Bank cash either by selling various assets to the CB that it agrees to buy, or by drawing down its own checking account with the central bank.
 
@@ -28,7 +28,7 @@ Let's take a look at how these dynamics work. Suppose the fractional reserve rat
 | IOUs = \$4000     |  Demand deposits = \$5000  |
 | Reserves = demand deposits at CB = \$1000  |   |
 
-One of the bank's clients decides to withdraw \$500 from its account. But bank A has cannot issue any notes, so it goes to the CB and withdraws \$500 from its own account there. The CB issues these notes. After this transaction the balance sheet of bank A looks as follows. Note that only the form of the money has changed, not the actual money supply level.
+One of the bank's clients decides to withdraw \$500 from its account. But bank A cannot issue any notes, so it goes to the CB and withdraws \$500 from its own account there. The CB issues these notes. After this transaction the balance sheet of bank A looks as follows. Note that only the form of the money has changed, not the actual money supply level.
 
 |  | Bank A  |
 |----:|----:|
@@ -87,18 +87,18 @@ Another monstrous example. What happens if the Fed directly buys *newly created*
 Finally, it is an interesting question of how a central bank can develop in the first place. The following is a simplified historical narrative for how the Bank of England (BoE) came about.
 
 1. In the late 17-th century, the British government needs money to fund a policy of war and imperialism against the French. Its credit rating is low and levying higher taxes is politically unfeasible. A new way of financing needs to be invented.
-2. [William Paterson](https://en.wikipedia.org/wiki/William_Paterson_(banker)) comes up with a scheme where a new bank, the BoE, will issue new notes to buy new government bonds, as long as the government grants these notes the status of legal tender. The British government refuses, but allows the BoE to issue notes.
-3. The BoE issues a huge sum, leading to inflation, and in two years, after a bank run, it becomes insolvent. This is caused by private goldsmiths want redemption in specie.
+2. [William Paterson](https://en.wikipedia.org/wiki/William_Paterson_(banker)) comes up with a scheme where a new bank, the BoE, will issue notes to buy new government bonds, as long as the government grants these notes the status of legal tender. The British government refuses, but allows the BoE to issue notes.
+3. The BoE issues a huge sum, leading to inflation, and in two years, after a bank run, it becomes insolvent. This is caused by private goldsmiths wanting redemption in specie.
 4. In May 1696 the government allows the BoE to *suspend specie payment* indefinitely. Its notes prompty fall to a 20% discount against specie. It resumes specie payments two years later, but in the future there are additional similar suspensions.
 5. In 1696 the Tories almost succeed in creating a competing National Land Bank. To hinder competition, Parliament passes a law prohibiting any new corporate bank from being established in England. Counterfeiting of BoE notes is made punishable by death.
 6. In 1708 another piece of legislation asserts *roughly* that corporations or institutions with more than six partners cannot issue notes redeemable on demand or make short-term loans under six months. Thus, the BoE starts enjoying the privilege of being the only bank (except very small institutions) that can issue bank notes.
 7. In 1720, a formidable rival, the [South Sea Company](https://en.wikipedia.org/wiki/South_Sea_Company), collapses after a bout of inflationary monetary expansion. BoE also suffers a bank run.
-8. In 1745 there is another bank run, due to the rising of [Bonnie Prince Charlie](https://en.wikipedia.org/wiki/Charles_Edward_Stuart) in Scotland. Both in 1720 and now, BoE is allowed to suspend species payment.
+8. In 1745 there is another bank run, due to the rising of [Bonnie Prince Charlie](https://en.wikipedia.org/wiki/Charles_Edward_Stuart) in Scotland. Both in 1720 and now, BoE is allowed to suspend specie payment.
 9. During the late 18th century, many small, private partnership banks start to hold BoE notes as reserves. Due to inflationary financing of the wars with France, in the period 1790-1797 many banks, including the BoE suspend specie payment. This suspension lasts 24 years.
 10. During that time BoE notes serve as de facto legal tender. In 1812 they're made actual legal tender. When specie payments finally resume, BoE stocks fall substantially.
 11. In 1833 banking is liberalized a bit, allowing banks within London to issue demand deposits. Country banks can now redeem in BoE notes.
 12. From 1727 to 1850 Scotland enjoys a free banking system. Bank notes circulate freely but are not legal tender. Banks grow large and confidence in them soars. Each bank maintains its own specie reserves and is responsible for its solvency.
-13. In 1844, Sir Robert Peel, a classical liberal, implements a fundamental banking reform with the intention of ending fractional reserve banking. Its provisions effectively eliminate country banks as issuers of bank notes, placing the monopoly of note issuing in the hands of the BoE, while at the same time forcing any new note issue by the BoE to be 100% backed by gold or silver. The plan was to have a only the BoE to issue notes, and to hold it to a 100% reserve requirement.
+13. In 1844, [Sir Robert Peel](https://en.wikipedia.org/wiki/Robert_Peel), a classical liberal, implements a fundamental banking reform with the intention of ending fractional reserve banking. Its provisions effectively eliminate country banks as issuers of bank notes, placing the monopoly of note issuing in the hands of the BoE, while at the same time forcing any new note issue by the BoE to be 100% backed by gold or silver. The plan was to have a single bank (the BoE) to issue notes, and to hold it to a 100% reserve requirement.
 14. However, they overlooked that a monopoly-privileged bank protected by the state cannot be held to a restrictive 100% rule (as in general such power will be used and abused), and that demand deposits are part of the money supply (they thought fractional reserve banking was only pernicious to notes). As a result, country banks could still issue deposit certificates.
 15. In July 1845 Peel's act is imposed also in Scotland, bringing Scottish banks under BoE's suzerainty and ending free banking there.
 16. Inflationary booms and busts continue. In times of trouble the BoE gets Parliament to suspend Peel's act (in 1847, 1857, 1866, and 1914) so that it can issue new notes (to save other banks) without these notes being backed up. The final remains of Peel's Act are scrapped in 1928.
