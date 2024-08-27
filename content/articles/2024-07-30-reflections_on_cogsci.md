@@ -71,10 +71,10 @@ Amsterdam is a crazy city. Very beautiful but also crushingly crowded with peopl
 </figure>
 
 ### References
-[1] Li, Minchen, et al. Incremental potential contact: intersection-and inversion-free, large-deformation dynamics. ACM Trans. Graph. 39.4 (2020): 49.   
-[2] Mehta, Ishit, Manmohan Chandraker, and Ravi Ramamoorthi. A level set theory for neural implicit evolution under explicit flows. European Conference on Computer Vision. Cham: Springer Nature Switzerland, 2022.  
-[3] Paulun, Vivian C., et al. Shape, motion, and optical cues to stiffness of elastic objects. Journal of vision 17.1 (2017): 20-20.   
-[4] Paulun, Vivian C., et al. Seeing liquids from static snapshots. Vision research 115 (2015): 163-174.    
+[1] Li, Minchen, et al. [Incremental potential contact: intersection-and inversion-free, large-deformation dynamics.](https://par.nsf.gov/servlets/purl/10170679) ACM Trans. Graph. 39.4 (2020): 49.   
+[2] Mehta, Ishit, Manmohan Chandraker, and Ravi Ramamoorthi. [A level set theory for neural implicit evolution under explicit flows.](https://link.springer.com/chapter/10.1007/978-3-031-20086-1_41) European Conference on Computer Vision. Cham: Springer Nature Switzerland, 2022.  
+[3] Paulun, Vivian C., et al. [Shape, motion, and optical cues to stiffness of elastic objects.](https://pdfs.semanticscholar.org/e89f/e963e13269274c17dbe1c5d263d9fff254de.pdf) Journal of vision 17.1 (2017): 20-20.   
+[4] Paulun, Vivian C., et al. [Seeing liquids from static snapshots.](https://www.sciencedirect.com/science/article/pii/S0042698915000401) Vision research 115 (2015): 163-174.    
 [5] Wu, Jiajun, et al. [Galileo: Perceiving physical object properties by integrating a physics engine with deep learning.](https://proceedings.neurips.cc/paper/2015/hash/d09bf41544a3365a46c9077ebb5e35c3-Abstract.html) Advances in neural information processing systems 28 (2015).   
 [6] Whittington, James CR, et al. [On prefrontal working memory and hippocampal episodic memory: Unifying memories stored in weights and activity slots.](https://www.biorxiv.org/content/biorxiv/early/2024/03/04/2023.11.05.565662.full.pdf) bioRxiv (2023): 2023-11.
 
