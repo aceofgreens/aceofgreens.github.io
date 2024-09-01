@@ -15,7 +15,10 @@ To get a feeling for what I’m all about, check out some of my favourite quotes
 
 <li><em>I can calculate the motion of heavenly bodies, but not the madness of people.</em><br> - Isaac Newton</li>
 
+<!-- <li><em>In the great chess-board of human society, every single piece has a principle of motion of its own, altogether different from that which the legislature might choose to impress upon it.</em><br> - Adam Smith </li> -->
+
 </ul>
 
 My interests lie in fields like machine learning, artificial intelligence, computer science, economics.
 
+This blog is dedicated to *The Electric Messiah* and *The Fellowship*. They have provided me with precious bits of high-quality training signal and have supported, encouraged, and shaped my worldview more than anyone else, for which I am beyond grateful.
