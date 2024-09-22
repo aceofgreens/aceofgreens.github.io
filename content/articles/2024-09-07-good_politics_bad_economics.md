@@ -20,29 +20,29 @@ So let's analyze the effect of power from a pragmatic view. Firstly, we should a
 The political landscape can be broken down into three groups:
 
 1. **The nominal selectorate**. This is everyone who has at least some legal say in choosing their leader. In a democracy this selectorate is large and consists of everyone who is eligible to vote. However small the weight of their vote may be, they are still *able* to affect the outcome of an election deciding who is to come into power. This group is called *interchangeables*.
-2. **The real selectorate**. These are the people that actually choose the leader. Examples here include all the members of the Communist Party in China, or back in the Soviet Union, the senion members of the royal family in Saudi Arabia, or the voters backing members of parliament from the majority party in Great Britain. This group is called *influentials*.
+2. **The real selectorate**. These are the people that actually choose the leader. Examples here include all the members of the Communist Party in China or back in the Soviet Union, the senion members of the royal family in Saudi Arabia, or the voters backing members of parliament from the majority party in Great Britain. This group is called *influentials*.
 3. **The winning coalition**. These are the ones whose support is essential in order for the wining coalition to survive. For Louis XIV this included a handful of members of the court, military officers, and senion civil servants. For the US, it is the minimal number of voters who give the edge to one presidential candidate over another. This group is called *essentials*.
 
 Let's consider the United States. The nominal selectorate consists of all voters. The real selectorate consists of the electors of the electoral college. However, nowadays they are normatively bound to vote the way their state's voters voted. As a result, the real selectorate and the nominal selectorate are very closely aligned. The winning coalition consists of those voters, properly distributed among the states, whose support for a candidate translates into a presidential win in the electoral college.
 
-Different forms of government can be put in a spectrum according to the size of their interchangeables, influentials, and essentials. Dictatorships have a very little essentials chosen from a very large group of interchangeables, and usually a relatively small batch of influentials. Democracies have very large essentials, interchangeables, and also influentials. A monarchy or a military junta has a small number of interchangeables, influentials, and essentials.
+Different forms of government can be put on a spectrum according to the size of their interchangeables, influentials, and essentials. Dictatorships have very few essentials chosen from a very large group of interchangeables, and usually a relatively small batch of influentials. Democracies have very large sets of essentials, interchangeables, and also influentials. A monarchy or a military junta has a small number of interchangeables, influentials, and essentials.
 
-People are inventive in finding ways to manipulate these three groups to their advantage:
+Historically and even up to today, politicians have been very inventive in finding ways to manipulate these three groups to their advantage. Even though they believe they are public servants and always operate in the name of the public good, it is not difficult to intuitively understand how the relationships between the three groups of people can and, in fact, do determine outcomes of elections. Consider the following examples:
 
 - Leaders make rules to allow more people to vote, yet impose electoral boundaries.
 - Democratic elits may decide to require a plurality, instead of majority, in order to win.
 - A runoff election may be held to create a majority, even though it may end up being a majority of the interchangeables' second-place choices.
 - Leaders can represent political views in proportion to how many votes each view got, forging a government out of a colition of minorities.
 
-All of these can be considered democratic practices, yet may lead to wildly different outcomes.
+All of these can be considered democratic practices, yet may lead to wildly different outcomes. Thus, it is very important how the governance system is designed.
 
-To stay in power, leaders need to keep their essential coalition intact, which happens by supporting them financially. Small coalitions encourage stable, corrupt, private-goods-oriented regimes. On the contrary, where coalitions are large, as in democracies, it is too costly to buy loyalty through private rewards. Therefore, leaders emphasize spending to create effective public policies that improve general welfare.
+To stay in power, leaders need to keep their essential coalition intact, which happens by rewarding the supporters financially. Small coalitions encourage stable, corrupt, private-goods-oriented regimes. On the contrary, where coalitions are large, as in democracies, it is too costly to buy loyalty through private rewards. Therefore, leaders emphasize spending to create effective public policies that improve the general welfare of most influentials.
 
 Since the ruler depends on other people, who in turn depend on yet other people, a complicated hierarchical power relationship forms. Each leader must spend enough to keep those on which he depends satisfied. Otherwise, a challenger may steal the supporters by offering them increased rewards under his leadership. We can delineate 5 rules that help leaders stay in power:
 
 1. *Keep your winning coalition as small as possible*. It is good to depend on fewer people which makes staying in power easier.
 2. *Keep your nominal selectorate as large as possible*. Being able to easily replace troublemakers in your coalition puts more pressure on them and keeps them in check.
-3. *Control the flow of revenue*. By creating a bottleneck in incoming revenue, a leader can divert large amounts from one group of people, e.g. interchangeables, to another, e.g. essentials. This increases bargaining power.
+3. *Control the flow of revenue*. By creating a bottleneck in incoming revenue, a leader can divert large amounts from one group of people, e.g. interchangeables, to another, e.g. essentials. Controlling the flow of rewards increases bargaining power.
 4. *Pay your key supporters just enough to keep them loyal*. Naturally, this helps the ruler to stay in power while minimizing expenditures for doing so.
 5. *Don't take money out of your supporter's pockets to make the people's lives better*. Disappointed coalition members can defect if the leader prioritises the people instead of them.
 
@@ -51,6 +51,6 @@ Since the ruler depends on other people, who in turn depend on yet other people,
     <figcaption>Figure 1: A schematic showing hierarchical power structure.</figcaption>
 </figure>
 
-For dictatorships it is obvious that these rules apply. But they are present also in democracies. District gerrymandering can keep coalitions small. Immigration can expand the set of interchangeables. Changing the tax code helps controlling revenue. Welfare programs help to reward essentials. In general, democrats have a harder time staying in power because of the large group of essentials and as a result have to provide more to its supporters.
+For dictatorships it is obvious that these rules apply. But they are present also in democracies. District gerrymandering can keep coalitions small. Immigration can expand the set of interchangeables. Changing the tax code helps to control revenue. Welfare programs help to reward essentials. In general, democrats have a harder time staying in power because of the large group of essentials and as a result have to provide more to its supporters.
 
 Thus, even if in a democracy most of the time public policies are beneficial to most of the people, it is not the case that in general good economics will get you re-elected. Depending on the governance system architecture and the incentives it creates, the policies which benefit a small group of supporters may wildly disadvantage another larger group of non-supporters. For further details, the book to read is [this one](https://en.wikipedia.org/wiki/The_Dictator%27s_Handbook).
