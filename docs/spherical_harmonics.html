@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Spherical Harmonics | The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+
+
+    <meta name="description" content="Spherical harmonics are a nice little mathematical tool that has found big applications in computer vision for modeling view-dependent light. The first time I encountered them was in the Plenoxels paper and I've been meaning to explore them ever since. Apart from the mathematics, there's not much to worry about, it's actually quite pleasant." />
+
+    <meta name="tags" content="cs" />
+
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <header class="post-header">
+      <h1 class="post-title p-name" itemprop="name headline">Spherical Harmonics</h1>
+      <p class="post-meta">
+        <time class="dt-published" datetime="2024-10-26T07:00:00+02:00" itemprop="datePublished">
+          26 Oct 2024
+        </time>
+      </p>
+
+    </header>
+
+    <div class="post-content">
+      <p>Spherical harmonics are a nice little mathematical tool that has found big applications in computer vision for modeling view-dependent light. The first time I encountered them was in the <a href="https://arxiv.org/abs/2112.05131">Plenoxels</a> paper and I've been meaning to explore them ever since. Apart from the mathematics, there's not much to worry about, it's actually quite pleasant.</p>
+<p>We start with some motivation from computer graphics. Consider that, due to light being directional, in 3D we can think of the incoming and outgoing light directions as points on a unit sphere. The rendering equation defines the radiance at a surface point <span class="math">\(\mathbf{p}\)</span> that goes out in direction <span class="math">\(\mathbf{v}\)</span>. It consists of the emitted light from point <span class="math">\(\mathbf{p}\)</span> in that direction, summed with the reflected light towards <span class="math">\(\mathbf{v}\)</span> from all incoming directions:</p>
+<div class="math">$$
+L_{\text{out}}(\mathbf{p}, \mathbf{v}, \lambda) = L_{\text{emit}}(\mathbf{p}, \mathbf{v}, \lambda) + \int_\Omega \text{BRDF}(\mathbf{p}, \mathbf{s}, \mathbf{v}, \lambda) L_{\text{in}}(\mathbf{p}, \mathbf{s}, \lambda) (\mathbf{n}^T \mathbf{s}) d\mathbf{s}.
+$$</div>
+<p>Here <span class="math">\(\lambda\)</span> is the wavelength, <span class="math">\(\Omega\)</span> is the hemisphere of all incoming directions <span class="math">\(\mathbf{s}\)</span>, <span class="math">\(\mathbf{n}\)</span> is the surface normal at point <span class="math">\(\mathbf{p}\)</span>, and the BRDF controls the precise way in which light is reflected. Diffuse surfaces reflect light uniformly in all directions, while specular surfaces reflect in a mirror-like way. Most natural surfaces have both a specular and a diffuse component.</p>
+<p>As another example in radiometry, the <a href="https://en.wikipedia.org/wiki/Radiometry">radiance</a>, or the emitted electromagnetic energy, is also measured in a directional way. The total power of light emittance by a physical object is called <em>radiant flux</em>. If we differentiate it with respect to direction, we get <em>radiant intensity</em>. If we further differentiate it by its surface area, we get radiance. Thus, when it comes to waves, it is important to be able to model directionally-dependent quantities.</p>
+<p>In vision, when reconstructing 3D scenes, for example using <a href="https://en.wikipedia.org/wiki/Neural_radiance_field">neural radiance fields</a>, it is common to have the network model a function like <span class="math">\((\mathbf{p}, \theta, \phi) \mapsto \mathbf{c}\)</span>. If we only predict the RGB color <span class="math">\(\mathbf{c}\)</span> from the point coordinates <span class="math">\(\mathbf{p}\)</span>, without consider the viewing direction <span class="math">\((\theta, \phi)\)</span>, then the point will look the same from all directions, which may be unrealistic. Thus, usually we condition the generated color to depend on the viewing direction. Spherical harmonics are a different way to achieve this.</p>
+<p>The Laplacian of a function <span class="math">\(f(x, y)\)</span> is given by <span class="math">\(\nabla^2 f = \frac{\partial^2 f}{\partial x^2} + \frac{\partial^2 f}{\partial y^2}\)</span>. Any function <span class="math">\(f\)</span> for which <span class="math">\(\nabla^2 f = 0\)</span> is called a harmonic. This property entails a certain smoothness to the function. To see why, consider the Laplacian operator applied on images, in which case it's called the Laplacian filter. It looks like the following convolution kernel.</p>
+<div class="math">$$
+\begin{pmatrix}
+0 &amp; -1 &amp; 0 \\
+-1 &amp; 4 &amp; -1 \\
+0 &amp; -1 &amp; 0
+\end{pmatrix} \text{ or } 
+\begin{pmatrix}
+-1 &amp; -1 &amp; -1 \\
+-1 &amp; 8 &amp; -1 \\
+-1 &amp; -1 &amp; -1
+\end{pmatrix}
+$$</div>
+<p>It takes the difference between the value at the central point and the average value of the surrounding points. When scanning it along an image, it produces a peak whenever a change in intensity is detected. Intuitively, this Laplacian is equal to zero whenever the central value is exactly equal to the average of the surrounding values. In that regard, the function is smooth.</p>
+<p>This interpretation of the Laplacian as a measure of how different the current point is from its surroundings is very important. It is present for example in the heat and wave equations:</p>
+<div class="math">$$
+\begin{align}
+ \frac{\partial f}{\partial t} &amp;= \nabla^2 f \\
+ \frac{\partial^2 f}{\partial t^2} &amp;= \nabla^2 f
+\end{align}
+$$</div>
+<p>The heat equation tells us that the speed with which some quantity <span class="math">\(f\)</span> at a particular point <span class="math">\(\mathbf{x}\)</span> changes depends on the different of <span class="math">\(f\)</span> at that point, and the surrounding points. So if we imagine a flat plane and an infinitely tiny region which is warped (a bit like how they represent singularities in space-time), then at that particular point that difference (Laplacian) will be very large in magnitude. The velocity with which <span class="math">\(f\)</span> changes at this point will be proportional to how curved <span class="math">\(f\)</span> is at that point.</p>
+<p>The same notion of curvature is used in the wave equation, except that now it tells us that the acceleration of <span class="math">\(f\)</span>, not the velocity, depends on it. This small change leads to big qualitative differences as it usually introduces offershooting dynamics causing <span class="math">\(f\)</span> to oscillate, which in turn gives rise to waves. Depending on the boundary conditions waves can propagate radially, or interfere between each other, or be standing waves. But the general idea is that the acceleration of some quantity depends on the difference between the specific value and the surrounding values.  </p>
+<p>Now back to spherical harmonics, they are functions defined on the surface of a sphere. Naturally, they are smooth. They do not have any isolated local maxima (or similarly minima). This means that there is no point <span class="math">\(x^*\)</span> on the sphere where the harmonic has a local maximum (there exists a small neighborhood around <span class="math">\(x^*\)</span> where the values are all smaller than the value at <span class="math">\(x^*\)</span>) that is also unique in attaining this value across the whole domain. For example, the function <span class="math">\(\sin(x)\)</span> has a local maximum at <span class="math">\(\pi/2\)</span> but it is not isolated, because there are other local maxima at <span class="math">\(\frac{5\pi}{2}, \frac{9\pi}{2}, ...\)</span> which attain the same value.</p>
+<p>With spherical harmonics there are no isolated local extema. There may be local maxima and minima, but they are not isolated. Any increase in the function needs to be offset by a decrease somewhere else. An intuitive way to think about this is through the Laplacan filter kernel for 2D images. The versions presented above are <span class="math">\(3\times3\)</span>, but we can extend them to <span class="math">\(5\times5\)</span> and beyond:</p>
+<div class="math">$$
+\begin{pmatrix}
+0 &amp; 0   &amp;   -1  &amp;   0   &amp;   0 \\
+0   &amp;   -1  &amp;   -2  &amp;   -1  &amp;   0 \\
+-1  &amp;   -2 &amp; 16 &amp;   -2  &amp;   -1 \\
+0   &amp;   -1  &amp;   -2  &amp;   -1  &amp;   0 \\
+0   &amp;   0   &amp;   -1  &amp;   0   &amp;   0 \\
+\end{pmatrix}.
+$$</div>
+<p>This filter computes the same Laplacian but considers a larger context window compared to the <span class="math">\(3\times3\)</span> one. If we imagine an even bigger one, it becomes clear that it is entirely possible to have a high-value region within the neighborhood, as long as there are also points somewhere in it that are sufficiently negative so as to balance it out.</p>
+<p>Figure 1 shows a few spherical harmonics (only their real part really). Each of them has specific <em>degree</em> and <em>order</em> parameters. The order, called <span class="math">\(m\)</span>, represents the number of waves we can count if we trace the sphere horizontally along a constant latitude. If <span class="math">\(m=0\)</span>, the harmonic has no variation along the longitude and is symmetric around the polar axis. The degree, typically called <span class="math">\(\ell\)</span>, represents the number of latitude (horizontal) variations or bands that the function will have. If we trace the values on a line from one pole to the other, it will have <span class="math">\(\ell - |m|\)</span> zero-crossings. A particular harmonic is written as <span class="math">\(Y_\ell^m\)</span>.</p>
+<figure>
+    <img class='big_img' src="/images/sh1.png" alt="Spherical harmonics" width="1200">
+    <figcaption>Figure 1: Spherical harmonics from degree one to degree three. Only the real part is shown. Red regions are positive, blue are negative, white is close to zero. Colors are normalized independently for each harmonic and cannot be compared between different harmonics.</figcaption>
+</figure>
+
+<h3>Derivation</h3>
+<p>Let's look at a high level derivation, without too much mathematical details. We are looking for functions <span class="math">\(f: \mathbb{R}^3 \rightarrow \mathbb{C}\)</span> for which <span class="math">\(\nabla^2 f = 0\)</span>. We start with the Laplace equation in spherical coordinates (its derivation can be found <a href="https://planetmath.org/derivationofthelaplacianfromrectangulartosphericalcoordinates">here</a>):</p>
+<div class="math">$$
+\nabla^2f = \frac{1}{r^2}\frac{\partial}{\partial r}\bigg(r^2 \frac{\partial f}{\partial r}\bigg) + \frac{1}{r^2 \sin \theta} \frac{\partial}{\partial \theta} \bigg( \sin \theta \frac{\partial f}{\partial \theta}\bigg) + \frac{1}{r^2 \sin^2 \theta} \frac{\partial^2 f}{\partial \phi^2} = 0,
+$$</div>
+<p>where <span class="math">\(\theta\)</span> is the inclination angle, <span class="math">\(\phi\)</span> is the azimuth, angle ranges are <span class="math">\(0 &lt; \phi &lt; 2\pi\)</span>, <span class="math">\(0 &lt; \theta &lt; \pi\)</span>. The boundary conditions ensuring periodicity are <span class="math">\(f(r, \theta, 0) = f(r, \theta, 2\pi)\)</span> and <span class="math">\(f_\phi(r, \theta, 0) = f_\phi(r, \theta, 2\pi)\)</span>. Additionally, the most important boundary condition is <span class="math">\(f(r, \theta, \phi) = g(\theta, \phi)\)</span>, which expresses the idea that we are considering to model some particular function <span class="math">\(g\)</span> depending only on the direction <span class="math">\((\theta, \phi)\)</span>, not the radial distance.</p>
+<p>Let's assume that <span class="math">\(f\)</span> factorizes as <span class="math">\(f(r, \theta, \phi) = R(r)\Theta(\theta)\Phi(\phi)\)</span>. After substituting and rearranging, we can get an expression from which <span class="math">\(r\)</span> can be moved to one side:</p>
+<div class="math">$$
+\frac{1}{R}\frac{d}{dr}\bigg( r^2 \frac{dR}{dr}\bigg) + \frac{1}{\sin\theta \Theta} \frac{d}{d\theta}\bigg( \sin \theta \frac{d\Theta}{d\theta}\bigg) + \frac{1}{\sin^2\theta \Phi}\frac{d^2 \Phi}{d\phi^2} = 0.
+$$</div>
+<p>Since the <span class="math">\(r\)</span> terms can be separated from the non <span class="math">\(r\)</span> terms, all of them need to equal a constant. Hence, we introduce <span class="math">\(-\lambda\)</span> and get the following equations:</p>
+<div class="math">$$
+\begin{align}
+&amp;\frac{1}{R}\frac{d}{dr} \bigg( r^2 \frac{dR}{dr}\bigg) = \lambda \\
+&amp;\frac{1}{\sin\theta \Theta} \frac{d}{d\theta}\bigg( \sin \theta \frac{d\Theta}{d\theta}\bigg) + \frac{1}{\sin^2\theta \Phi}\frac{d^2 \Phi}{d\phi^2} = -\lambda.
+\end{align}
+$$</div>
+<p>Now, we introduce a second separation constant, <span class="math">\(m^2\)</span>, in the second of these, from which we get:</p>
+<div class="math">$$
+\begin{align}
+&amp;\frac{1}{\Phi}\frac{d^2 \Phi}{d\phi^2} = -m^2\\
+&amp; \lambda \sin^2 \theta + \frac{\sin\theta}{\Theta} \frac{d}{d\theta} \bigg(\sin \theta \frac{d\Theta}{d\theta} \bigg) = m^2.
+\end{align}
+$$</div>
+<p>The equation for <span class="math">\(\phi\)</span> is a second order linear equation. Its solution, given the periodic boundary constraints, is <span class="math">\(\Phi(\phi) = \{\sin m \phi, \cos m \phi \}\)</span>, for <span class="math">\(m=0, 1, 2, ...\)</span>.</p>
+<p>The solution for the equation for <span class="math">\(\theta\)</span> is more involved. If we substitute <span class="math">\(x = \cos\theta\)</span> in the second equation above and let <span class="math">\(y(x) = \Theta(\theta)\)</span>, then we get </p>
+<div class="math">$$
+\frac{d}{dx}\bigg( (1 - x^2) \frac{dy}{dx}\bigg) + \bigg( \lambda - \frac{m^2}{1 - x^2}\bigg)y = 0
+$$</div>
+<p>Here one can assume a functional form of the type <span class="math">\(y(x) = \sum_{n=0}^\infty a_n x^n\)</span>, that is, a generating function. Now, from studying this equation, one would get a recurrence relation for the coefficients <span class="math">\(a_n\)</span>, where <span class="math">\(\lambda\)</span> is still to be found. Turns out the infinite series converges only when <span class="math">\(\lambda = \ell(\ell + 1)\)</span>, for <span class="math">\(\ell = 0, 1, 2, ...\)</span>. In general, the solution for <span class="math">\(\Theta(\theta)\)</span> involves the so-called associated Legendre functions, which we note as <span class="math">\(P^m_\ell\)</span>, and is given by <span class="math">\(\Theta(\theta) = P^m_\ell(\cos \theta)\)</span>.</p>
+<p>Having establishes that <span class="math">\(\lambda=\ell(\ell + 1)\)</span>, we can solve the radial equation by assuming a solution of the form <span class="math">\(R(r) = r^s\)</span>. When solving for <span class="math">\(s\)</span>, we get <span class="math">\(s(s+1) = \ell(\ell+1)\)</span>, hence <span class="math">\(s = \ell\)</span> or <span class="math">\(s = -(\ell + 1)\)</span>. In general, after boundary conditions, <span class="math">\(R(r) = ar^\ell\)</span>. </p>
+<p>Finally, the overall solution, in complex form, is given by</p>
+<div class="math">$$
+f(r, \theta, \phi) = \sum_{l=0}^\infty \sum_{m = -\ell}^{\ell} a_{
+    \ell, m} r^\ell P_l^m(\cos \theta) e^{i m \phi}.
+$$</div>
+<p>Since spherical harmonics arise in many cases and only their angular terms matter, it is common to combine them as follows (and this is actually the usual form):</p>
+<div class="math">$$
+Y_\ell^m(\theta, \phi) = \sqrt{\frac{2\ell + 1}{4\pi} \frac{(\ell - m)!}{(\ell + m)!}} P_\ell^m (\cos \theta) e^{im\phi}
+$$</div>
+<p>Spherical harmonics form a complete orthonormal basis for functions on the sphere. Thus, much like how every function on the circle can be expressed as a potentially infinite series of Fourier terms, also, every function on the sphere can be expressed as a potentially infinite sum of spherical harmonics. The coefficients <span class="math">\(a_\ell^m\)</span> are found as </p>
+<div class="math">$$
+a_\ell^m = \int_0^{2\pi} \int_0^\pi g(\theta, \phi) Y_\ell^{m \ast} (\theta, \phi) \sin \theta d\theta d\phi,
+$$</div>
+<p>where <span class="math">\(\ast\)</span> indicates complex conjugation and, finally, we are using the boundary condition <span class="math">\(g(\theta, \phi)\)</span>. Thus, the interesting things start to happen when we mix different spherical harmonics with different coefficients. Fig. 2 shows a few examples where we combine different harmonics and plot them by radially modulating the shape according to the magnitude.</p>
+<figure>
+    <img class='extra_big_img' src="/images/sh3.png" alt="Spherical harmonics" width="1200">
+    <figcaption>Figure 2: Combinations of various spherical harmonics. Even though they are defined on a sphere, we plot them by modulating the distance from the origin of each point according to its magnitude. Blue regions indicate negative values, while red - positive. Increasing the coefficients of the higher frequency harmonics makes their frequencies dominate the overall shape.</figcaption>
+</figure>
+
+<p>Naturally, it is obvious that spherical harmonics can model very complicated BRDFs representing diverse specular effects. So how do we use them for machine learning? The common approach is to have the model predict the coefficients of all spherical harmonics up to a given degree, e.g. <span class="math">\(3\)</span>. Then, we sum them up and evaluate the joint harmonic at the requested <span class="math">\((\theta, \phi)\)</span> direction. If we need to produce RGB images, and not just intensities, we can predict separate coefficients for the red, green, and blue channels and thereby simply repeat the process for each channel independently. In most implementations the evaluation is very efficient because the normalization factors for the basis spherical components are precomputed and hardcoded. Therefore the neural network just predicts the coefficients <span class="math">\(a_\ell^m\)</span> for RGB separately and we approximate the light field by the the linear combination of the first few low degree spherical harmonics.</p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'], ['$', '$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+    </div>
+  
+  <p class="post-meta">
+    Tag: cs
+  </p>
+
+  </article>
+
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>
