@@ -146,7 +146,7 @@ or even better
 
 $$ \pi_t = \pi_t^e + (\mu + z) - \alpha u_t .$$
 
-This equation is called the Phillips curve and suggests that the actual inflation in period $t$ depends on the expected inflation for period $t$. This happens because a higher expected price level $P^e$ leads to higher current prices $P$, which compared a given value of past prices, is inflation. Similarly, an increase in the markup or a decrease in the unemployment rate also lead to higher inflation.
+This equation is called the Phillips curve and suggests that the actual inflation in period $t$ depends on the expected inflation for period $t$. This happens because a higher expected price level $P^e$ leads to higher current prices $P$, which compared to a given value of past prices, is inflation. Similarly, an increase in the markup or a decrease in the unemployment rate also lead to higher inflation.
 
 The Phillips curve represents a fairly complicated process governing the inflation rate, mainly due to the different possibilities for the formation of the expectation $\pi_t^e$. Before 1970, it was believed that the expectation was constant $\pi_t^e = \bar{\pi}$, but after that models were adapted to handle autoregressive expectations like $\pi_t^e = \theta \bar{\pi} + (1 - \theta) \pi_{t-1}$. The accuracy of the Phillips curve now depends on the accuracy of the expectation model for $\pi_t^e$ and care should be taken when choosing its functional form in order to keep the process stationary (unless one wants to model rare scenarios like hyperinflation).
 
