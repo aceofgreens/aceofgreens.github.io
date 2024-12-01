@@ -55,6 +55,19 @@ Recent posts:
 <ul>
 
     <li>
+      <span class="dates_and_tags">30 Nov 2024 </span>
+      
+      
+      <a class="enum_title" href="analytic_policy_gradients.html"><b>Analytic Policy Gradients</b></a>
+      
+      <p>
+      Current methods to learn controllers for autonomous vehicles (AVs) focus on behavioural cloning, where agents learn to mimic the actions obtained from an expert trajectory. Being trained only on exact historic data, the resulting agents often generalize poorly when deployed to novel scenarios. Simulators provide the opportunity to go beyond offline datasets, but they are still treated as complicated black boxes, only used to update the global simulation state. As a result, these RL algorithms are slow, sample-inefficient, and prior-agnostic. Instead, if these simulators are differentiable, they can be included into an end-to-end training loop, turning their hard-coded world dynamics into useful inductive biases for the model. Here we explore the differentiable Waymax simulator and use analytic policy gradients to train AV controllers on the large-scale Waymo Open Motion Dataset (WOMD) [1]. This allows us to learn robust, accurate, and fast policies only using gradient descent.
+      </p>
+      <br>
+    </li>
+
+
+    <li>
       <span class="dates_and_tags">21 Nov 2024 </span>
       
       
@@ -101,19 +114,6 @@ Recent posts:
       
       <p>
       Being able to differentiate through the graphics rendering pipeline is a promising nascent technology that opens up the possibilities for tackling interesting vision problems of all kinds, from scene parameter estimation, to 3D modeling. Typically, in such cases one only has access to 2D images, and the task of finding the corresponding 3D representation is handled using <em>analysis by synthesis</em> - an approach where we render multiple candidate 2D images, compute a loss term, and propagate it back to the 3D scene attributes which we want to estimate. Such an approach requires differentiable rendering.
-      </p>
-      <br>
-    </li>
-
-
-    <li>
-      <span class="dates_and_tags">21 Sep 2024 </span>
-      
-      
-      <a class="enum_title" href="good_politics_bad_econ.html"><b>Good Politics, Bad Economics</b></a>
-      
-      <p>
-      This is a very important article. It deals with politicians and the nature of power. It explores the differences between dictatorships and democracies. It questions some of the core democratic tenets that we are told to believe. It provides an important perspective that is not only plausible but probable. In my opinion, it is an indispensable view for making stone cold rational sense of modern society and all its complicacies.
       </p>
       <br>
     </li>
