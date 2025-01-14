@@ -96,7 +96,7 @@ $$</div>
 <div class="math">$$
 \nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta(\tau)} \left[ \sum_{t=1} \nabla_\theta \log \pi_\theta(a_t | s_t) \Big( \sum_{t=1}r_{t} \Big) \right] \approx  \frac{1}{N} \sum_{i=1}^N \sum_{t=1} \nabla_\theta \log \pi_\theta(a_t^i | s_t^i) \Big( \sum_{t=1}r_{t}^i \Big).
 $$</div>
-<p>Here the sum of rewards uses the same index <span class="math">\(t\)</span> because it is factored out from the innermost sum and there is no ambiguity. The same value multiplies all the innermost terms. This setup is the classic REINFORCE algorithm. To train the algorithm, we roll-out a trajectory and update the policy weights as <span class="math">\(\theta' = \theta + \eta \nabla_\theta J(\theta)\)</span>. The collected trajectory is discarded. No replay buffers are used. We can also roll-out a batch of trajectories and perform a batched update with them. But we cannot perform multiple sequential updates on the same trajectory (not yet).</p>
+<p>Here the sum of rewards uses the same index <span class="math">\(t\)</span> because it is factored out from the innermost sum and there is no ambiguity. The same value multiplies all the innermost terms. This setup is the classic REINFORCE algorithm [1]. To train the algorithm, we roll-out a trajectory and update the policy weights as <span class="math">\(\theta' = \theta + \eta \nabla_\theta J(\theta)\)</span>. The collected trajectory is discarded. No replay buffers are used. We can also roll-out a batch of trajectories and perform a batched update with them. But we cannot perform multiple sequential updates on the same trajectory (not yet).</p>
 <p>Note that the REINFORCE algorithm simply formalizes the idea of "trial and error". The agent has to experience different rewards in order to get a sense of what works and the likelihood of which actions should be maximized. If the reward is the same everywhere, the agent doesn't learn because it does not learn to prioritize one action at the expense of another one. Same thing happens if the reward is zero - the agent does not learn. Thus, optimal policy learning is a <em>search</em> task. Unlike classification, regression, or other supervised tasks, here the agent requires variability in the reward in order to search more efficiently.</p>
 <p>The problem with this basic algorithm is that its variance is too large. Since both <span class="math">\(a_t | s_t\)</span> and <span class="math">\(s_{t+1} | s_t, a_t\)</span> are random variables, the variance of <span class="math">\(\tau\)</span> can be huge and hence the updates <span class="math">\(\nabla_\theta J(\theta)\)</span> while unbiased, will be very inconsistent from iteration to iteration. To address this, we need to make a few modifications.</p>
 <p>First, we don't need to have the full sum of rewards <span class="math">\(\sum_{t=1} r_t\)</span> at every single step. In reality, action <span class="math">\(a_t\)</span> only affects rewards <span class="math">\(r_t, r_{t+1}, r_{t+2}, ...,\)</span>, not <span class="math">\(r_1, ..., r_{t-1}\)</span>. Hence the log probability can be weighted by the "reward to go", <span class="math">\(G_t = \sum_{j=t} r_j\)</span>. With this change the update becomes</p>
@@ -131,8 +131,8 @@ J(\theta')&amp; = \mathbb{E}_{\tau \sim \pi_\theta(\tau)} \left[ \frac{\pi_{\the
 &amp;= \mathbb{E}_{\tau \sim \pi_\theta(\tau)} \left[ \Bigg(\frac{\prod_{t=1} \pi_{\theta'}(a_t | s_t)}{\prod_{t=1} \pi_{\theta}(a_t | s_t)} \Bigg) \left( \sum_{t=1} \nabla_{\theta'}\log \pi_{\theta'}(a_t | s_t) \right) \left( \sum_{t=1} r_t \right) \right]
 \end{align}
 $$</div>
-<p>The more times we update on the same data, the more <span class="math">\(\theta'\)</span> becomes different from <span class="math">\(\theta\)</span>, and hence the more the first term in the last equation diverges from 1. This could very easily lead to vanishing or exploding gradients. To address this, we need to keep the policies close to each other, i.e. <span class="math">\(D_\text{KL}(\pi_{\theta'} || \pi_\theta) \le \delta\)</span>. This is the idea behind the Trust Region Policy Optimization (TRPO) algorithm. There is a lot of math behind it, so we'll skip it, but the bottom line is that it improves stability by keeping the current policy sufficiently close to the old one.</p>
-<p>Another method along the same idea of restricting how much the policy changes is Proximal Policy Optimization (PPO). Suppose <span class="math">\(r_t(\theta') = \pi_{\theta'}(a_t | s_t) / \pi_\theta(a_t | s_t)\)</span>. PPO simply works by maximizing the minimum between <span class="math">\(r_t(\theta)\)</span> and a clipped version of it:</p>
+<p>The more times we update on the same data, the more <span class="math">\(\theta'\)</span> becomes different from <span class="math">\(\theta\)</span>, and hence the more the first term in the last equation diverges from 1. This could very easily lead to vanishing or exploding gradients. To address this, we need to keep the policies close to each other, i.e. <span class="math">\(D_\text{KL}(\pi_{\theta'} || \pi_\theta) \le \delta\)</span>. This is the idea behind the Trust Region Policy Optimization (TRPO) algorithm [2]. There is a lot of math behind it, so we'll skip it, but the bottom line is that it improves stability by keeping the current policy sufficiently close to the old one.</p>
+<p>Another method along the same idea of restricting how much the policy changes is Proximal Policy Optimization (PPO) [3]. Suppose <span class="math">\(r_t(\theta') = \pi_{\theta'}(a_t | s_t) / \pi_\theta(a_t | s_t)\)</span>. PPO simply works by maximizing the minimum between <span class="math">\(r_t(\theta)\)</span> and a clipped version of it:</p>
 <div class="math">$$
 L^{\text{CLIP}} = \mathbb{E}_t \left[ \min(r_t(\theta)A_t, \text{clip}(r_t(\theta), 1 - \epsilon, 1 + \epsilon)A_t \right].
 $$</div>
@@ -140,7 +140,11 @@ $$</div>
 <p>PPO is the default algorithm for policy gradients. There are some variations which are in use, like DD-PPO which allows for synchronized parallel data-collection on many devices, but overall the method has held up nicely. So now that we've explored the method, let's take a look at an important application - reinforcement learning from human feedback - the main technique for aligning LLMs so that they respond in more human-likable manner.</p>
 <p>Suppose we have a LLM that has been pretrained on a large corpus using next-token prediction, and then finetuned on a smaller dataset of question-answer pairs, so that it knows how to format its responses. People can still have preferences over how the LLM should respond and we'll try to align the LLM to them. Here is how RLHF works.</p>
 <p>Let the initial policy be the LLM after supervised fine-tuning (SFT), <span class="math">\(\pi^{\text{SFT}}\)</span>. We select prompts <span class="math">\(x\)</span> and generate pairs of answers <span class="math">\((y_1, y_2) \sim \pi^{\text{SFT}}(y | x)\)</span>. Human reviewers then rank them by preference, denoted as <span class="math">\(y_w \succ y_l | x\)</span>, where <span class="math">\(y_w\)</span> is the preferred response and <span class="math">\(y_l\)</span> the dispreferred one. Now, in principle, we can assume that there is some underlying reward model (the equivalent of a utility function in economics) <span class="math">\(r^\ast\)</span> which generates these preferences. Our goal is then to learn an approximation <span class="math">\(r_\phi\)</span> as close as possible to <span class="math">\(r^\ast\)</span>. Note that we do not observe the true rewards <span class="math">\(r^\ast(x, y_1)\)</span> and <span class="math">\(r^\ast(x, y2)\)</span>, only their pairwise comparisons. <a href="https://en.wikipedia.org/wiki/Bradley%E2%80%93Terry_model">Bradley-Terry</a> is a famous model establishing how to work with such preferences.</p>
-<p>In any case, the stragy is to learn a reward model <span class="math">\(r_\phi\)</span> based on the following objective:</p>
+<p>It models the probability that <span class="math">\(y_1\)</span> is preferred as given by </p>
+<div class="math">$$
+p(y_1 \succ y_2 |x) = \frac{\exp\big(r^\ast(x, y_1)\big)}{\exp\big(r^\ast(x, y_1)\big) + \exp\big(r^\ast(x, y_2)\big)}.
+$$</div>
+<p>We will learn a parameterized reward model <span class="math">\(r_\phi\)</span> to approximate <span class="math">\(r^\ast\)</span>. To do so, we view preference prediction as binary classification. The negative log-likelihood of the Bradley-Terry model directly becomes the loss function with which we can train <span class="math">\(r_\phi\)</span>:</p>
 <div class="math">$$
 \mathcal{L}_R(r_\phi, \mathcal{D}) = -\mathbb{E}_{(x, y_w, y_l) \sim \mathcal{D}} \Big[ \log \sigma\big(r_\phi(x, y_w) - r_\phi(x, y_l) \big) \Big].
 $$</div>
@@ -152,6 +156,26 @@ $$</div>
 <div class="math">$$
 r(x, y) = r_\phi(x, y) - \beta\big( \log \pi_\theta(y | x) - \log \pi^\text{SFT}(y|x)\big).
 $$</div>
+<p>This setup is too complicated. We can simplify as follows, though we'll skip the derivations. First, one can prove that the policy solving the optimization problem above with the KL has the form:</p>
+<div class="math">$$
+\pi_r(y | x) = \frac{1}{Z(x)}\pi^\text{SFT}(y | x) \exp\big(\frac{1}{\beta}r(x, y)\big).
+$$</div>
+<p>From here we can take the log and solve for <span class="math">\(r(x, y)\)</span>:</p>
+<div class="math">$$ 
+r(x, y) = \beta\log\frac{\pi_r(y | x)}{\pi^\text{SFT}(y|x)} + \beta\log Z(x).
+$$</div>
+<p>This is very convenient because in the Bradley-Terry model the probability that one sample is preferred only depends on the differences of rewards, not their actual values. We can then construct a maximum likelihood objective for a parametrized policy <span class="math">\(\pi_\theta\)</span>:</p>
+<div class="math">$$
+\mathcal{L}_\text{DPO}(\pi_\theta; \pi^\text{SFT}) = -\mathbb{E}_{x, y_w, y_l \sim \mathcal{D}} \left[ \log \sigma \Bigg( \beta \log \frac{\pi_\theta(y_w |x)}{\pi^\text{SFT}(y_w|x)} - \beta\log \frac{\pi_\theta(y_l | x)}{\pi^\text{SFT}(y_l | x)} \Bigg) \right]
+$$</div>
+<p>This method is called Direct Preference Optimization (DPO) and is very powerful. Can you find the reward model <span class="math">\(r_\phi\)</span> in it? Exactly, it's not there. In fact, the equation shows that we can finetune the LLM policy directly on human preferences, without needing to train a reward model beforehand and without needing to do RL. By finetuning with this loss the LLM learns the underlying reward function implicitly, which saves us a lot of trouble. Neat.</p>
+<h3>References</h3>
+<p>[1] Sutton, Richard S., and Andrew G. Barto. Reinforcement learning: An introduction. MIT press, 2018. <br>
+[2] Schulman, John, et al. <a href="https://proceedings.mlr.press/v37/schulman15.html">Trust Region Policy Optimization.</a> Proceedings of the 32nd International Conference on Machine Learning, vol. 37, 2015, pp. 1889-1897. <br>
+[3] Schulman, John, et al. <a href="https://arxiv.org/abs/1707.06347">Proximal policy optimization algorithms.</a> arXiv preprint 1707.06347 (2017). <br>
+[4] Wijmans, Erik, et al. <a href="https://arxiv.org/abs/1911.00357">Dd-PPO: Learning near-perfect pointgoal navigators from 2.5 billion frames.</a> arXiv preprint arXiv:1911.00357 (2019). <br>
+[5] Ouyang, Long, et al. <a href="https://proceedings.neurips.cc/paper_files/paper/2022/hash/b1efde53be364a73914f58805a001731-Abstract-Conference.html">Training language models to follow instructions with human feedback.</a> Advances in neural information processing systems 35 (2022): 27730-27744. <br>
+[6] Rafailov, Rafael, et al. <a href="https://arxiv.org/abs/2305.18290">Direct preference optimization: Your language model is secretly a reward model.</a> Advances in Neural Information Processing Systems 36 (2024).</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
