@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Analytic World Models | The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+
+
+    <meta name="description" content="Differentiable simulators have recently shown great promise for training autonomous vehicle controllers. Being able to backpropagate through them, they can be placed into an end-to-end training loop where their known dynamics turn into useful priors for the policy to learn, removing the typical black box assumption of the environment. So far, these systems have only been used to train policies. However, this is not the end of the story in terms of what they can offer. They can also be used to train world models. Specifically, in this post we propose and explore three new task setups that allow us to learn next state predictors, optimal planners, and optimal inverse states. Unlike analytic policy gradients (APG), which requires the gradient of the next simulator state with respect to the current actions, the proposed setups rely on the gradient of the next state with respect to the current state. We call this approach Analytic World Models (AWMs)." />
+
+    <meta name="tags" content="rl" />
+
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <header class="post-header">
+      <h1 class="post-title p-name" itemprop="name headline">Analytic World Models</h1>
+      <p class="post-meta">
+        <time class="dt-published" datetime="2025-01-31T07:00:00+02:00" itemprop="datePublished">
+          31 Jan 2025
+        </time>
+      </p>
+
+    </header>
+
+    <div class="post-content">
+      <p>Differentiable simulators have recently shown great promise for training autonomous vehicle controllers. Being able to backpropagate through them, they can be placed into an end-to-end training loop where their known dynamics turn into useful priors for the policy to learn, removing the typical black box assumption of the environment. So far, these systems have only been used to train policies. However, this is not the end of the story in terms of what they can offer. They can also be used to train world models. Specifically, in this post we propose and explore three new task setups that allow us to learn next state predictors, optimal planners, and optimal inverse states. Unlike analytic policy gradients (APG), which requires the gradient of the next simulator state with respect to the current actions, the proposed setups rely on the gradient of the next state with respect to the current state. We call this approach Analytic World Models (AWMs).</p>
+<h3>Introduction</h3>
+<p>Differentiable simulation has emerged as a powerful tool to train controllers and predictors across different domains like physics, graphics, and robotics. Within the field of autonomous vehicles (AVs), we've <a href="https://aceofgreens.github.io/analytic_policy_gradients.html">already looked</a> at how differentiable motion dynamics can serve as a useful stepping stone for training robust and realistic vehicle policies. The framework is straightforward and bears similarity to <a href="https://en.wikipedia.org/wiki/Backpropagation_through_time">backpropagation through time</a> - it involves rolling out a trajectory and supervising it with a ground-truth (GT) expert one. The process is sample-efficient because the gradients of the dynamics automatically guide the policy toward optimality and there is no search involved, unlike when the environment is treated as black box.</p>
+<p>Yet, this has only been explored for single policies, which are <em>reactive</em> [1] in their nature - at test-time they simply associate an action with each observation without providing any guarantee for their expected performance. Unlike them, model-based methods use planning at test time, which <em>guarantees</em> to maximize the estimated reward. They are considered more interpretable compared to model-free methods, due to the simulated world dynamics, and more amenable to conditioning, which makes them potentially safer. They are also sample-efficient due to the self-supervised training. Consequently, the ability to plan at test time is a compelling requirement towards accurate and safe autonomous driving.</p>
+<figure>
+    <img class='small_img' src="/images/awm_teaser2.png" alt="AWMs" width="1200">
+    <figcaption> Fig. 1: Differentiable simulation allows for a variety of learning tasks. Previously, differentiable simulators have been used to train controllers using analytic policy gradients (bottom). They can also be used for learning relative odometry, state planning, and inverse state estimation (top).</figcaption>
+</figure>
+
+<p>An open question is <em>whether model-based methods can be trained and utilized in a differentiable environment</em>, and what would be the benefits of doing so. Let's explore this question here. Naturally, planning requires learning a world model, but the concept of a world model is rather nuanced, as there are different ways to understand the effect of one's own actions. Fig. 1 shows our approach, which uses the differentiability of the simulator to formulate three novel tasks related to world modeling. First, the effect of an agent's action could be understood as the difference between the agent's next state and its current state. If a vehicle's state consists of its position, yaw, and velocity, then this setup has an odometric interpretation. Second, an agent could predict not an action, but a <em>desired</em> next state to visit, which is a form of state planning. Third, we can ask <em>"Given an action in a particular state, what should the state be so that this action is optimal?"</em>, which is another form of world modeling but also an inverse problem.</p>
+<p>Thus, we are motivated to understand the kinds of tasks solvable in a differentiable simulator for vehicle motion. Policy learning with differentiable simulation is called Analytic Policy Gradients (APG). Similarly, we call the proposed approach Analytic World Models (AWMs). It is intuitive, yet distinct from APG because APG requires the gradients of the next state with respect to the current actions, while AWM requires the gradients of the next state with respect to the current state.</p>
+<p>The benefit of using a differentiable environment for solving these tasks is twofold. First, by not assuming black box dynamics, one can avoid <em>searching</em> for the solution, which improves sample efficiency. Second, when the simulator is put into an end-to-end training loop, the differentiable dynamics serve to better condition the predictions, leading to more physically-consistent representations, as evidenced from other works. This happens because the gradients of the dynamics get mixed together with the gradients of the predictors. More generally, similar to how differentiable rendering allows us to solve inverse graphics tasks, differentiable simulation allows us to solve new inverse dynamics tasks.</p>
+<p>Having established the world modeling tasks, we can use them for planning at test time. Specifically, we formulate a method based on model-predictive control (MPC), which allows the agent to autoregressively imagine future trajectories and apply the proposed world modeling predictors on their imagined states. Thus, the agent can efficiently compose these predictors in time. Note that this requires another world modeling predictor - one that predicts the next state latent sensory features from the current ones. This is the de facto standard world model [2]. Its necessity results only from the architectural design, to drive the autoregressive generation. Contrary to it, the predictions from our three proposed tasks are interpretable and meaningful, and represent a step towards the goal of having robust accurate planning for driving.</p>
+<p>We'll use Waymax [3] as our simulator of choice, due to it being fully differentiable and data-driven. The scenarios are instantiated from the large-scale Waymo Open Motion Dataset (WOMD) [4] and are realistic in terms of roadgraph layouts and traffic actors.</p>
+<h3>Method</h3>
+<p>Now, let's look at the different task formulations for learning in a differentiable simulator. We'll then cover the architecture and planning aspects.</p>
+<p><strong>Notation</strong>. In all that follows we represent the current simulator state with <span class="math">\(\mathbf{s}_t\)</span>, the current action with <span class="math">\(\mathbf{a}_t\)</span>, the log (expert) state with <span class="math">\(\hat{\mathbf{s}}_t\)</span>, the log action with <span class="math">\(\hat{\mathbf{a}}_t\)</span>. The simulator is a function <span class="math">\(\text{Sim}: \mathcal{S} \times \mathcal{A} \rightarrow \mathcal{S}\)</span>, with <span class="math">\(\text{Sim}(\mathbf{s}_t, \mathbf{a}_t) \mapsto \mathbf{s}_{t + 1}\)</span>, where the set of all states is <span class="math">\(\mathcal{S}\)</span> and that of the actions <span class="math">\(\mathcal{A}\)</span>.</p>
+<p><strong>APG</strong>. We know that a differentiable simulator can turn the search problem of optimal policy learning into a supervised one. Here the policy <span class="math">\(\pi_\theta\)</span> produces an action <span class="math">\(\mathbf{a}_t\)</span> from the current state, which is executed in the environment to obtain the next state <span class="math">\(\mathbf{s}_{t+1}\)</span>. Comparing it to the log-trajectory <span class="math">\(\hat{\mathbf{s}}_{t+1}\)</span> produces a loss, whose gradient is backpropagated through the simulator and back to the policy:
+</p>
+<div class="math">$$
+\begin{aligned}
+\min_\theta {\Big\lVert \text{Sim} \big(\mathbf{s}_t, \pi_\theta (\mathbf{s}_t) \big) - \hat{\mathbf{s}}_{t+1} \Big\rVert}_2^2.
+\end{aligned}
+$$</div>
+<p>The key gradient here is that of the next state with respect to the current agent actions <span class="math">\(\frac{\partial \mathbf{s}_{t+1}}{\mathbf{a}_t}\)</span>. The loss is minimized whenever the policy outputs an action equal to the inverse kinematics <span class="math">\(\text{InvKin}(\mathbf{s}_t , \hat{\mathbf{s}}_{t+1})\)</span>. To obtain similar supervision without access to a differentiable simulator, one would need to supervise the policy with the inverse kinematic actions, which are unavailable if the environment is considered a black box. Hence, this is an example of an inverse dynamics problem that is not efficiently solvable without access to a known environment, in this case to provide inverse kinematics.</p>
+<p><strong>Relative odometry</strong>. In this simple setting a world model <span class="math">\(f_\theta : \mathcal{S} \times \mathcal{A} \rightarrow \mathcal{S}\)</span> predicts the next state <span class="math">\(\mathbf{s}_{t+1}\)</span> from the current state-action pair <span class="math">\((\mathbf{s}_t, \mathbf{a}_t)\)</span>. Here, a differentiable simulator is not needed to learn a good predictor. One can obtain <span class="math">\((\mathbf{s}_t, \mathbf{a}_t, \mathbf{s}_{t+1})\)</span> tuples simply by rolling out a random policy and then supervising the predictions with the next state <span class="math">\(\mathbf{s}_{t+1}\)</span>. Nonetheless, we provide a formulation for bringing the simulator into the training loop of this task:
+</p>
+<div class="math">$$
+\begin{aligned}
+\min_\theta {\Big\lVert \text{Sim}^{-1} \big(f_\theta(\mathbf{s}_t, \mathbf{a}_t), \mathbf{a}_t \big) - \mathbf{s}_{t} \Big\rVert}_2^2.
+\end{aligned}
+$$</div>
+<p>Here, the world model <span class="math">\(f_\theta\)</span> takes <span class="math">\((\mathbf{s}_{t}, \mathbf{a}_t)\)</span> and returns a next-state estimate <span class="math">\(\tilde{\mathbf{s}}_{t+1}\)</span>. We then feed it into an inverse simulator <span class="math">\(\text{Sim}^{-1}\)</span> which is a function with the property that <span class="math">\(\text{Sim}^{-1}( \text{Sim}(\mathbf{s}_t, \mathbf{a}_t), \mathbf{a}_t) = \mathbf{s}_t\)</span>. This output is compared with the current <span class="math">\(\mathbf{s}_t\)</span>. The loss is minimized when <span class="math">\(f_\theta\)</span> predicts exactly <span class="math">\(\mathbf{s}_{t+1}\)</span>, thus becoming a predictor of the next state.</p>
+<p>I implemented the inverse simulator for the bicycle dynamics in Waymax [3], however observed that it is problematic in the following sense. The velocities <span class="math">\(v_x\)</span> and <span class="math">\(v_y\)</span> are tied to the yaw angle of the agent through the relationship <span class="math">\(v_x = v \cos \phi\)</span> and <span class="math">\(v_y = v \sin \phi\)</span>, where <span class="math">\(\phi\)</span> is the yaw angle and <span class="math">\(v\)</span> is the current speed. However, at the first simulation step, due to the WOM dataset [4] being collected with noisy estimates of the agent state parameters, the relationships between <span class="math">\(v_x\)</span>, <span class="math">\(v_y\)</span>, and <span class="math">\(\phi\)</span> do not hold. Thus, the inverse simulator produces incorrect results for the first timestep.</p>
+<p>For this reason, one can provide another formulation for the problem that only requires access to a forward simulator and thus avoids the problem of inconsistent first-steps:
+</p>
+<div class="math">$$
+\begin{aligned}
+\min_\theta {\Big\lVert \text{Sim} \big(\mathbf{s}_{t+1} - f_\theta(\mathbf{s}_t, \mathbf{a}_t), \mathbf{a}_t \big) - \mathbf{s}_{t + 1} \Big\rVert}_2^2.
+\end{aligned}
+$$</div>
+<p>Here, <span class="math">\(f_\theta\)</span> predicts the relative state difference that executing <span class="math">\(\mathbf{a}_t\)</span> will bring to the agent. One can verify that the loss is minimized if and only if the prediction is equal to <span class="math">\(\mathbf{s}_{t+1} - \mathbf{s}_t\)</span>. This can still be interpreted as a world model where <span class="math">\(f_\theta\)</span> learns to estimate how an action would change its relative state. Since the time-varying elements of the agent state consist of <span class="math">\((x, y, v_x, v_y, \phi)\)</span>, this world model has a clear relative odometric interpretation. Learning such a predictor without a differentiable simulator will prevent the gradients of the environment dynamics from mixing with those of the network.</p>
+<p><strong>Inverse dynamics and inverse kinematics</strong>. Given a tuple <span class="math">\((\mathbf{s}_t, \mathbf{a}_t, \mathbf{s}_{t + 1})\)</span>, one can learn inverse dynamics <span class="math">\((\mathbf{s}_{t+1}, \mathbf{a}_t) \mapsto \mathbf{s}_t\)</span> and inverse kinematics <span class="math">\((\mathbf{s}_{t}, \mathbf{s}_{t+1}) \mapsto \mathbf{a}_t\)</span> without a differentiable simulator, which is useful for exploration \cite{pathak2017curiosity}. Formulations that involve the simulator are also possible. We'll skip their formulations, as it's very similar to the ones already presented.</p>
+<p><strong>Optimal planners</strong>. We call the network <span class="math">\(f_\theta: \mathcal{S} \rightarrow \mathcal{S}\)</span> with <span class="math">\(\mathbf{s}_t \mapsto \mathbf{s}_{t+1}\)</span> a planner because it plans out the next state to visit from the current one. Unlike a policy, which selects an action without explicitly knowing the next state, the planner does not execute any actions. Hence, until an action is executed, its output is inconsequential. We consider the problem of learning an optimal planner. With a differentiable simulator, as long as we have access to the inverse kinematics, we can formulate the optimisation as:
+</p>
+<div class="math">$$
+\begin{aligned}
+\min_\theta {\Big\lVert \text{Sim} \Big(\mathbf{s}_t, \text{InvKin}\big(\mathbf{s}_t, \mathbf{s}_t + f_\theta(\mathbf{s}_t) \big) \Big) - \hat{\mathbf{s}}_{t + 1} \Big\rVert}_2^2.
+\end{aligned}
+$$</div>
+<p>Here, <span class="math">\(f_\theta\)</span> predicts the next state to visit as an offset to the current one. The action that reaches it is obtained using the inverse kinematics. After executing the action we directly supervise with the optimal next state. The gradient of the loss goes through the simulator, the inverse kinematics, and finally through the state planner network. Note that with a black box environment we can still supervise the planner directly with <span class="math">\(\hat{\mathbf{s}}_{t+1}\)</span>, but a black box does not provide any inverse kinematics, hence there is no way to perform trajectory rollouts, unless with a separate behavioral policy.</p>
+<p><strong>Inverse optimal state estimation</strong>. We now consider the following task \emph{"Given <span class="math">\((\mathbf{s}_t, \mathbf{a}_t)\)</span>, find an alternative state for the current timestep <span class="math">\(t\)</span> where taking action <span class="math">\(\mathbf{a}_t\)</span> will lead to an optimal next state <span class="math">\(\hat{\mathbf{s}}_{t+1}\)</span>"}. We formulate the problem as
+</p>
+<div class="math">$$
+\begin{aligned}
+\min_\theta {\Big\lVert \text{Sim} \big(\mathbf{s}_t + f_\theta(\mathbf{s}_t, \mathbf{a}_t), \mathbf{a}_t \big) - \hat{\mathbf{s}}_{t + 1} \Big\rVert}_2^2.
+\end{aligned}
+$$</div>
+<p>Here <span class="math">\(f_\theta\)</span> needs to estimate the effect of the action <span class="math">\(\mathbf{a}_t\)</span> and predict a new state <span class="math">\(\tilde{\mathbf{s}}_t\)</span>, relatively to the current state <span class="math">\(\mathbf{s}_t\)</span>, such that after executing <span class="math">\(\mathbf{a}_t\)</span> in it, the agent reaches <span class="math">\(\hat{\mathbf{s}}_{t + 1}\)</span>. The loss is minimized if <span class="math">\(f_\theta\)</span> predicts <span class="math">\(\tilde{\mathbf{s}}_t - \mathbf{s}_t\)</span>. The key gradient, as in the equations for the relative odometry and optimal planners, is that of the next state with respect to the current state. Given the design of the Waymax simulator [3], these gradients are readily-available.</p>
+<p>Consider solving this task with a black box environment. To do so, one would need to supervise the prediction  <span class="math">\(f_\theta(\mathbf{s}_t, \mathbf{a}_t)\)</span> with the state <span class="math">\(\tilde{\mathbf{s}}_t - \mathbf{s}_t\)</span>, with <span class="math">\(\tilde{\mathbf{s}}_t\)</span> being unknown. By definition <span class="math">\(\tilde{\mathbf{s}}_t = \text{Sim}^{-1}(\hat{\mathbf{s}}_{t+1}, \mathbf{a}_t)\)</span>, which is unobtainable since under a black box environment assumption, <span class="math">\(\text{Sim}^{-1}\)</span> is unavailable. Hence, this is another inverse problem which is not solvable unless we are given more information about the environment, here specifically its inverse function.</p>
+<p>The utility of this task is in providing a "confidence" measure to an action. If the prediction of <span class="math">\(f_\theta\)</span> is close to <span class="math">\(\mathbf{0}\)</span>, then the agent is relatively certain that the action <span class="math">\(\mathbf{a}_t\)</span> is close to optimal. Likewise, a large prediction from <span class="math">\(f_\theta\)</span> indicates that the action <span class="math">\(\mathbf{a}_t\)</span> is believed to be optimal for a different state. The prediction units are also directly interpretable.</p>
+<figure>
+    <img class='small_img' src="/images/awm_architecture.png" alt="AWMs" width="1200">
+    <figcaption> Fig. 2: Model architecture. We extract observations for the different modalities (roadgraph $\text{rg}_t$, agent locations $\text{d}_t$, and traffic lights $\text{tr}_t$), process them, and fuse them into a unified latent world state. An RNN evolves the hidden state according to each timestep and selects actions. The world model predicts semantic quantities of interest (purple), allowing for latent imagination and planning. Gradients from the environment dynamics, shown in red, flow through the action execution - we only show for the control task, but in fact similar gradients flow backward also from the world modeling tasks.</figcaption>
+</figure>
+
+<p>Having described the world modeling tasks, we now present a recurrent architecture that implements predictors for them.</p>
+<p><strong>Networks</strong>. Figure 2 shows our setup. We extract observations for each modality - roadgraph, agent locations, traffic lights, and any form of route conditioning -- and process them into a unified world state representing the current situation around the ego-vehicle. To capture temporal information, we use an RNN to evolve a hidden state according to the observed features. A world model with multiple heads predict the next unified world state, a reward, and the estimates for the three tasks introduced previously - relative odometry, state planning, and inverse state estimation.</p>
+<p><strong>Losses</strong>. We use four main losses - one for the control task, which drives the behavioral policy, and three additional losses for the relative odometry, state planning, and inverse state tasks. Each of these leverages the differentiability of the environment. The inputs to the world model are detached (denoted with sg[<span class="math">\(\cdot\)</span>]) so the world modeling losses do not impact the behavioral policy. This greatly improves policy stability and makes it so one does not need to weigh the modeling losses relative to the control loss.</p>
+<p>For extended functionality, our agent requires two additional auxiliary losses. The first trains the world model to predict the next world state in latent space, which is needed to be able to predict autoregressively arbitrarily long future sequences <span class="math">\(\mathbf{z}_t, \mathbf{z}_{t+1}, ...\)</span>. It also allows us to use the AWM task heads on those imagined trajectories, similar to [5, 6]. The second is a reward loss so the world model can predict rewards. We use a standard reward defined as <span class="math">\(r_t = -{\lVert \mathbf{s}_{t+1} - \hat{\mathbf{s}}_{t+1} \rVert}_2\)</span>.</p>
+<p><strong>Qualitative results</strong>. Now, let's look at some quick qualitative results from the predictors. First, the top row of Figure 3 shows trajectories obtained using the planner. Specifically, the planner produces a desired next state <span class="math">\(\mathbf{\tilde{s}}_{t+1}\)</span> and we obtain the action <span class="math">\(\mathbf{a}_t\)</span> that brings us there using inverse kinematics. For good performance, if the planner is used for action selection at test time, we need set the behavioural policy at training time to also come from the planner. This is a slight nuisance, but is expected, since in general APG and AWMs work best in on-policy settings.</p>
+<figure>
+    <img class='extra_big_img' src="/images/awm_qualitative_preds.jpg" alt="AWM qualitative predictions" width="1200">
+    <figcaption> Fig. 3: Qualitative predictions from the world modeling predictors. The top row shows different trajectories obtained by following the planner network. The bottom row shows different imagined future sequences. Specifically, we condition the agent to turn left/right, accelerate/decelerate. The agent imagines the next one second at various points in time, shown as different colored circles. Since they align with the simulated trajectory relatively well, the agent can accurately imagine its future trajectory, even when the action sequence is relatively far from the training distribution.</figcaption>
+</figure>
+
+<p>We can also condition the agent to steer left/right, or accelerate/decelerate. The bottom row of Fig. 3 shows predictions from the relative odometry representing the agent's own imagined motion for the next one second. Computing these trajectories is done by autoregressively rolling-out the latent world model and the odometry predictor at test time. Since the imagined trajectories align with the realized one, we judge the agent to accurately imagine its motion, conditional on a sequence of actions. The accuracy here depends on the temporal horizon and whether the action sequence is in- or out-of-distribution.</p>
+<h3>References</h3>
+<p>[1] Sutton, Richard S. <a href="https://dl.acm.org/doi/abs/10.1145/122344.122377">Dyna, an integrated architecture for learning, planning, and reacting.</a> ACM Sigart Bulletin 2.4 (1991): 160-163. <br>
+[2] Ha, David, and Jürgen Schmidhuber. <a href="https://arxiv.org/abs/1803.10122">World models.</a> arXiv preprint arXiv:1803.10122 (2018). <br>
+[3] Gulino, Cole, et al. <a href="https://proceedings.neurips.cc/paper_files/paper/2023/hash/1838feeb71c4b4ea524d0df2f7074245-Abstract-Datasets_and_Benchmarks.html">Waymax: An accelerated, data-driven simulator for large-scale autonomous driving research.</a> Advances in Neural Information Processing Systems 36 (2024). <br>
+[4] Ettinger, Scott, et al. <a href="https://openaccess.thecvf.com/content/ICCV2021/html/Ettinger_Large_Scale_Interactive_Motion_Forecasting_for_Autonomous_Driving_The_Waymo_ICCV_2021_paper.html">Large scale interactive motion forecasting for autonomous driving: The waymo open motion dataset.</a> Proceedings of the IEEE/CVF International Conference on Computer Vision. 2021. <br>
+[5] Hafner, Danijar, et al. <a href="https://arxiv.org/abs/1912.01603">Dream to control: Learning behaviors by latent imagination.</a> arXiv preprint arXiv:1912.01603 (2019). <br>
+[6] Wu, Philipp, et al. <a href="https://proceedings.mlr.press/v205/wu23c.html">Daydreamer: World models for physical robot learning.</a> Conference on robot learning. PMLR, 2023.   </p>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'], ['$', '$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+    </div>
+  
+  <p class="post-meta">
+    Tag: rl
+  </p>
+
+  </article>
+
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>

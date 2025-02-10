@@ -55,6 +55,19 @@ Recent posts:
 <ul>
 
     <li>
+      <span class="dates_and_tags">31 Jan 2025 </span>
+      
+      
+      <a class="enum_title" href="analytic_world_models.html"><b>Analytic World Models</b></a>
+      
+      <p>
+      Differentiable simulators have recently shown great promise for training autonomous vehicle controllers. Being able to backpropagate through them, they can be placed into an end-to-end training loop where their known dynamics turn into useful priors for the policy to learn, removing the typical black box assumption of the environment. So far, these systems have only been used to train policies. However, this is not the end of the story in terms of what they can offer. They can also be used to train world models. Specifically, in this post we propose and explore three new task setups that allow us to learn next state predictors, optimal planners, and optimal inverse states. Unlike analytic policy gradients (APG), which requires the gradient of the next simulator state with respect to the current actions, the proposed setups rely on the gradient of the next state with respect to the current state. We call this approach Analytic World Models (AWMs).
+      </p>
+      <br>
+    </li>
+
+
+    <li>
       <span class="dates_and_tags">08 Jan 2025 </span>
       
       
@@ -101,19 +114,6 @@ Recent posts:
       
       <p>
       Here we take a look at some basic use-cases with DINOv2, Clip, and Google's new visual-language model PaliGemma 2. This is not meant to be a comprehensive overview of vision-language models. We will only dip our toes into this vast topic, which is only becoming more and more prominent in current AI. All these models can be considered <em>foundational</em>.
-      </p>
-      <br>
-    </li>
-
-
-    <li>
-      <span class="dates_and_tags">30 Nov 2024 </span>
-      
-      
-      <a class="enum_title" href="analytic_policy_gradients.html"><b>Analytic Policy Gradients</b></a>
-      
-      <p>
-      Current methods to learn controllers for autonomous vehicles (AVs) focus on behavioural cloning, where agents learn to mimic the actions obtained from an expert trajectory. Being trained only on exact historic data, the resulting agents often generalize poorly when deployed to novel scenarios. Simulators provide the opportunity to go beyond offline datasets, but they are still treated as complicated black boxes, only used to update the global simulation state. As a result, these RL algorithms are slow, sample-inefficient, and prior-agnostic. Instead, if these simulators are differentiable, they can be included into an end-to-end training loop, turning their hard-coded world dynamics into useful inductive biases for the model. Here we explore the differentiable Waymax simulator and use analytic policy gradients to train AV controllers on the large-scale Waymo Open Motion Dataset (WOMD) [1]. This allows us to learn robust, accurate, and fast policies only using gradient descent.
       </p>
       <br>
     </li>
