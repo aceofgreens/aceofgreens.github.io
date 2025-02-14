@@ -28,9 +28,9 @@ These relationships are recursive. The Bellman equations express the value of th
 $$
 \begin{align}
 v_\pi(s) &= \mathbb{E}_\pi\left[G_t | S_t = s \right] = \mathbb{E}_\pi \left[ R_{t+1} + \gamma G_{t+1} | S_t = s \right] \\ 
-&= \sum_{a} \pi(a|s) \sum_{s', r} p(s', r | s, a) \left[r + \gamma v_\pi(s') \right], \\
+&= \sum_{a} \pi(a|s) \sum_{s', r} p(s', r | s, a) \Big[r + \gamma v_\pi(s') \Big], \\
 q_\pi(s, a) &= \mathbb{E}_\pi\left[G_t | S_t = s, A_t = a \right] = \mathbb{E}_\pi \left[ R_{t+1} + \gamma G_{t+1} | S_t = s, A_t = a \right] \\ 
-&= \sum_{s', r} p(s', r | s, a) \left[r + \gamma v_\pi(s') \right] = \sum_{s', r} p(s', r | s, a) \left[r + \gamma \sum_{a'}\pi(a'|s')q_\pi(s', a') \right].
+&= \sum_{s', r} p(s', r | s, a) \Big[r + \gamma v_\pi(s') \Big] = \sum_{s', r} p(s', r | s, a) \Big[r + \gamma \sum_{a'}\pi(a'|s')q_\pi(s', a') \Big].
 \end{align}
 $$
 
@@ -108,4 +108,38 @@ $$
 
 The off-policy MC control setup is more complicated and our discussion will be necessarily brief. It involves the target policy $\pi$ and the behaviour policy $b$ and corrects the returns $G_t$ according to the importance sampling ratio $\prod_{k=t}^{T-1} \frac{\pi(A_k | S_k)}{b(A_k | S_k)}$. There are many ways to do it: ordinary importance sampling simply averages the weighted returns from many $(s, a)$ occurrences. It is unbiased but can have unbounded variance. On the other hand, weighted importance sampling takes the weighted mean of the returns, weighted by their importance ratios, which has bias (converging asymptotically to zero) and drammatically lower variance.
 
-**Temporal difference learning**. The most popular type of learning setup is actually
+**Temporal difference learning**. The most popular type of learning setup is actually temporal difference (TD) learning. Unlike MC, which performs sample trace backups, TD performs sample transition backups. Hence we don't need to wait for the episode to end, we just bootstrap the value of the current state from the value of the next experienced state. Since initially the value function is incorrect, TD produces biased estimates, yet the variance is much smaller than that of the MC methods, which usually translates to faster learning.
+
+TD algorithms work by collecting episodes and then updating the value functions using individual transitions from the episodes. $V(s)$ is updated by moving $V(S_t)$ towards $R_{t+1} + \gamma V(S_{t+1})$ and similarly for $Q(S_t, A_t)$. If the learning rate $\alpha$ is decreasing properly, convergence is guaranteed: 
+
+$$
+\begin{align}
+V(S_t) &\leftarrow V(S_t) + \alpha\big(R_{t+1} + \gamma V(S_{t+1}) - V(S_t)\big) \\
+Q(S_t, A_t) &\leftarrow V(S_t) + \alpha\big(R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}) - Q(S_t, A_t)\big) \\
+\end{align}
+$$
+
+Backup diagrams for evaluating $v_\pi(s)$ and $q_\pi(s, a)$ are shown in Fig. 4. The main benefit compared to MC is that TD allows us to learn in infinite episodes, for example if the task is continuing from before. It also allows us to naturally learn in an online manner, as we don't have to wait until the episode finishes.
+
+<figure>
+    <img class='img' src="/images/td_trace.svg" alt="Bellman optimality state" width="1200">
+    <figcaption> Figure 4: Backup diagrams for TD algorithms. Left is policy evaluation. Middle is Q-policy iteration as used in Sarsa. Right is the TD Bellman optimality equation, as used in Q-learning. </figcaption>
+</figure>
+
+**Sarsa**. When it comes to control, the on-policy TD algorithm is called Sarsa. The name comes from the quintuple $(s, a, r, s', a')$. We initialize the Q-values arbitrarily and set the initial policy to be $\epsilon$-greedy with respect to the Q-values. We collect transitions using that policy and update the Q-values according to the on-policy transitions. $Q(s, a)$ is updated toward $r + \gamma Q(s', a')$, with $a \sim \pi(s')$. The policy is improved by making it $\epsilon$-greedy with respect to the new, updated Q-values. Since both the transitions collected and the Bellman targets are coming from the $\epsilon$-greedy policy, this is an on-policy method.
+
+**Q-learning**. The off-policy TD control algorithm is the classic Q-learning, where everything is the same except that we update the Q-values as
+
+$$
+Q(S, A) \leftarrow Q(S, A) + \alpha \left[ R + \gamma \max_a Q(S', a) - Q(S, A)\right].
+$$
+
+Why is this off-policy? Because the behaviour policy collecting the data is $\epsilon$-greedy wrt Q, while the Bellman targets with which the policy is updated are actually greedy wrt Q. This is the mismatch. The Bellman target follows the form in the corresponding optimality equation.
+
+Note that Q-learning suffers from a selection bias. Because usually the estimated Q-values are noisy, and because we always select the best one, it may happen that because of noise, a poor action is selected more often than it should. This may lead to overly optimistic Q-values and may hurt learning. The solution is to have two sets of Q-values, $Q_1$ and $Q_2$, one for selecting the action and one for evaluating it. The value used in the Bellman target is $Q_2(s, \text{arg}\max_a Q_1(s, a))$.
+
+Another thing is that for all $\epsilon$-greedy policies the initial starting Q-values greatly affect exploration. If the true range of Q-values in a given state is $[0, 1]$, but we initialize them in the range $[10, 11]$, then all of actions will be tried out sooner rather than later because of the $\epsilon$-greedy policy. On the other hand, if one of the Q-values is initialized to $-1$, then it's likely that it will rarely be picked, only ever by chance. This particular trick to encourage/discourage exploration is called optimistic/pessimistic initialization. Similarly, if we have some kind of uncertainty signal like prediction error, or information gain, and we use it to select for execution those actions for which the signal is highest, this is called *optimism in the face of uncertainty*.
+
+**Multistep bootstrapping**. Finally, one should recognize that a TD target like $r + \gamma V(s')$ bootstraps from only one step ahead. But it may use more than that, e.g. $r + \gamma r' + \gamma^2 r'' + \gamma^3 V(s''')$. All on-policy and off-policy methods could be adapted to work in this manner. This kind of multistep bootstrapping trades off increased variance with decreased bias. The more we rely on bootstrapping, the more biased is the estimate.
+
+This completes our basic overview of value-based model-free tabular RL methods. The two main dimensions of interest are depth and width of the update. Depth refers to how much they bootstrap. Width refers to whether they rely on sample updates (from a trajectory) or expected updates (from a distribution of possible trajectories). TD methods have small depth (single transition) and small width (sampling). MC methods have large depth (entire traces) and small width (sampling). Dynamic programming has small depth and large width (one-step expected updates). Exhaustive search has large depth and width. 
