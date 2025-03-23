@@ -84,3 +84,53 @@ What does the solution look like? Generally, one object of interest is the [Pare
 Proving whether a Nash equilibrium exists and whether it's unique is tricky. There are various [theorems](https://en.wikipedia.org/wiki/Kakutani_fixed-point_theorem). Let's avoid this question altogether. Assuming it exists, the way to find it is by first computing a best-response function for each player. It simply returns the best action for each player, assuming a given set of other actions for the other players. In our setting for player $i$ it is $\text{BR}(\mathbf{p}^{-i}, \mathbf{q}^{-i}, c^i) = \text{arg}\max_{p, q_s} \pi^i(p, \mathbf{p}^{-i}, q_s, \mathbf{q}_s^{-i}) = (p^\ast, q_s^\ast)$. It computes the best price-quantity for firm $i$ given that the other price-quantities are $(\mathbf{p}^{-i}, \mathbf{q}_s^{-i})$. Once we have all BR functions we need to find their intersection which is the Nash equilibrium. This can be done through an iterative approach where we start from a random set of price-quantities and we evolve them according to the BRs until they converge.
 
 ### Multi-Agent Policy Gradients
+
+I've implemented the market making process as a basic `Jax` function that takes in $p^1, q_s^1, ..., p^N, q_s^N$ and returns the profits and sales. I've then conveniently `vmap`-ed it to work with batches of prices and quantities. Let's see how the profit behaves in the case of only one seller and one buyer. The cost is linear, $C(q) = cq$, with $c=1.5$ and $Q_d(p) = \max\{a - bp, 0\}$ with $a=118$ and $b=4.8$.
+
+<figure>
+    <img class='big_img' src="/images/monopoly_profile.png" alt="Monopoly profile" width="1200">
+    <figcaption> Figure 1: Qualitative behaviour of the market. Left plot shows the how the profit depends on the price for various fixed values of the supply. Right plot shows the profit at all (price-quantity) combinations. </figcaption>
+</figure>
+
+Figure 1 show the profit profile. There are a lot of things to unpack:
+
+1. In the right plot, the highest profit occurs when the price is around $13$, which is consistent with the analytic solution of $p^\ast = a/(2b) + c/2$.
+2. If the firm produces too much above the quantity demanded, its profit falls.
+3. In the left plot, consider how the profit depends on the price when $q_s = 60$ (green). Up to a price of about $12$, profit increases linearly and the number of sales is equal to $q_s = 60$. Beyond that price the consumer starts demanding less than $60$ units which bounds the sales. Depending on $q_s$ a further increasing price could or could not increase the profits.
+4. There is a non-differentiable $(p, q_s)$ ridge caused by the $\min$ operation. The global optimum is found on this ridge so convex optimization may not be easy.
+5. The spikiness after each kink in the lines of the left plot could be safely ignored. It likely results from the rounding of the floating points.
+
+These plots make sense. Now, let's use a policy gradients agent to optimize for the right $(p, q_s)$. It works as follows. A very small single neural network will model the best responses for all sellers. The inputs to the network are $(\mathbf{p}^{-i}, \mathbf{q}^{-i}, c^i)$ and the outputs are $\mu_p^i, \mu_q^i, f_p^i, f_q^i$. Hence, which inputs are passed to the network determines for which firm the output corresponds. First we scale the std features to within the range $[0, R]$, obtaining $\sigma_p^i$ and $\sigma_q^i$. Then we sample latent values for $p$ and $q$ and scale them to the ranges $[0, R_p]$ and $[0, R_q]$. Squashing happens with a sigmoid $\sigma(\cdot)$.
+
+$$
+\begin{bmatrix}
+p^i \\
+q_s^i
+\end{bmatrix}
+=  \begin{bmatrix}
+R_p \sigma\big(\mu_p^i + R \sigma(f_p^i) \epsilon_1\big) \\
+R_q \sigma\big(\mu_p^i + R \sigma(f_q^i) \epsilon_2\big) \\
+\end{bmatrix}
+$$
+
+The crucial hyperparameter here is $R$ - it controls the noisiness of the actions. A higher $R$ makes exploration easier and you can converge to the right answer faster. However, it also makes gradients potentially very noisy, to the point where learning becomes impossible. Hence, a very small value such as $0.02$ is adequate. It stabilizes training at the cost of reduced exploration, which in turn can make convergence to a local minimum more probable.
+
+After we get the actions for all firms, we execute the market environment and obtain the profits. Since all of this can be `vmap`-ed we can get a batch of profits at the same time, of shape $(B, N)$. Then, we compute the loss as $-\mathbb{E}_{\mathcal{M}}[\log p_\theta(p^i, q_s^i | \mathbf{p}^{-i}, \mathbf{q}^{-i}, c^i) \pi^i ]$ for firm $i$, where $\mathcal{M}$ is the distribution of the market. We compute the Jacobian (not the gradient) of the profits and backbpropagate all the way back to the network parameters. Basically we obtain per-sample and per-seller gradients and average over these two dimensions. This effectively trains the network using $N$ objectives.
+
+As a sanity check, we first solve the monopolist case with a single consumer. Fig. 2 shows the evolution of the price and quantity. Overall, the policy gradients in this case easily converge to a very good minimum, within 0.8% of the global minimum in terms of profits. Here we use simple SGD with Nesterov momentum.
+
+<figure>
+    <img class='extra_big_img' src="/images/monopolist_sgd.png" alt="Monopoly profile" width="1200">
+    <figcaption> Figure 2: SGD convergence in the monopolist setting. </figcaption>
+</figure>
+
+Now that we know that our optimizer works in the verifiable simple monopolist setting, let's run it on a more serious problem - 10 consumers and 2 sellers with different marginal costs. In general, things can get complicated.
+
+ 
+<!-- 1. Firm prices and quantities evolve in a similar, correlated manner because the best response function is shared. Yet, different dynamic patterns are noticeably visible. -->
+
+1. If buyers always choose the seller with lowest price, the market often becomes a winner-take-all scheme. The firm with lowest prices sells the most and has the highest profit. Other firms are able to sell only if they lower their prices below the current firm's price. Profit swings rapidly from one firm to another. Equilibrium is found in sharp regions of the $(p, q_s)$ space.
+2. Similar sharp profit boundaries exist also if one of the firms commits to a given $(p, q_s)$. In that case, these values become a sharp point around which the other firm pivots.
+3. If buyers tolerate a small margin $\xi$ above the minimum price and choose a seller randomly from those whose prices are within that margin, then profits tend to be split across the participating firms. Yet, if one firm commits to some $(p, q_s)$ which "stands in the way" of the other firm, a sharp boundary at a distance $\xi$ from that price may form again.
+4. With more than one firm optimization becomes very difficult. Suppose firm 1 has a competitive price $\bar{p}$ and claims the whole market. Then firm 2 will have a very sparse revenue signal. Its sales will be null, whenever its price is above $\bar{p}$. If there is no gradient for the profits, or if it's too weak, the best response cannot be optimized. 
+5. As more firms participate, each one captures less profit and sales. If $N$ is large, each of them finds a reduced amount of quantity demanded at a given price $p$. Thus, holding all prices fixed, firm $i$ should reduce its $q_s$, to economize. So the whole 

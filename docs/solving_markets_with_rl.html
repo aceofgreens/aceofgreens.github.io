@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Solving Markets With RL | The Critical Section</title>
+    <meta charset="utf-8" />
+    <meta name="generator" content="Pelican" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="stylesheet" href="/assets/main.css" />
+    <link rel="icon" href="/assets/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+
+
+    <meta name="description" content="I was recently tinkering with some fairly realistic oligopolistic market simulations. Compared to textbook cases, where it is common to assume the market matches all buyers to all sellers simultaneously, in my case the simulation involved non-clearing markets, sequential search, and various computational constraints among the market participants. If you think about it, it gets quite hard to solve the market in this case. Analytic solutions are out of the question. One typically has to use numerical methods. Yet, I had the beautiful idea of using multi-agent RL for finding the equilibria. It turned out to be a very nice bridge between the two disciplines - one providing the problem setting, and another providing the tool to solve it." />
+
+    <meta name="tags" content="econ" />
+    <meta name="tags" content="rl" />
+
+</head>
+
+<body onload="welcomeFunction()" >
+
+  <header class="site-header" role="banner">
+    <div class="wrapper">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!--An icon library for the button icon-->
+
+      <a class="site-title" rel="author" href="/">The Critical Section</a>
+
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/about.html">About</a>
+            <a class="page-link" href="/posts.html">Posts</a>
+            <a class="page-link" href="/tags.html">Tags</a>
+        </div>
+
+      </nav>
+
+    </div>
+  </header>
+
+
+  <main class="page-content" aria-label="Content">
+    <div class="wrapper">
+
+  <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+    <header class="post-header">
+      <h1 class="post-title p-name" itemprop="name headline">Solving Markets With RL</h1>
+      <p class="post-meta">
+        <time class="dt-published" datetime="2025-03-17T07:00:00+02:00" itemprop="datePublished">
+          17 Mar 2025
+        </time>
+      </p>
+
+    </header>
+
+    <div class="post-content">
+      <p>I was recently tinkering with some fairly realistic oligopolistic market simulations. Compared to textbook cases, where it is common to assume the market matches all buyers to all sellers simultaneously, in my case the simulation involved non-clearing markets, sequential search, and various computational constraints among the market participants. If you think about it, it gets quite hard to solve the market in this case. Analytic solutions are out of the question. One typically has to use numerical methods. Yet, I had the beautiful idea of using multi-agent RL for finding the equilibria. It turned out to be a very nice bridge between the two disciplines - one providing the problem setting, and another providing the tool to solve it.</p>
+<h3>Background</h3>
+<p>Let's motivate the problem by building toward it from the ground up. We'll recap consumption and production, and then build the mathematical structure of the market.</p>
+<p><strong>Consumption</strong>. Consumers have preferences over world states. They can be expressed as binary relations between different bundles of goods. E.g. if the world state in which one has <span class="math">\(q_1\)</span> units of good A and <span class="math">\(q_2\)</span> units of good B is preferred over <span class="math">\(q_1\)</span> units of good B and <span class="math">\(q_2\)</span> of good A, we can denote this as <span class="math">\((q_1, q_2) \succeq (q_2, q_1)\)</span>. Here the quantities are what matters.</p>
+<p>Now, under various important assumptions, called the <a href="https://en.wikipedia.org/wiki/Von_Neumann%E2%80%93Morgenstern_utility_theorem">axioms of rational choice</a>, these preferences are captured by a cardinal utility function. Its values are meaningless, yet it accurately captures the same preferences, so we might say that <span class="math">\(u(q_1, q_2) \ge u(q_2, q_1)\)</span>. If peopel are rational, they would maximize this expected utility.</p>
+<p>Consumption is about choosing how to best allocate scarce resources to maximize your immediate utility. For example, suppose a consumer has total income <span class="math">\(Y\)</span>, and there are only two goods, with prices <span class="math">\(p_1\)</span> and <span class="math">\(p_2\)</span>. Then, the consumer has to decide how much <span class="math">\((q_1, q_2)\)</span> to consume of both goods so as to maximize his utility <span class="math">\(u(q_1, q_2)\)</span> while not going over his budget <span class="math">\(Y\)</span>. He faces the problem.</p>
+<div class="math">$$
+q_1^\ast, q_2^\ast = \text{arg}\max_{q_1, q_2} u(q_1, q_2)  \ \ \ \ \text{s.t.} \ \  p_1q_1 + p_2q_2 \le Y. 
+$$</div>
+<p>A common utility function is <a href="https://en.wikipedia.org/wiki/Cobb%E2%80%93Douglas_production_function">Cobb-Douglas</a> which has realistic properties such as negative second derivatives representing diminishing marginal utility. When the consumption problem is solved, one obtains the optimal <span class="math">\(q_1^\ast(p_1, p_2, Y)\)</span> as a function of the prices and the income, and the same for <span class="math">\(q_2^\ast\)</span>. Note that if we trace how <span class="math">\(q_1^\ast\)</span> changes as <span class="math">\(p_1\)</span> changes, we get the <em><a href="https://en.wikipedia.org/wiki/Marshallian_demand_function">demand</a></em> function.</p>
+<p>The demand is important because it shows how many units <span class="math">\(q\)</span> of a good are demanded at a given price <span class="math">\(p\)</span>. Likewise, if we invert it, the inverse demand <span class="math">\(p_1(q_1^\ast)\)</span> shows the maximum price a consumer is willing to pay (WTP) for an additional unit of the good. To get the aggregate demand of the whole market we simply sum the quantities demanded at every price.</p>
+<p><strong>Production</strong>. On the other side of the consumers are producers that supply products. Producers have a production function <span class="math">\(q = f(L, K)\)</span> where <span class="math">\(L\)</span> and <span class="math">\(K\)</span> represent the labour and capital inputs, respectively. Different combinations of inputs produce different quantities <span class="math">\(q\)</span> of the product. Additionally, there are factor cost associated with <span class="math">\(K\)</span> and <span class="math">\(L\)</span> - wages <span class="math">\(w\)</span> and rent <span class="math">\(r\)</span>, respectively. Thus, the cost of producing at <span class="math">\((L, K)\)</span> is given by <span class="math">\(C(L, K) = wL + rK\)</span>, where we assume factor prices <span class="math">\(w\)</span> and <span class="math">\(r\)</span> are constant.</p>
+<p>Producers face two important <a href="https://en.wikipedia.org/wiki/Duality_(optimization)">dual</a> problems. They can either minimize cost given fixed <span class="math">\(q\)</span>, or maximize <span class="math">\(q\)</span> given fixed cost. Consumers also have a dual problem similar to the one described above, which minimizes the expenditure given a constant utility. For the producers, the primal (on which we'll focus here) is the cost minimization problem: determine the inputs <span class="math">\((L, K)\)</span> at which producing exactly <span class="math">\(q\)</span> units yields minimum cost:</p>
+<div class="math">$$
+L^\ast, K^\ast = \text{arg}\min_{L, K} wL + rK \ \ \ \ \text{s.t.} \ \ f(K, L) = \bar{q}.
+$$</div>
+<p>Evaluating the cost at <span class="math">\((L^\ast, K^\ast)\)</span> yields the minimum cost <span class="math">\(C(q)\)</span> needed to produce <span class="math">\(q\)</span> units, which depends on <span class="math">\(q\)</span>, <span class="math">\(r\)</span>, and <span class="math">\(k\)</span>. Now what remains is to determine the value produced <span class="math">\(q\)</span>.</p>
+<p><strong>Perfect competition</strong>. In perfect competition, which is an idealized market model, firms are price takers. They maximize profit <span class="math">\(\pi\)</span> by setting the quantity <span class="math">\(q\)</span> so that </p>
+<div class="math">$$
+q^\ast = \text{arg}\max_{q} \pi = p q - C(q) \ \ \Rightarrow \ \ q^\ast = \left\{q \ | \ p = \frac{dC(q)}{dq}\right\}.
+$$</div>
+<p>Thus, each firm sets the quantity to that point where its marginal cost <span class="math">\(dC(q)/dq\)</span> is equal to the constant market price <span class="math">\(p\)</span>. Let's motivate this result a bit. What does it mean for a firm is a price taker? It means that it cannot influence the price. Whatever quantity it sets, the price is constant. Тhe demand is horizontal at the market price <span class="math">\(p\)</span> and firms can sell as much as they want at that price. For that reason, if they produce a quantity <span class="math">\(q\)</span>, their revenue will be <span class="math">\(pq\)</span>. If a firm sets the price higher than <span class="math">\(p\)</span>, it will sell zero. If it sets it below <span class="math">\(p\)</span>, it will sell as much as it will sell if the price is <span class="math">\(p\)</span>.</p>
+<p>To derive the supply curve one can trace how the selected quantity <span class="math">\(q^\ast\)</span> depends on the price <span class="math">\(p\)</span>. Hence, the supply is given by <span class="math">\(q_s = [dC(q)/dq]^{-1}(p)\)</span>, and only whenever <span class="math">\(p\)</span> is greater than the average cost curve (otherwise, it's more profitable to shut down). The total supply is given by the sum of all quantities supplied by the individual firms. Markets clear because however much is produced, is also bought. There are other complications which we'll skip.</p>
+<p><strong>Monopoly</strong>. A monopolist is a price setter - he is able to set any price <span class="math">\(p\)</span> he wants. If he sets a price <span class="math">\(p\)</span>, the market demand is <span class="math">\(Q_d(p)\)</span> so that's how many sells he can get. Thus, he will produce exactly that many in terms of quantity <span class="math">\(q\)</span>. The problem becomes</p>
+<div class="math">$$
+\begin{align}
+&amp;p^\ast = \text{arg}\max_{p} \pi = p Q_d(p) - C\big(Q_d(p)\big)\\
+&amp;\Rightarrow \ Q_d(p) + \frac{dQ_d(p)}{dp} p  = \frac{dC\big(Q_d(p)\big)}{dQ_d(p)}\frac{dQ_d(p)}{dp} \Rightarrow \frac{p - dC(q)/dq}{p} = \frac{1}{|\epsilon|}.
+\end{align}
+$$</div>
+<p>The last line shows the profit maximizing equation where marginal revenue equals marginal cost. Further reshuffling yields the <a href="https://en.wikipedia.org/wiki/Lerner_index">Lerner index</a>, a useful formula showing that the monopolist sets the price above the marginal cost and the markup is inversely proportional to the demand elasticity. </p>
+<p>Note the hidden assumption of perfect information. The monopolist needs to perfectly know the demand <span class="math">\(Q_d(p)\)</span> at price <span class="math">\(p\)</span>, so he can produce exactly that much in terms of quantity, <span class="math">\(q_s = Q_d(p)\)</span>. This makes the market clear. If we remove that assumption then the monopolist has to set the quantity supplied <span class="math">\(q_s\)</span> separately - a situation in which he may end up with not enough production or with leftover inventory:</p>
+<div class="math">$$
+p^\ast, q_s^\ast = \text{arg}\max_{p, q_s} \pi = p \min\{Q_d(p), q_s \} - C(q_s).
+$$</div>
+<p>This is a more general setting which allows for rationing. If <span class="math">\(q_s &gt; q_d(p)\)</span>, then the monopoly will produce more than the market demands. If <span class="math">\(q_s &lt; q_d(p)\)</span> then the monopolist reduces the number of transactions below the desired ones. Note also that there is no clearly defined supply function here. There is only a supply <em>point</em> since the monopolist sets both the price and the quantity.</p>
+<h3>Problem Setting</h3>
+<p>Let's move to more realistic settings involving market friction. This is any factor that introduces transaction fees, product search, price dispersion, buyer-seller matching, or a myriad other phenomena. In our case instead of assuming that buyers and sellers are matched instantaneously, we'll build a very simple <a href="https://en.wikipedia.org/wiki/Order_book">order book</a> inspired from the workings of stock market exchanges.</p>
+<p>So, consider a market where there are <span class="math">\(N\)</span> firms and <span class="math">\(M\)</span> consumers. Each of the consumers has a downward sloping linear demand function, whose precise parameters are chosen randomly. Trading happens day by day. Firm <span class="math">\(i\)</span> sets its price <span class="math">\(p^i\)</span> and quantity <span class="math">\(q_s^i\)</span> for each day. The quantity <span class="math">\(q_s^i\)</span> becomes the available inventory for that firm to sell during the day. We simulate a trading day by iterating over <span class="math">\(K\)</span> transaction opportunities. Within each iteration a random buyer is selected. Then, we filter the firms by considering only those firms that have positive inventory (have something to sell), and whose set price is lower than the willingness to pay (WTP) of that buyer, evaluated at their prices. Then, out of all remaining firms the buyer chooses the one with the lowest price. If the buyer will not go over his average (across the prices) quantity demanded by buying one more unit, a transaction happens. We decrease the inventory of that firm by 1, increase its sales by 1, and increase the quantity bought by that buyer by 1. The trading day halts earlier if all sellers have empty inventories or if their prices are above any of the WTPs of the consumers.</p>
+<p>After the <span class="math">\(K\)</span> iterations, the firms have accumulated their sales <span class="math">\(n^i\)</span> and can calculate profits simply as <span class="math">\(n^i p^i - C(q_s^i)\)</span>. We assume firms have linearly increasing costs <span class="math">\(C^i(q) = c^iq\)</span>. Thus, they have constant marginal costs but at different levels <span class="math">\(c^i\)</span>.</p>
+<p>This is how we'll model the market process. At the end of each day it provides the number of sales <span class="math">\(n^i\)</span> for each firm. The function <span class="math">\(n^i(p^i, \mathbf{p}^{-i}, q^i, \mathbf{q}^{-i})\)</span> depends on all prices and quantities and is discrete in values. It is also random and not differentiable. The problem of the firm <span class="math">\(i\)</span> is</p>
+<div class="math">$$
+p^\ast, q_s^\ast = \text{arg}\max_{p^i, q_s^i} \pi = n^i(p^i, \mathbf{p}^{-i}, q_s^i, \mathbf{q}_s^{-i}) p^i - C(q_s^i), \ \ \forall i \in \{1, .., N \}.
+$$</div>
+<p>What does it mean to solve the market in this case? This objective has to be solved for all firms simultaneously. But since the <span class="math">\(N\)</span> firms are sharing (partitioning) the market through their sales, this becomes a strategic game involving different interactions. A transaction for one firm is a lost transaction for another firm. Thus, we're in the area of <a href="https://en.wikipedia.org/wiki/Multi-objective_optimization">multiobjective optimization</a>, where each firm has its own objective.</p>
+<p>What does the solution look like? Generally, one object of interest is the <a href="https://en.wikipedia.org/wiki/Pareto_front">Pareto frontier</a> which contains all the price-quantity tuples that are non-dominated. A setting <span class="math">\((p^i, q_s^i)\)</span> is non-dominated if firm <span class="math">\(i\)</span> cannot increase its profit <span class="math">\(\pi^i\)</span> without hurting the profit of another firm... Yet, this is not what we want. In our case firms will gladly increase their profits at the expense of other firms. We're actually looking for a Nash equilibrium. It represents a point <span class="math">\((p^1, q_s^1, ..., p^N, q_s^N)\)</span> such that the profit <span class="math">\(\pi^i\)</span> of firm <span class="math">\(i\)</span> is maximal with respect to <span class="math">\((p^i, q_s^i)\)</span> if all other firms set their price-quantities precisely to <span class="math">\((\mathbf{p}^{-i}, \mathbf{q}_s^{-i})\)</span>. The same is simultaneously valid for them. A maximal profit in this case means that you don't have incentives to deviate. Thus, the Nash equilibrium represents a point of convergence from which no firm has any incentive to deviate. It is a <a href="https://en.wikipedia.org/wiki/Fixed_point_(mathematics)">fixed point</a> with respect to the dynamics of the system.</p>
+<p>Proving whether a Nash equilibrium exists and whether it's unique is tricky. There are various <a href="https://en.wikipedia.org/wiki/Kakutani_fixed-point_theorem">theorems</a>. Let's avoid this question altogether. Assuming it exists, the way to find it is by first computing a best-response function for each player. It simply returns the best action for each player, assuming a given set of other actions for the other players. In our setting for player <span class="math">\(i\)</span> it is <span class="math">\(\text{BR}(\mathbf{p}^{-i}, \mathbf{q}^{-i}, c^i) = \text{arg}\max_{p, q_s} \pi^i(p, \mathbf{p}^{-i}, q_s, \mathbf{q}_s^{-i}) = (p^\ast, q_s^\ast)\)</span>. It computes the best price-quantity for firm <span class="math">\(i\)</span> given that the other price-quantities are <span class="math">\((\mathbf{p}^{-i}, \mathbf{q}_s^{-i})\)</span>. Once we have all BR functions we need to find their intersection which is the Nash equilibrium. This can be done through an iterative approach where we start from a random set of price-quantities and we evolve them according to the BRs until they converge.</p>
+<h3>Multi-Agent Policy Gradients</h3>
+<p>I've implemented the market making process as a basic <code>Jax</code> function that takes in <span class="math">\(p^1, q_s^1, ..., p^N, q_s^N\)</span> and returns the profits and sales. I've then conveniently <code>vmap</code>-ed it to work with batches of prices and quantities. Let's see how the profit behaves in the case of only one seller and one buyer. The cost is linear, <span class="math">\(C(q) = cq\)</span>, with <span class="math">\(c=1.5\)</span> and <span class="math">\(Q_d(p) = \max\{a - bp, 0\}\)</span> with <span class="math">\(a=118\)</span> and <span class="math">\(b=4.8\)</span>.</p>
+<figure>
+    <img class='big_img' src="/images/monopoly_profile.png" alt="Monopoly profile" width="1200">
+    <figcaption> Figure 1: Qualitative behaviour of the market. Left plot shows the how the profit depends on the price for various fixed values of the supply. Right plot shows the profit at all (price-quantity) combinations. </figcaption>
+</figure>
+
+<p>Figure 1 show the profit profile. There are a lot of things to unpack:</p>
+<ol>
+<li>In the right plot, the highest profit occurs when the price is around <span class="math">\(13\)</span>, which is consistent with the analytic solution of <span class="math">\(p^\ast = a/(2b) + c/2\)</span>.</li>
+<li>If the firm produces too much above the quantity demanded, its profit falls.</li>
+<li>In the left plot, consider how the profit depends on the price when <span class="math">\(q_s = 60\)</span> (green). Up to a price of about <span class="math">\(12\)</span>, profit increases linearly and the number of sales is equal to <span class="math">\(q_s = 60\)</span>. Beyond that price the consumer starts demanding less than <span class="math">\(60\)</span> units which bounds the sales. Depending on <span class="math">\(q_s\)</span> a further increasing price could or could not increase the profits.</li>
+<li>There is a non-differentiable <span class="math">\((p, q_s)\)</span> ridge caused by the <span class="math">\(\min\)</span> operation. The global optimum is found on this ridge so convex optimization may not be easy.</li>
+<li>The spikiness after each kink in the lines of the left plot could be safely ignored. It likely results from the rounding of the floating points.</li>
+</ol>
+<p>These plots make sense. Now, let's use a policy gradients agent to optimize for the right <span class="math">\((p, q_s)\)</span>. It works as follows. A very small single neural network will model the best responses for all sellers. The inputs to the network are <span class="math">\((\mathbf{p}^{-i}, \mathbf{q}^{-i}, c^i)\)</span> and the outputs are <span class="math">\(\mu_p^i, \mu_q^i, f_p^i, f_q^i\)</span>. Hence, which inputs are passed to the network determines for which firm the output corresponds. First we scale the std features to within the range <span class="math">\([0, R]\)</span>, obtaining <span class="math">\(\sigma_p^i\)</span> and <span class="math">\(\sigma_q^i\)</span>. Then we sample latent values for <span class="math">\(p\)</span> and <span class="math">\(q\)</span> and scale them to the ranges <span class="math">\([0, R_p]\)</span> and <span class="math">\([0, R_q]\)</span>. Squashing happens with a sigmoid <span class="math">\(\sigma(\cdot)\)</span>.</p>
+<div class="math">$$
+\begin{bmatrix}
+p^i \\
+q_s^i
+\end{bmatrix}
+=  \begin{bmatrix}
+R_p \sigma\big(\mu_p^i + R \sigma(f_p^i) \epsilon_1\big) \\
+R_q \sigma\big(\mu_p^i + R \sigma(f_q^i) \epsilon_2\big) \\
+\end{bmatrix}
+$$</div>
+<p>The crucial hyperparameter here is <span class="math">\(R\)</span> - it controls the noisiness of the actions. A higher <span class="math">\(R\)</span> makes exploration easier and you can converge to the right answer faster. However, it also makes gradients potentially very noisy, to the point where learning becomes impossible. Hence, a very small value such as <span class="math">\(0.02\)</span> is adequate. It stabilizes training at the cost of reduced exploration, which in turn can make convergence to a local minimum more probable.</p>
+<p>After we get the actions for all firms, we execute the market environment and obtain the profits. Since all of this can be <code>vmap</code>-ed we can get a batch of profits at the same time, of shape <span class="math">\((B, N)\)</span>. Then, we compute the loss as <span class="math">\(-\mathbb{E}_{\mathcal{M}}[\log p_\theta(p^i, q_s^i | \mathbf{p}^{-i}, \mathbf{q}^{-i}, c^i) \pi^i ]\)</span> for firm <span class="math">\(i\)</span>, where <span class="math">\(\mathcal{M}\)</span> is the distribution of the market. We compute the Jacobian (not the gradient) of the profits and backbpropagate all the way back to the network parameters. Basically we obtain per-sample and per-seller gradients and average over these two dimensions. This effectively trains the network using <span class="math">\(N\)</span> objectives.</p>
+<p>As a sanity check, we first solve the monopolist case with a single consumer. Fig. 2 shows the evolution of the price and quantity. Overall, the policy gradients in this case easily converge to a very good minimum, within 0.8% of the global minimum in terms of profits. Here we use simple SGD with Nesterov momentum.</p>
+<figure>
+    <img class='extra_big_img' src="/images/monopolist_sgd.png" alt="Monopoly profile" width="1200">
+    <figcaption> Figure 2: SGD convergence in the monopolist setting. </figcaption>
+</figure>
+
+<p>Now that we know that our optimizer works in the verifiable simple monopolist setting, let's run it on a more serious problem - 10 consumers and 2 sellers with different marginal costs. In general, things can get complicated.</p>
+<!-- 1. Firm prices and quantities evolve in a similar, correlated manner because the best response function is shared. Yet, different dynamic patterns are noticeably visible. -->
+
+<ol>
+<li>If buyers always choose the seller with lowest price, the market often becomes a winner-take-all scheme. The firm with lowest prices sells the most and has the highest profit. Other firms are able to sell only if they lower their prices below the current firm's price. Profit swings rapidly from one firm to another. Equilibrium is found in sharp regions of the <span class="math">\((p, q_s)\)</span> space.</li>
+<li>Similar sharp profit boundaries exist also if one of the firms commits to a given <span class="math">\((p, q_s)\)</span>. In that case, these values become a sharp point around which the other firm pivots.</li>
+<li>If buyers tolerate a small margin <span class="math">\(\xi\)</span> above the minimum price and choose a seller randomly from those whose prices are within that margin, then profits tend to be split across the participating firms. Yet, if one firm commits to some <span class="math">\((p, q_s)\)</span> which "stands in the way" of the other firm, a sharp boundary at a distance <span class="math">\(\xi\)</span> from that price may form again.</li>
+<li>With more than one firm optimization becomes very difficult. Suppose firm 1 has a competitive price <span class="math">\(\bar{p}\)</span> and claims the whole market. Then firm 2 will have a very sparse revenue signal. Its sales will be null, whenever its price is above <span class="math">\(\bar{p}\)</span>. If there is no gradient for the profits, or if it's too weak, the best response cannot be optimized. </li>
+<li>As more firms participate, each one captures less profit and sales. If <span class="math">\(N\)</span> is large, each of them finds a reduced amount of quantity demanded at a given price <span class="math">\(p\)</span>. Thus, holding all prices fixed, firm <span class="math">\(i\)</span> should reduce its <span class="math">\(q_s\)</span>, to economize. So the whole </li>
+</ol>
+<script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
+    var align = "center",
+        indent = "0em",
+        linebreak = "false";
+
+    if (false) {
+        align = (screen.width < 768) ? "left" : align;
+        indent = (screen.width < 768) ? "0em" : indent;
+        linebreak = (screen.width < 768) ? 'true' : linebreak;
+    }
+
+    var mathjaxscript = document.createElement('script');
+    mathjaxscript.id = 'mathjaxscript_pelican_#%@#$@#';
+    mathjaxscript.type = 'text/javascript';
+    mathjaxscript.src = "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+
+    var configscript = document.createElement('script');
+    configscript.type = 'text/x-mathjax-config';
+    configscript[(window.opera ? "innerHTML" : "text")] =
+        "MathJax.Hub.Config({" +
+        "    config: ['MMLorHTML.js']," +
+        "    TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'none' } }," +
+        "    jax: ['input/TeX','input/MathML','output/HTML-CSS']," +
+        "    extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']," +
+        "    displayAlign: '"+ align +"'," +
+        "    displayIndent: '"+ indent +"'," +
+        "    showMathMenu: true," +
+        "    messageStyle: 'normal'," +
+        "    tex2jax: { " +
+        "        inlineMath: [ ['\\\\(','\\\\)'], ['$', '$'] ], " +
+        "        displayMath: [ ['$$','$$'] ]," +
+        "        processEscapes: true," +
+        "        preview: 'TeX'," +
+        "    }, " +
+        "    'HTML-CSS': { " +
+        "        availableFonts: ['STIX', 'TeX']," +
+        "        preferredFont: 'STIX'," +
+        "        styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: 'inherit ! important'} }," +
+        "        linebreaks: { automatic: "+ linebreak +", width: '90% container' }," +
+        "    }, " +
+        "}); " +
+        "if ('default' !== 'default') {" +
+            "MathJax.Hub.Register.StartupHook('HTML-CSS Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax['HTML-CSS'].FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+            "MathJax.Hub.Register.StartupHook('SVG Jax Ready',function () {" +
+                "var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;" +
+                "VARIANT['normal'].fonts.unshift('MathJax_default');" +
+                "VARIANT['bold'].fonts.unshift('MathJax_default-bold');" +
+                "VARIANT['italic'].fonts.unshift('MathJax_default-italic');" +
+                "VARIANT['-tex-mathit'].fonts.unshift('MathJax_default-italic');" +
+            "});" +
+        "}";
+
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(configscript);
+    (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
+}
+</script>
+    </div>
+  
+  <p class="post-meta">
+    Tags: econ, rl
+  </p>
+
+  </article>
+
+
+    </div>
+  </main>
+
+
+<footer class="site-footer h-card">
+  <div class="wrapper">
+  
+  <p></p>
+  
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <div class="footer-col-wrapper">
+
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">The Critical Section</li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          <li><a href="https://github.com/aceofgreens"><i class="fa fa-github"></i> GitHub</a></li>
+
+
+        </ul>
+      </div>
+
+
+      <div class="footer-col footer-col-3">
+        <p>A personal blog for artificial intelligence and similar topics.</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<script type="text/javascript">
+function welcomeFunction() {
+  var items = document.getElementsByTagName("code");
+    for (var i = items.length; i--;) {
+      items[i].setAttribute("class", "highlight");
+  }
+}
+</script>
+
+</body>
+</html>
