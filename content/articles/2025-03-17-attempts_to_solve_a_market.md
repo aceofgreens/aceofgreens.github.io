@@ -1,11 +1,11 @@
 ---
-Title: Solving Markets With RL
+Title: Attempts to Solve a Market
 Date: 2025-03-17 07:00:00 +0200
 Tags: econ, rl
-slug: solving_markets_with_rl
+slug: attempts_to_solve_a_market
 ---
 
-I was recently tinkering with some fairly realistic oligopolistic market simulations. Compared to textbook cases, where it is common to assume the market matches all buyers to all sellers simultaneously, in my case the simulation involved non-clearing markets, sequential search, and various computational constraints among the market participants. If you think about it, it gets quite hard to solve the market in this case. Analytic solutions are out of the question. One typically has to use numerical methods. Yet, I had the beautiful idea of using multi-agent RL for finding the equilibria. It turned out to be a very nice bridge between the two disciplines - one providing the problem setting, and another providing the tool to solve it.
+I was recently tinkering with some fairly realistic oligopolistic market simulations. Compared to textbook cases, where it is common to assume the market matches all buyers to all sellers simultaneously, in my case the simulation involved non-clearing markets, sequential search, and various computational constraints among the market participants. If you think about it, it gets quite hard to solve the market in this case. Analytic solutions are out of the question. One typically has to use numerical methods. Yet, I had the beautiful idea of tryin out multi-agent RL for finding the equilibria. It turned out to be a very nice bridge between the two disciplines - one providing the problem setting, and another providing the tool to solve it.
 
 ### Background
 
@@ -120,17 +120,27 @@ After we get the actions for all firms, we execute the market environment and ob
 As a sanity check, we first solve the monopolist case with a single consumer. Fig. 2 shows the evolution of the price and quantity. Overall, the policy gradients in this case easily converge to a very good minimum, within 0.8% of the global minimum in terms of profits. Here we use simple SGD with Nesterov momentum.
 
 <figure>
-    <img class='extra_big_img' src="/images/monopolist_sgd.png" alt="Monopoly profile" width="1200">
-    <figcaption> Figure 2: SGD convergence in the monopolist setting. </figcaption>
+    <img class='extra_big_img' src="/images/monopolist_sgd.png" alt="PG_monopolist" width="1200">
+    <figcaption> Figure 2: Policy gradients convergence in the monopolist setting. </figcaption>
 </figure>
 
 Now that we know that our optimizer works in the verifiable simple monopolist setting, let's run it on a more serious problem - 10 consumers and 2 sellers with different marginal costs. In general, things can get complicated.
 
- 
-<!-- 1. Firm prices and quantities evolve in a similar, correlated manner because the best response function is shared. Yet, different dynamic patterns are noticeably visible. -->
-
 1. If buyers always choose the seller with lowest price, the market often becomes a winner-take-all scheme. The firm with lowest prices sells the most and has the highest profit. Other firms are able to sell only if they lower their prices below the current firm's price. Profit swings rapidly from one firm to another. Equilibrium is found in sharp regions of the $(p, q_s)$ space.
 2. Similar sharp profit boundaries exist also if one of the firms commits to a given $(p, q_s)$. In that case, these values become a sharp point around which the other firm pivots.
 3. If buyers tolerate a small margin $\xi$ above the minimum price and choose a seller randomly from those whose prices are within that margin, then profits tend to be split across the participating firms. Yet, if one firm commits to some $(p, q_s)$ which "stands in the way" of the other firm, a sharp boundary at a distance $\xi$ from that price may form again.
-4. With more than one firm optimization becomes very difficult. Suppose firm 1 has a competitive price $\bar{p}$ and claims the whole market. Then firm 2 will have a very sparse revenue signal. Its sales will be null, whenever its price is above $\bar{p}$. If there is no gradient for the profits, or if it's too weak, the best response cannot be optimized. 
-5. As more firms participate, each one captures less profit and sales. If $N$ is large, each of them finds a reduced amount of quantity demanded at a given price $p$. Thus, holding all prices fixed, firm $i$ should reduce its $q_s$, to economize. So the whole 
+4. Optimization is hard. Suppose firm 1 has a competitive price $\bar{p}$ and claims the whole market. Then firm 2 will have a very sparse revenue signal. Its sales will be null whenever its price is above $\bar{p}$. If there is no gradient, or if it's too weak, the best response cannot be optimized.
+5. If buyers choose sellers probabilistically, inversely proportional to their prices, the sharp boundaries become more smooth, making optimization slightly easier, at the cost of introducing stochasticity in the results.
+
+I ran many simulations with the policy gradients but am not convinced that they converge to something that can be called a Nash equilibrium (NE). Instead, a new question emerges - does a NE in pure strategies even exist for this market? We'll investigate visually.
+
+<figure>
+    <img class='extra_big_img' src="/images/duopoly_dynamics2.png" alt="Duopoly dynamics" width="1200">
+    <figcaption> Figure 3: Best response dynamics. Each plot shows the profits for one of the firms. Brighter areas correspond to higher profits. Notice the noise due to the stochastic matching.</figcaption>
+</figure>
+
+Fig. 3 shows the best response dynamics. Step 0 represents the profit landscape of firm 1 given an initial fixed $(p, q_s)$ combination for firm 2 (blue square). Firm 1 sets its $(p, q_s)$ to the orange circle. In step 1 firm 2 responds to this move by setting its combination to the blue circle. In step 2 firm 1 responds to the response by selecting the orange circle. And so on. An equilibrium occurs if two combinations converge and stop moving. Yet this does not happen.
+
+In particular, it is often beneficial for one firm to undercut the other. At medium to high prices the firms undercut each other, pushing both prices and profits downward, similar to the [prisoner's dilemma](https://en.wikipedia.org/wiki/Prisoner%27s_dilemma). Eventually one of the firms decides to reduce its quantity and increase its price, capturing these consumers with higher WTP. The other firm then follows this strategy and prices jointly increase again. This repeats, most likely ad infinitum.
+
+Thus, we see that the dynamics of oligopolies are complicated, especially in more realistic market settings. Even though we couldn't "solve" this market, we got a lot of insights into the nature of the problem, which is still useful and rewarding.

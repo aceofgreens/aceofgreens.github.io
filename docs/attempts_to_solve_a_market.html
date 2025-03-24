@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>Solving Markets With RL | The Critical Section</title>
+    <title>Attempts to Solve a Market | The Critical Section</title>
     <meta charset="utf-8" />
     <meta name="generator" content="Pelican" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
 
 
-    <meta name="description" content="I was recently tinkering with some fairly realistic oligopolistic market simulations. Compared to textbook cases, where it is common to assume the market matches all buyers to all sellers simultaneously, in my case the simulation involved non-clearing markets, sequential search, and various computational constraints among the market participants. If you think about it, it gets quite hard to solve the market in this case. Analytic solutions are out of the question. One typically has to use numerical methods. Yet, I had the beautiful idea of using multi-agent RL for finding the equilibria. It turned out to be a very nice bridge between the two disciplines - one providing the problem setting, and another providing the tool to solve it." />
+    <meta name="description" content="I was recently tinkering with some fairly realistic oligopolistic market simulations. Compared to textbook cases, where it is common to assume the market matches all buyers to all sellers simultaneously, in my case the simulation involved non-clearing markets, sequential search, and various computational constraints among the market participants. If you think about it, it gets quite hard to solve the market in this case. Analytic solutions are out of the question. One typically has to use numerical methods. Yet, I had the beautiful idea of tryin out multi-agent RL for finding the equilibria. It turned out to be a very nice bridge between the two disciplines - one providing the problem setting, and another providing the tool to solve it." />
 
     <meta name="tags" content="econ" />
     <meta name="tags" content="rl" />
@@ -55,7 +55,7 @@
   <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
 
     <header class="post-header">
-      <h1 class="post-title p-name" itemprop="name headline">Solving Markets With RL</h1>
+      <h1 class="post-title p-name" itemprop="name headline">Attempts to Solve a Market</h1>
       <p class="post-meta">
         <time class="dt-published" datetime="2025-03-17T07:00:00+02:00" itemprop="datePublished">
           17 Mar 2025
@@ -65,7 +65,7 @@
     </header>
 
     <div class="post-content">
-      <p>I was recently tinkering with some fairly realistic oligopolistic market simulations. Compared to textbook cases, where it is common to assume the market matches all buyers to all sellers simultaneously, in my case the simulation involved non-clearing markets, sequential search, and various computational constraints among the market participants. If you think about it, it gets quite hard to solve the market in this case. Analytic solutions are out of the question. One typically has to use numerical methods. Yet, I had the beautiful idea of using multi-agent RL for finding the equilibria. It turned out to be a very nice bridge between the two disciplines - one providing the problem setting, and another providing the tool to solve it.</p>
+      <p>I was recently tinkering with some fairly realistic oligopolistic market simulations. Compared to textbook cases, where it is common to assume the market matches all buyers to all sellers simultaneously, in my case the simulation involved non-clearing markets, sequential search, and various computational constraints among the market participants. If you think about it, it gets quite hard to solve the market in this case. Analytic solutions are out of the question. One typically has to use numerical methods. Yet, I had the beautiful idea of tryin out multi-agent RL for finding the equilibria. It turned out to be a very nice bridge between the two disciplines - one providing the problem setting, and another providing the tool to solve it.</p>
 <h3>Background</h3>
 <p>Let's motivate the problem by building toward it from the ground up. We'll recap consumption and production, and then build the mathematical structure of the market.</p>
 <p><strong>Consumption</strong>. Consumers have preferences over world states. They can be expressed as binary relations between different bundles of goods. E.g. if the world state in which one has <span class="math">\(q_1\)</span> units of good A and <span class="math">\(q_2\)</span> units of good B is preferred over <span class="math">\(q_1\)</span> units of good B and <span class="math">\(q_2\)</span> of good A, we can denote this as <span class="math">\((q_1, q_2) \succeq (q_2, q_1)\)</span>. Here the quantities are what matters.</p>
@@ -142,20 +142,27 @@ $$</div>
 <p>After we get the actions for all firms, we execute the market environment and obtain the profits. Since all of this can be <code>vmap</code>-ed we can get a batch of profits at the same time, of shape <span class="math">\((B, N)\)</span>. Then, we compute the loss as <span class="math">\(-\mathbb{E}_{\mathcal{M}}[\log p_\theta(p^i, q_s^i | \mathbf{p}^{-i}, \mathbf{q}^{-i}, c^i) \pi^i ]\)</span> for firm <span class="math">\(i\)</span>, where <span class="math">\(\mathcal{M}\)</span> is the distribution of the market. We compute the Jacobian (not the gradient) of the profits and backbpropagate all the way back to the network parameters. Basically we obtain per-sample and per-seller gradients and average over these two dimensions. This effectively trains the network using <span class="math">\(N\)</span> objectives.</p>
 <p>As a sanity check, we first solve the monopolist case with a single consumer. Fig. 2 shows the evolution of the price and quantity. Overall, the policy gradients in this case easily converge to a very good minimum, within 0.8% of the global minimum in terms of profits. Here we use simple SGD with Nesterov momentum.</p>
 <figure>
-    <img class='extra_big_img' src="/images/monopolist_sgd.png" alt="Monopoly profile" width="1200">
-    <figcaption> Figure 2: SGD convergence in the monopolist setting. </figcaption>
+    <img class='extra_big_img' src="/images/monopolist_sgd.png" alt="PG_monopolist" width="1200">
+    <figcaption> Figure 2: Policy gradients convergence in the monopolist setting. </figcaption>
 </figure>
 
 <p>Now that we know that our optimizer works in the verifiable simple monopolist setting, let's run it on a more serious problem - 10 consumers and 2 sellers with different marginal costs. In general, things can get complicated.</p>
-<!-- 1. Firm prices and quantities evolve in a similar, correlated manner because the best response function is shared. Yet, different dynamic patterns are noticeably visible. -->
-
 <ol>
 <li>If buyers always choose the seller with lowest price, the market often becomes a winner-take-all scheme. The firm with lowest prices sells the most and has the highest profit. Other firms are able to sell only if they lower their prices below the current firm's price. Profit swings rapidly from one firm to another. Equilibrium is found in sharp regions of the <span class="math">\((p, q_s)\)</span> space.</li>
 <li>Similar sharp profit boundaries exist also if one of the firms commits to a given <span class="math">\((p, q_s)\)</span>. In that case, these values become a sharp point around which the other firm pivots.</li>
 <li>If buyers tolerate a small margin <span class="math">\(\xi\)</span> above the minimum price and choose a seller randomly from those whose prices are within that margin, then profits tend to be split across the participating firms. Yet, if one firm commits to some <span class="math">\((p, q_s)\)</span> which "stands in the way" of the other firm, a sharp boundary at a distance <span class="math">\(\xi\)</span> from that price may form again.</li>
-<li>With more than one firm optimization becomes very difficult. Suppose firm 1 has a competitive price <span class="math">\(\bar{p}\)</span> and claims the whole market. Then firm 2 will have a very sparse revenue signal. Its sales will be null, whenever its price is above <span class="math">\(\bar{p}\)</span>. If there is no gradient for the profits, or if it's too weak, the best response cannot be optimized. </li>
-<li>As more firms participate, each one captures less profit and sales. If <span class="math">\(N\)</span> is large, each of them finds a reduced amount of quantity demanded at a given price <span class="math">\(p\)</span>. Thus, holding all prices fixed, firm <span class="math">\(i\)</span> should reduce its <span class="math">\(q_s\)</span>, to economize. So the whole </li>
+<li>Optimization is hard. Suppose firm 1 has a competitive price <span class="math">\(\bar{p}\)</span> and claims the whole market. Then firm 2 will have a very sparse revenue signal. Its sales will be null whenever its price is above <span class="math">\(\bar{p}\)</span>. If there is no gradient, or if it's too weak, the best response cannot be optimized.</li>
+<li>If buyers choose sellers probabilistically, inversely proportional to their prices, the sharp boundaries become more smooth, making optimization slightly easier, at the cost of introducing stochasticity in the results.</li>
 </ol>
+<p>I ran many simulations with the policy gradients but am not convinced that they converge to something that can be called a Nash equilibrium (NE). Instead, a new question emerges - does a NE in pure strategies even exist for this market? We'll investigate visually.</p>
+<figure>
+    <img class='extra_big_img' src="/images/duopoly_dynamics2.png" alt="Duopoly dynamics" width="1200">
+    <figcaption> Figure 3: Best response dynamics. Each plot shows the profits for one of the firms. Brighter areas correspond to higher profits. Notice the noise due to the stochastic matching.</figcaption>
+</figure>
+
+<p>Fig. 3 shows the best response dynamics. Step 0 represents the profit landscape of firm 1 given an initial fixed <span class="math">\((p, q_s)\)</span> combination for firm 2 (blue square). Firm 1 sets its <span class="math">\((p, q_s)\)</span> to the orange circle. In step 1 firm 2 responds to this move by setting its combination to the blue circle. In step 2 firm 1 responds to the response by selecting the orange circle. And so on. An equilibrium occurs if two combinations converge and stop moving. Yet this does not happen.</p>
+<p>In particular, it is often beneficial for one firm to undercut the other. At medium to high prices the firms undercut each other, pushing both prices and profits downward, similar to the <a href="https://en.wikipedia.org/wiki/Prisoner%27s_dilemma">prisoner's dilemma</a>. Eventually one of the firms decides to reduce its quantity and increase its price, capturing these consumers with higher WTP. The other firm then follows this strategy and prices jointly increase again. This repeats, most likely ad infinitum.</p>
+<p>Thus, we see that the dynamics of oligopolies are complicated, especially in more realistic market settings. Even though we couldn't "solve" this market, we got a lot of insights into the nature of the problem, which is still useful and rewarding.</p>
 <script type="text/javascript">if (!document.getElementById('mathjaxscript_pelican_#%@#$@#')) {
     var align = "center",
         indent = "0em",
