@@ -3,6 +3,8 @@ We're migrating the blog from Jekyll to Pelican because Jekyll requires Ruby, wh
 ### Requirements
 - `sassc` - the sass compiler which builds `.css` files from `.scss`.
 - `pelican==4.8.0` or above
+- `markdown`
+- `beautifulsoup4`
 
 ### Additional plugins
 - `pelican-render-math` - used to [render math](https://github.com/pelican-plugins/render-math).
