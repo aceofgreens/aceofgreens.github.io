@@ -1,3 +1,6 @@
+# The Critical Section
+[![Build and Deploy](https://github.com/aceofgreens/aceofgreens.github.io/actions/workflows/static.yml/badge.svg)](https://github.com/aceofgreens/aceofgreens.github.io/actions/workflows/static.yml)
+
 We're migrating the blog from Jekyll to Pelican because Jekyll requires Ruby, while Pelican is based on Python.
 
 ### Requirements
