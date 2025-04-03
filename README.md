@@ -6,9 +6,6 @@ We're migrating the blog from Jekyll to Pelican because Jekyll requires Ruby, wh
 - `markdown`
 - `beautifulsoup4`
 
-### Additional plugins
-- `pelican-render-math` - used to [render math](https://github.com/pelican-plugins/render-math).
-
 ### Serving
 To serve locally, clone the repo, run `make html` which populates the `docs` folder. Then run `make serve` to serve it.
 
