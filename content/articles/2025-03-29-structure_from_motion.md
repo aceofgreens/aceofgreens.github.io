@@ -85,7 +85,7 @@ The transformer has 24 layers. It is ViT patchifying all frames into tokens and 
 There is a certain amount of redundancy in the outputs. Camera poses can be inferred from the point maps, which can be inferred from the depth maps. Yet, having multiple over-complete predictions improves performance noticeably. It is up to the user to use decide which point cloud to use - the one from the depth head or the one from the point map head.
 
 <figure>
-    <img class='extra_big_img' src="/images/vggt_reconstructions.png" alt="CoTracker3" width="1200">
+    <img class='extra_big_img' src="/images/vggt_reconstructions2.png" alt="CoTracker3" width="1200">
     <figcaption> Figure 2: VGGT Reconstruction of an outdoor scene. The leftmost image is the only input to the model. The three views of the reconstruction are reasonable. Note that the cacti are sticking out of the scene. The reconstructed landscape is steep, consistent with the visible hills. Due to the gradual increase in pixel depth the points are radially splatted, which is expected. The sky has been segmented out for clarity. The person's shadow is visible.</figcaption>
 </figure>
 
