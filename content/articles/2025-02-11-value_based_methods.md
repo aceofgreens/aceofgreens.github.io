@@ -54,7 +54,7 @@ $$
 A very convenient way to represent these equations is through backup diagrams, as shown in Fig. 1. States are shown as circles, while actions as squares. Arcs show max-aggregation operations.
 
 <figure>
-    <img class='img' src="/images/bellman_optimality_state.svg" alt="Bellman optimality state" width="1200">
+    <img class='img' src="/images/bellman_optimality_state2.svg" alt="Bellman optimality state" width="1200">
     <figcaption> Figure 1: Backup diagrams for the Bellman optimality equations.</figcaption>
 </figure>
 
@@ -71,7 +71,7 @@ Policy evaluation could be implemented in a synchronous manner where we update t
 To improve the policy we need to use $V_\pi(\cdot)$ to obtain a new $\pi$. A simple way to do it is to make the policy greedy with respect to the value function in every state, which is a guaranteed improvement: $\pi(a | s) = \text{arg}\max_a \sum_{s', r}p(s', r | s, a)[r + \gamma V(s')]$. Once we improve the policy we can re-evaluate it and improve it again, and again, and again. This *policy iteration* approach of repeatedly evaluating the policy and improving it is common to pretty much all value-based methods. It also allows us to be flexible in terms of how many sweeps we use to evaluate the policy before we improve it. The special case of using a single sweep is called value iteration.
 
 <figure>
-    <img class='img' src="/images/policy_evaluation_dyn_prog.svg" alt="Bellman optimality state" width="1200">
+    <img class='img' src="/images/policy_evaluation_dyn_prog2.svg" alt="Bellman optimality state" width="1200">
     <figcaption> Figure 2: Backup diagrams for the policy evaluation and Q-policy iteration. Here we simply aggregate neighboring values according to their probabilities. The left diagram finds $v_\pi(s)$, the right one finds $q_\pi(s, a)$.</figcaption>
 </figure>
 
@@ -89,7 +89,7 @@ So, the idea behind Monte Carlo methods is that the agent will rollout entire tr
 This simple algorithm evaluates $v_\pi(s)$. We can use the same procedure to evaluate also $q_\pi(s, a)$. It can be implemented in an online (update policy after every episode) or batched manner. It does not use bootstrapping, because we're updating the value function using only the true collected rewards, not estimates of them. Because of that it has high variance, but is unbiased. It also requires that episodes have finite length.
 
 <figure>
-    <img class='small_img' src="/images/mc_trace.svg" alt="Bellman optimality state" width="1200">
+    <img class='small_img' src="/images/mc_trace2.svg" alt="Bellman optimality state" width="1200">
     <figcaption> Figure 3: Backup diagrams for Monte Carlo policy iteration. The agent performs sample trace backups - rolls out a policy until a terminal state, indicated with a T, and estimates mean empirical returns. The dashed arrows show that rewards are obtained from the corresponding transitions.    </figcaption>
 </figure>
 
@@ -122,7 +122,7 @@ $$
 Backup diagrams for evaluating $v_\pi(s)$ and $q_\pi(s, a)$ are shown in Fig. 4. The main benefit compared to MC is that TD allows us to learn in infinite episodes, for example if the task is continuing from before. It also allows us to naturally learn in an online manner, as we don't have to wait until the episode finishes.
 
 <figure>
-    <img class='img' src="/images/td_trace.svg" alt="Bellman optimality state" width="1200">
+    <img class='img' src="/images/td_trace2.svg" alt="Bellman optimality state" width="1200">
     <figcaption> Figure 4: Backup diagrams for TD algorithms. Left is policy evaluation. Middle is Q-policy iteration as used in Sarsa. Right is the TD Bellman optimality equation, as used in Q-learning. </figcaption>
 </figure>
 
