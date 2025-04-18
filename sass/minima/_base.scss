@@ -26,9 +26,8 @@ body {
   display: flex;
   min-height: 100vh;
   flex-direction: column;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
-
-
 
 /**
  * Set `margin-bottom` to maintain vertical rhythm
@@ -40,6 +39,19 @@ ul, ol, dl, figure,
   margin-bottom: $spacing-unit / 2;
 }
 
+#theme-toggle {
+  background: none;
+  border: none;
+  outline: none;
+  padding: 0.5rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: inherit; /* So it adapts to theme text color */
+}
+
+#theme-toggle:focus {
+  outline: none;
+}
 
 /**
  * `main` element
@@ -177,6 +189,7 @@ h1, h2, h3, h4, h5, h6 {
 
 
 /*** Links*/
+
 a {
   color: $hyperlink-color;
   text-decoration: none;
@@ -189,15 +202,6 @@ a {
     color: $hyperlink-color;
     text-decoration: underline;
   }
-
-  .social-media-list   
-    &:hover {
-    text-decoration: none;
-    color: $grey-color;
-    }
-    &:visited {
-      color: $grey-color
-    }
   
   &.customlink {
     &:visited {
@@ -222,9 +226,17 @@ a {
     }
   }
 
-
   .username {
     text-decoration: underline;
+  }
+}
+
+
+.social-media-list a {
+  color: $grey-color;
+
+  &:visited {
+    color: $grey-color
   }
 }
 
@@ -290,10 +302,10 @@ blockquote {
 code {
   // @include relative-font-size(0.9375);
   // background-color: rgb(45, 45, 45); //rgb(151, 149, 149)
-  background-color: #2d2d2d; //rgb(151, 149, 149)
+  background-color: $code-background-color; //rgb(151, 149, 149)
 
   // color: rgb(210, 210, 210); // rgb(47, 51, 55)
-  color: #d2d2d2; // rgb(47, 51, 55)
+  color: $code-color; // rgb(47, 51, 55)
   overflow-x: auto;
   font-family: $code-font-family;
   padding-left: 2px;

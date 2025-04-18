@@ -9,22 +9,24 @@ $base-font-size:   16px !default;
 $base-font-weight: 400 !default;
 $small-font-size:  $base-font-size * 0.875 !default;
 $base-line-height: 1.5 !default;
-
 $spacing-unit:     30px !default;
 
-$dark_theme: true;
+$dark_theme: true !default;
 
-// White theme colour palette
-$text-color:       #111111; //bbbbbb
-$background-color: #fdfdfd; //rgb(30, 30, 30)
-$brand-color:      #828282; // bbbbbb
-$grey-color:       #828282; //rgb(133, 133, 120)
-$grey-color-light: #828282; //#bbbbbb
-$grey-color-dark:  #828282; //bbbbbb)
-$hyperlink-color: #888888;
-$site-title-color: #141618; //d2d5d8
-$highlight-background-color: rgb(119, 16, 16); //fff
-$highlight-rouge-background-color: $background-color; //eef
+// Declare all variables first (so they exist)
+$text-color: null;
+$background-color: null;
+$brand-color: null;
+$grey-color: null;
+$grey-color-light: null;
+$grey-color-dark: null;
+$hyperlink-color: null;
+$hyperlink-color-visited: null;
+$site-title-color: null;
+$highlight-background-color: null;
+$highlight-rouge-background-color: null;
+$code-background-color: null;
+$code-color: null;
 
 // Dark theme colour palette
 @if $dark_theme {
@@ -35,9 +37,26 @@ $highlight-rouge-background-color: $background-color; //eef
   $grey-color-light: #bbbbbb;
   $grey-color-dark:  #bbbbbb;
   $hyperlink-color: #888888;
+  $hyperlink-color-visited: $grey-color;
   $site-title-color: #d2d5d8;
   $highlight-background-color: $background-color; //fff
   $highlight-rouge-background-color: $background-color; //eef 
+  $code-background-color: #2d2d2d;
+  $code-color: #d2d2d2;
+} @else {
+  // White theme colour palette
+  $text-color:       #111111; //bbbbbb
+  $background-color: #ffffff; //rgb(30, 30, 30)
+  $brand-color:      #353535; // bbbbbb
+  $grey-color:       #353535; //rgb(133, 133, 120)
+  $grey-color-light: #353535; //#bbbbbb
+  $grey-color-dark:  #353535; //bbbbbb)
+  $hyperlink-color: #0c3273;
+  $site-title-color: #141618; //d2d5d8
+  $highlight-background-color: rgb(119, 16, 16); //fff
+  $highlight-rouge-background-color: $background-color; //eef
+  $code-background-color: #b8b6b6;
+  $code-color: $text-color;
 }
 
 $table-text-align: left !default;

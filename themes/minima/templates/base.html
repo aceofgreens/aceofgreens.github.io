@@ -8,7 +8,19 @@
     <meta name="generator" content="Pelican" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <link rel="stylesheet" href="/assets/main.css" />
+    <!-- <link rel="stylesheet" href="/assets/main.css" /> -->
+    <!-- <link id="theme-stylesheet" rel="stylesheet" href="/assets/dark.css" /> -->
+    
+    <!-- Handle the theme -->
+    <script>
+      (function () {
+        const theme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+        document.write('<link id="theme-stylesheet" rel="stylesheet" href="/assets/' + theme + '.css">');
+      })();
+    </script>
+    <!-- <link id="theme-stylesheet" rel="stylesheet" href="/assets/light.css" /> -->
+
     <link rel="icon" href="/assets/favicon.png" />
     <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
   {% endblock head %}
@@ -60,6 +72,11 @@
             <a class="page-link" href="/about.html">About</a>
             <a class="page-link" href="/posts.html">Posts</a>
             <a class="page-link" href="/tags.html">Tags</a>
+
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+            <button id="theme-toggle" aria-label="Toggle theme"><i class="fa-regular fa-lightbulb"></i></button>
+            
+            
         </div>
 
       </nav>
@@ -127,6 +144,33 @@ function welcomeFunction() {
       items[i].setAttribute("class", "highlight");
   }
 }
+</script>
+
+<script>
+  const toggleButton = document.getElementById('theme-toggle');
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const storedTheme = localStorage.getItem('theme');
+  const themeStylesheet = document.getElementById('theme-stylesheet');
+
+  // Function to apply theme
+  const applyTheme = (theme) => {
+    themeStylesheet.href = `/assets/${theme}.css`;
+  };
+
+  // Apply theme on load
+  if (storedTheme === 'dark' || (storedTheme === null && prefersDark)) {
+    applyTheme('dark');
+  } else {
+    applyTheme('light');
+  }
+
+  // Toggle theme on click
+  toggleButton.addEventListener('click', () => {
+    const currentTheme = themeStylesheet.getAttribute('href').includes('dark') ? 'dark' : 'light';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    applyTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+  });
 </script>
 
 </body>

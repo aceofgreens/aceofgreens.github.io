@@ -51,6 +51,11 @@ html:
 	"$(PELICAN)" "$(INPUTDIR)" -o "$(OUTPUTDIR)" -s "$(CONFFILE)" $(PELICANOPTS)
 	sassc sass/minima.scss "$(OUTPUTDIR)/assets/main.css"
 
+theme:
+	"$(PELICAN)" "$(INPUTDIR)" -o "$(OUTPUTDIR)" -s "$(CONFFILE)" $(PELICANOPTS)
+	echo '$$dark-theme: true; @import "sass/minima.scss";' | sassc -s "$(OUTPUTDIR)/assets/dark.css"
+	echo '$$dark-theme: false; @import "sass/minima.scss";' | sassc -s "$(OUTPUTDIR)/assets/light.css"
+
 clean:
 	[ ! -d "$(OUTPUTDIR)" ] || rm -rf "$(OUTPUTDIR)"
 
