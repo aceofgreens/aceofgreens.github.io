@@ -5,7 +5,7 @@ Tags: econ
 slug: exogeneous_growth
 ---
 
-Here we study the simplest economics growth model by Robert Solow and Trevor Swan. It is the basis over which many other models build upon and is quite easy to analyze, while providing useful insights and introducing the key questions and ideas.
+Here we study the simplest economics growth model by Robert Solow and Trevor Swan. It is the basis over which many other models build upon and is quite easy to analyze, while providing useful insights. For example, it asserts that changes in saving only matter for the economy's transition path, not for its permanent growth rate. Yet, savings obviously determine consumption. So should we save more or less? The model also introduces key questions such as whether poor countries grow faster than richer ones, or whether physical capital can explain big differences in output across space and time. 
 
 We are concerned with an economy's long term behaviour. This presupposes that individual macroeconomic fluctuations from year-to-year are not of interest. In fact, the main variable of focus is the output $Y(t)$ as a function of the production factors capital $K(t)$, labor $L(t)$, and technology $A(t)$. All of these depend on time $t$, but we'll often skip this notation for clarity. The mapping between inputs and outputs is given by a production function $F$, i.e. $Y = F(K, A, L)$.
 
