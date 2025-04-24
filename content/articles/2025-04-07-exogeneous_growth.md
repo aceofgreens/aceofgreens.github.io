@@ -5,13 +5,13 @@ Tags: econ
 slug: exogeneous_growth
 ---
 
-Here we study the simplest economics growth model by Robert Solow and Trevor Swan. It is the basis over which many other models build upon and is quite easy to analyze, while providing useful insights. For example, it asserts that changes in saving only matter for the economy's transition path, not for its permanent growth rate. Yet, savings obviously determine consumption. So should we save more or less? The model also introduces key questions such as whether poor countries grow faster than richer ones, or whether physical capital can explain big differences in output across space and time. 
+Here we study the simplest economics growth model - the Solow model - by Robert Solow and Trevor Swan. It is the basis over which many other models build upon and is quite easy to analyze, while providing useful insights. For example, it asserts that changes in saving only matter for the economy's transition path, not for its permanent growth rate. Yet, savings obviously determine consumption. So should we save more or less? The model also introduces key questions such as whether poor countries grow faster than richer ones, or whether physical capital can explain big differences in output across space and time. 
 
 We are concerned with an economy's long term behaviour. This presupposes that individual macroeconomic fluctuations from year-to-year are not of interest. In fact, the main variable of focus is the output $Y(t)$ as a function of the production factors capital $K(t)$, labor $L(t)$, and technology $A(t)$. All of these depend on time $t$, but we'll often skip this notation for clarity. The mapping between inputs and outputs is given by a production function $F$, i.e. $Y = F(K, A, L)$.
 
 If we assume that $F$ is increasing in $K$, $A$, and $L$, and they all grow exogeneously, this already implies a growth rate for $Y$. However, the generality and usefulness of the conclusions depend on the modeling setup. The assumptions of the Solow model hit a sweet spot in that regard because they are not the most unrealistic ones, but they do allow for some level of interesting insights.
 
-We'll assume that $F$ has a [Cobb-Douglas](https://en.wikipedia.org/wiki/Cobb%E2%80%93Douglas_production_function) functional form, $Y(t) = F(K, AL) = K^\alpha (AL)^{1 - \alpha}$. The technology $A$ enters only through its multiplication with the labor $L$. The product $AL$ is called *effective labor*. This functional form also implies constant returns to scale, where e.g. doubling the inputs doubles the outputs, $F(xK, xAL) = xF(K, AL)$. Such constant returns are realistic for large economies where the gains from specialization have been exhausted.
+We'll assume that $F$ has a [Cobb-Douglas](https://en.wikipedia.org/wiki/Cobb%E2%80%93Douglas_production_function) functional form, $Y(t) = F(K, AL) = K^\alpha (AL)^{1 - \alpha}$ with $0 < \alpha < 1$. The technology $A$ enters only through its multiplication with the labor $L$. The product $AL$ is called *effective labor*. This functional form also implies constant returns to scale, where e.g. doubling the inputs doubles the outputs, $F(xK, xAL) = xF(K, AL)$. Such constant returns are realistic for large economies where the gains from specialization have been exhausted.
 
 Let's assume that $L$ and $A$ grow at constant rates $n$ and $g$ respectively. Thus, they are exogeneous and grow exponentially as time $t$ progresses:
 
@@ -20,7 +20,7 @@ $$
 \frac{dA}{dt} = \dot{A}(t) = gA(t) \Rightarrow A(t) = A(0) e^{gt} \\
 $$
 
-A more interesting consideration is how capital changes from time to time. Suppose that households separate total income into consumption and saving and the saving gets channeled through the financial markets where it is converted to capital. Suppose also that capital depreciates at a constant rate $\delta$. Then the relationship for capital is
+A more interesting consideration is how capital changes from one instant to another. Suppose that households separate total income into consumption and saving and the saving gets channeled through the financial markets where it is converted to capital. Suppose also that capital depreciates at a constant rate $\delta$. Then the relationship for capital is
 
 $$
 \frac{dK}{dt} = \dot{K}(t) = Y(t) - C(t) - \delta K(t) = sY(t) - \delta K(t).
@@ -28,7 +28,7 @@ $$
 
 Here $Y(t) - C(t)$ is the saving which in the Solow model is assumed to be a constant fraction $s$ of the total income $Y(t)$. Generally, capital increases by however much is saved and decreases according to the depreciation rate.
 
-Now, to analyze the model more easily, we'll convert it into its *intensive* form, where the quantities of interest will now be expressed *per unit of effective labor*. Thus, output per effective labor is $Y/(AL) = y = F(K, AL)/(AL) = F(K/(AL), 1) = f(k)$ where we have introduced the variables $k=K/(AL)$ and $y=Y/AL$. For the Cobb-Douglas case we get a simple expression:
+Now, to analyze the model more easily, we'll convert it into its *intensive* form, where the quantities of interest will now be expressed *per unit of effective labor*. Thus, output per effective labor is $Y/(AL) = y = F(K, AL)/(AL) = F(K/(AL), 1) = f(k)$ where we have introduced the variables $k=K/(AL)$ and $y=Y/(AL)$. For the Cobb-Douglas case we get:
 
 $$
 \begin{align}
@@ -46,15 +46,15 @@ $$
 \dot{k}(t) = \frac{\dot{K}}{AL} - \frac{K}{(AL)^2}\left[ A\dot{L} + \dot{A}L \right] = sf\big(k(t)\big) - (n + g + \delta)k(t).
 $$
 
-To get to the last equation we've used the fact that $\dot{L}/L = n$ and $\dot{A}/A = g$. Now, the term $sf\big(k(t)\big)$ grows very fast initially (Inada condition) and but slows down at higher $k$ due to the diminishing marginal product. It grows like $O(k^\alpha)$. The term $(n + g + \delta)k$ grows like $O(k)$ and represents *break-even* investment - the amount needed to keep $k$ at the same level. The capital-per-unit-of-effective-labor $k$ is increasing when the actual investment $sf(k)$ is greater than the break-even investment, and decreases otherwise. The quantity at which $\dot{k} = 0$ is $k^\ast$ and it is a stable point to which $k$ converges.
+To get to the last equation we've used the fact that $\dot{L}/L = n$ and $\dot{A}/A = g$. Now, the term $sf\big(k(t)\big)$ grows very fast initially (Inada condition) but slows down at higher $k$ due to the diminishing marginal product. It grows like $O(k^\alpha)$. The term $(n + g + \delta)k$ grows like $O(k)$ and represents *break-even* investment - the amount needed to keep $k$ at the same level. The capital-per-unit-of-effective-labor $k$ is increasing when the actual investment $sf(k)$ is greater than the break-even investment, and decreases otherwise. The quantity at which $\dot{k} = 0$ is $k^\ast$ and it is a stable point to which $k$ converges.
 
 Once $k$ converges to $k^\ast$ the trajectory of the variables is called the *balanced growth path*. Then:
 
 - $L$ and $A$ grow at rates $n$ and $g$ by exogeneous definion;
 - $k$ is constant at $k^\ast$ but $K = ALk^\ast$ grows at rate $n + g$;
-- Output $Y$ grows at rate $n + g$, per-worker output $Y/L$ and capital $K/L$ grow at rate $g$.
+- Output $Y$ grows at rate $n + g$. Per-worker output $Y/L$ and capital $K/L$ grow at rate $g$.
 
-Thus the Solow model implies that, regardless of its starting point, the economy converges to a balanced growth path a situation where each variable of the model is growing at a constant rate. On the balanced growth path, the growth rate of output per worker is determined solely by the rate of technological progress $g$.
+Thus the Solow model implies that, regardless of its starting point, the economy converges to a balanced growth path  where each variable of the model is growing at a constant rate. On the balanced growth path, when $k=k^\ast$, the growth rate of output per worker is determined solely by the rate of technological progress $g$.
 
 We now turn to exploring the implication of this model. Specifically, what happens if the savings rate $s$ goes up. Intuitively, investment into capital $sf(k)$ goes up, and therefore the convergence point $k^\ast$ increases. Assuming we start from $k^\ast$ and $s$ increases, then suddenly actual investment becomes larger than break-even investment and $k$ starts to increase. Output grows at a rate higher than $n + g$. When the new equilibrium value of $k^\ast$ is reached, the growth rate of the economy becomes constant again. Similarly, a decrease in $s$ causes a *level effect* but not a *growth effect* in the economy. The only way to increase the growth rate of output per capita, which is $O(e^{gt})$, is through improvements in the technology $A(t)$.
 
@@ -78,7 +78,13 @@ $$
 \end{align}
 $$
 
-In principle that's all we need. Yet, to make the last equation more interpretable, we'll derive elasticities. Remember that the elasticity of $x$ wrt $y$ is given by $\epsilon_{x,y} = dx/dy \times y/x$. We multiply $\partial y^\ast/ \partial s$ by $s/y^\ast$ and express the $s$ in terms of $k^\ast$. After some function wrangling one obtains
+In principle that's all we need. Yet, to make the last equation more interpretable, we'll derive elasticities. Remember that the elasticity of $y$ wrt $x$ is given by $\epsilon_{y, x} = dy/dx \times x/y$. It represents the percentage change in $y$ from a percentage change in $x$. One can intuitively derive the formula:
+
+$$
+\epsilon_{y,x} = \frac{\% \Delta y}{\% \Delta x} = \frac{\Delta y / y}{\Delta x / x} \approx \frac{dy/y}{dx/x} = \frac{dy}{dx} \frac{x}{y}, \text{ as } \Delta x \rightarrow 0 \text{ and } \Delta y \rightarrow 0. 
+$$
+
+We want the elasticity of output per effective labor $y^\ast$ wrt savings $s$. So we multiply $\partial y^\ast/ \partial s$ by $s/y^\ast$ and express the $s$ in terms of $k^\ast$. After some function wrangling one obtains
 
 $$
 \frac{s}{y^\ast} \frac{\partial y^\ast}{\partial s} = \frac{\alpha_K(k^\ast)}{1 - \alpha_K(k^\ast)}, \text{ where } \alpha_K(k^\ast) = k^\ast f'(k^\ast) / f(k^\ast).
@@ -106,7 +112,7 @@ $$
 
 Usually $n + g + \delta$ is about $6\%$ per year and $\alpha_K(k^\ast)$ is about $1/3$. Hence, $k$ and $y$ move about $4\%$ of their remaining distance every year, which is very slow. Note that the Taylor approximation allows us to rely on this calculation only when $k$ is already in a small neighborhood around $k^\ast$.
 
-Let's also consider what happens with consumption when the savings rate increases. Intuitively, if $s$ increases, households save more and consume less, so consumption should go down? Yet, a higher $s$ increases $Y$, so which may lead to altogether increased consumption. So it seems unclear. Consumption per unit of effective labor is given by $c(k) = f(k) - sf(k)$. At the balanced path, $c^\ast = f(k^\ast) - (n + g + \delta)k^\ast$. Therefore,
+Let's also consider what happens with consumption when the savings rate increases. Intuitively, if $s$ increases, households save more and consume less, so consumption should initially go down? Yet, a higher $s$ increases future $Y$, which may lead to altogether increased consumption. The overall effect seems unclear. Consumption per unit of effective labor is given by $c(k) = f(k) - sf(k)$. At the balanced path, $c^\ast = f(k^\ast) - (n + g + \delta)k^\ast$. Therefore,
 
 $$
 \frac{\partial c^\ast}{\partial s} = \left[f'(k^\ast) - (n + g + \delta) \right]\frac{\partial k^\ast}{\partial s}.
@@ -116,7 +122,7 @@ The change in consumption is positive if the MPK is greater than the break-even 
 
 Finally, let's close by listing the shortcomings of the model. First, it assumes exogeneous technological progress, labour workforce, and savings rate. This is certainly convenient if we want to trace how growth changes given shocks to $s$, but if we want to understand how $s$ would change depending on some other factor, e.g. microeconomic foundations of households, we need a more powerful model. It also doesn't explain what the technological level $A(t)$ is? Is it education, property rights, quality of infrastructure, cultural attitudes?
 
-Secondly, the model implies that differences in capital accumulation cannot account for large differences in incomes. Suppose the difference between the output per capita between two countries is $X$. Then, the differences in capital per capita has to be $X^{1/\alpha_K}$. To see this:
+Secondly, the model implies that differences in capital accumulation cannot account for large differences in incomes. Suppose country $B$ has $X$ times more output per effective labor than country $A$. Then, the differences in capital per capita has to be $X^{1/\alpha_K}$. To see this:
 
 $$
 X = \frac{y_B}{y_A} = \frac{k_B^{\alpha_K}}{k_A^{\alpha_K}} = \left(\frac{k_B}{k_A}\right)^{\alpha_K} \Rightarrow \frac{k_B}{k_A} = X^{1/\alpha_K}.

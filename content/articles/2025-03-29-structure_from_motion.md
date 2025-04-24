@@ -38,7 +38,7 @@ A CNN extracts multi-scale features from each video frame. We can describe each 
 
 How do you train such a beast? You collect a large set of unlabeled real-world videos and use multiple *teacher* trackers to label them. The initial query points are SIFT keypoints, because points in high-texture regions are usually easier to track. The tracks from the teachers become the supervisory signal with which the actual *student* network is trained.
 
-**Estimating camera parameters**. Another interesting paper is PoseDiffusion [3]. It deals with the problem of estimating the camera poses from a given number of images. The idea is quite straightford - train a diffusion model to sample from $p(x | I)$ where $x$ are the camera parameters and $I$ are the images. It is assumed that this distribution is sufficiently peaked so that any sample from it can be considered a valid pose.
+**Estimating camera parameters**. Another interesting paper is PoseDiffusion [3]. It deals with the problem of estimating the camera poses from a given number of images. The idea is quite straightforward - train a diffusion model to sample from $p(x | I)$ where $x$ are the camera parameters and $I$ are the images. It is assumed that this distribution is sufficiently peaked so that any sample from it can be considered a valid pose.
 
 Naturally, to train the denoiser, one needs a large dataset of scenes and camera poses $(x_i, I_i)_{i=1}^S$. Noise is applied only over the camera poses. The model learns to look at the images and iteratively denoise the camera poses. Once this is done, you can get pretty reasonable camera poses on novel, unseen scenes. Yet, there is more you can do. The epipolar constraints in any pair of two images can be used to constrain the distribution of generated camera poses conditioned on the images. This signal can be used to steer the denoising process in more favourable directions.
 
@@ -48,7 +48,7 @@ $$
 e(\mathbf{x}, \mathbf{x}', \mathbf{F}) = \frac{(\mathbf{x}'^\mathsf{T}\mathbf{F}\mathbf{x})^2}{(\mathbf{F}\mathbf{x})_1^2 + (\mathbf{F}\mathbf{x})_2^2 + (\mathbf{F}^\mathsf{T}\mathbf{x}')^2 + (\mathbf{F}^\mathsf{T}\mathbf{x}')^2},
 $$
 
-which is a first order approximation of the full reprojection error. The idea is that we'll steer the diffusion process using towards camera poses with lower Sampson error: 
+which is a first order approximation of the full reprojection error. The idea is that we'll steer the diffusion process towards camera poses with lower Sampson error: 
 
 $$
 \begin{align}
@@ -80,7 +80,7 @@ As we've seen so far, more and more aspects of the classic SFM approach are bein
 
 **Data-driven reconstruction**. The visual geometry grounded transformer (VGGT) [5] goes into this direction. It is a single transformer that uses a shared backbone with multiple branching heads to predict camera poses, depth maps, point maps, and tracks. Specifically, given $N$ images of shape $(N, H, W, 3)$ the output poses are $(N, 9)$ representing quaternions, translations, and focal lengths, the depth maps are $(N, H, W)$, the point maps are $(N, H, W, 3)$ in the coordinate system of the first camera, and the tracks are actually track features of shape $(N, C, H, W)$ from which the point tracks are produced.
 
-The transformer has 24 layers. It is ViT patchifying all frames into tokens and using alternating global and local self-attention layers. In global self-attention each token attends over all other tokens, across all frames. In local self-attention it attends only to those tokens within the same frame. For the dense predictions they use a DPT head [6].
+The transformer has 24 layers. It is a ViT patchifying all frames into tokens and using alternating global and local self-attention layers. In global self-attention each token attends over all other tokens, across all frames. In local self-attention it attends only to those tokens within the same frame. For the dense predictions they use a DPT head [6].
 
 There is a certain amount of redundancy in the outputs. Camera poses can be inferred from the point maps, which can be inferred from the depth maps. Yet, having multiple over-complete predictions improves performance noticeably. It is up to the user to use decide which point cloud to use - the one from the depth head or the one from the point map head.
 
@@ -89,7 +89,7 @@ There is a certain amount of redundancy in the outputs. Camera poses can be infe
     <figcaption> Figure 2: VGGT Reconstruction of an outdoor scene. The leftmost image is the only input to the model. The three views of the reconstruction are reasonable. Note that the cacti are sticking out of the scene. The reconstructed landscape is steep, consistent with the visible hills. Due to the gradual increase in pixel depth the points are radially splatted, which is expected. The sky has been segmented out for clarity. The person's shadow is visible.</figcaption>
 </figure>
 
-Naturally, when I tested the model I was impressed with the quality on their particular examples. The reconstructions seem accurate and clean. Yet, I found the performance on realistic complicated outdoor scenes to be far from perfect. Figure 2 shows an example. Note that VGGT resizes the images to a maximum dimension of 518 pixels, so reconstructions are blurry and lose details. Overall, they are okay-ish and can benefit from additional training on similar outdoor scenes. Yet, it is clear that SFM is still *far* from solved.
+Naturally, when I tested the model I was impressed with the quality on their particular examples. The reconstructions seem accurate and clean. Yet, I found the performance on realistic complicated outdoor scenes to be far from perfect. Figure 2 shows an example. Note that VGGT resizes the images to a maximum dimension of 518 pixels, so reconstructions are blurry and lose details. Overall, they are okay-ish and can benefit from additional training on similar outdoor scenes. Nonetheless, it is clear that SFM is still *far* from solved.
 
 
 ### References
