@@ -11,7 +11,7 @@ To begin, one should realize that denoising is intrinsically tied to generation.
 
 Suppose we have a training dataset of samples and the underlying data distribution is $\mathcal{D}$. The whole diffusion pipeline can be applied independently across all samples. For that reason, let's consider a single sample $\textbf{x} \sim \mathcal{D}$. We can define a stochastic process which, at each step, adds noise to it. For simplicity, assume we add Gaussian noise independently to each dimension of the sample. If $\textbf{x}$ is an image, we'd add independent noise to the intensity of each pixel. If $\textbf{x}$ is a point in some geometric space, then we add noise to its coordinates. If $\textbf{x}$ represents a sample with physically-meaningful dimensions, we simply add noise to their measurements.
 
-Doing this for multiple steps, we get a discrete random walk. One commonly and highly practical example definition for the stochastic process governing it is:
+Doing this for multiple steps, we get a discrete random walk. One common and highly practical example definition for the stochastic process governing it is:
 
 $$
 \begin{aligned}
@@ -40,11 +40,13 @@ $$
 \textbf{x}_{t} \sim \mathcal{N} \big (\sqrt{\bar{\alpha}_t}\textbf{x}_0, \ (1 - \bar{\alpha}_t )\textbf{I} \big),
 $$
 
-where we have set $ \alpha_t = 1 - \beta_t$ and $\bar{\alpha}_t = \prod_{i=1}^t \alpha_i$ for convenience. Another useful property is that under some mild conditions on the variance schedule $\beta_i$, the distribution of $\textbf{x}_t$ converges to an isotropic Gaussian as $T \rightarrow \infty$. More generally $\textbf{x}_{1:T} | \textbf{x}_0$ is a Guassian process and hence $\textbf{x}_{t-1} | \textbf{x}_t, \textbf{x}_0$ is also Gaussian. However, the quantity of interest $\textbf{x}_{t-1} | \textbf{x}_{t}$ is not Gaussian. It's approximately Gaussian if the $\beta_i$ parameters are small. Crucially, the mean and standard deviation of this Gaussian depend on the whole dataset and this is where learning comes in.
+where we have set $ \alpha_t = 1 - \beta_t$ and $\bar{\alpha}_t = \prod_{i=1}^t \alpha_i$ for convenience. Another useful property is that under some mild conditions on the variance schedule $\beta_i$, the distribution of $\textbf{x}_t$ converges to an isotropic Gaussian as $T \rightarrow \infty$. More generally $\textbf{x}_{1:T} | \textbf{x}_0$ is a Guassian process and hence $\textbf{x}_{t-1} | \textbf{x}_t, \textbf{x}_0$ is also Gaussian. Consider the implications of this: if we know the clean sample $\mathbf{x}_0$, then we can obtain analytic distributions for the denoised sample, $\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0$. However, at test time we don't have $\textbf{x}_0$ and the distribution of $\mathbf{x}_{t-1} | \mathbf{x}_t$ is a complicated mixture. Our strategy will be to obtain an estimate of $\mathbf{x}_0$ and then sample from the Gaussian distribution of $\mathbf{x}_{t-1} | \mathbf{x}_t, \mathbf{x}_0$. However, if we already have an estimate of $\mathbf{x}_0$ why bother to denoise?
 
-So, we construct a neural network $p_\theta$ that takes in $(\textbf{x}_t, t)$ and outputs the mean and standard deviation of $\textbf{x}_{t-1} | \textbf{x}_{t}$. By autoregressively calling our network, we get samples from the joint distribution $p_\theta(\textbf{x}_{0:T}) = p(\textbf{x}_T) \prod_{t=1}^T p_\theta(\textbf{x}_{t-1} | \textbf{x}_{t})$. Since we don't care about the intermediate samples, our only task is to learn the network parameters $\theta$ such that $p_\theta(\textbf{x}_0) \approx p(\textbf{x}_0)$. Similar to a VAE, one can use variational inference here.
+Note that if we train a predictor to output directly $\mathbf{x}_0$ from $(\mathbf{x}_t, t)$, at test time when we give it $(\mathbf{x}_T, T)$ it will output something very blurry because $\mathbf{x}_T$ is uncorrelated with any sample from the target distribution. Hence, the best predictor given fully random noise is the average of the data distribution. The iterative denoising is needed because it allows the model to take this blurry image and progressively denoise it, randomly bringing it into one particular part of the data manifold, where specific clearcut features start to emerge.
 
-So, $p(\textbf{x}_0)$ is the observed target distribution, $p(\textbf{x}_{1:T} | \textbf{x}_0)$ is the latent distribution. We denote the trainable model as $p_\theta$ and hence its latent distribution is $p_\theta(\textbf{x}_{1:T} | \textbf{x}_0)$. Then,
+<!-- So, we construct a neural network $p_\theta$ that takes in $(\textbf{x}_t, t)$ and outputs the mean and standard deviation of $\textbf{x}_{t-1} | \textbf{x}_{t}$. By autoregressively calling our network, we get samples from the joint distribution $p_\theta(\textbf{x}_{0:T}) = p(\textbf{x}_T) \prod_{t=1}^T p_\theta(\textbf{x}_{t-1} | \textbf{x}_{t})$. Since we don't care about the intermediate samples, our only task is to learn the network parameters $\theta$ such that $p_\theta(\textbf{x}_0) \approx p(\textbf{x}_0)$. Similar to a VAE, one can use variational inference here. -->
+
+The observed target distribution is $p(\textbf{x}_0)$ and $p(\textbf{x}_{1:T} | \textbf{x}_0)$ is the latent distribution. We denote the learned distribution as $p_\theta(\mathbf{x}_0)$ and the corresponding latent distribution as $p_\theta(\textbf{x}_{1:T} | \textbf{x}_0)$. We'll maximize a lower bound on the likelihood of the target samples under our distribution:
 
 $$
 \begin{align*}
@@ -61,13 +63,13 @@ $$
 \mathcal{L}(\theta) = \sum_{t = 1}^T \mathbb{E}_{\textbf{x}_{t-1}, \textbf{x}_t \sim p} \big[ - \ln p_\theta(\textbf{x}_{t-1} | \textbf{x}_{t} )\big]
 $$
 
-Now, we need $p_\theta(\textbf{x}_{t-1} | \textbf{x}_t)$ to be something easy to evaluate, like a Gaussian. But $\textbf{x}_{t-1} | \textbf{x}_t$ does not have a Gaussian distribution, $\textbf{x}_{t-1} | \textbf{x}_t, \textbf{x}_0$ does. So we need to have the model estimate $\textbf{x}_0$. In practice, we can easily get $\textbf{x}_0$ since it is related to $\textbf{x}_t$ through the noise $\epsilon_t$,
+Now, we need $p_\theta(\textbf{x}_{t-1} | \textbf{x}_t)$ to be something easy to evaluate, like a Gaussian. But $\textbf{x}_{t-1} | \textbf{x}_t$ does not have a Gaussian distribution, $\textbf{x}_{t-1} | \textbf{x}_t, \textbf{x}_0$ does. So we need to have a neural network that estimates $\textbf{x}_0$. In practice, we can easily get $\textbf{x}_0$ since it is related to $\textbf{x}_t$ through the noise $\epsilon_t$,
 
 $$
-\textbf{x}_t = \sqrt{\bar{\alpha}_t} \textbf{x}_0 + \sqrt{1 - \bar{\alpha}_t} \epsilon_t \Longleftrightarrow \textbf{x}_0 = \frac{\textbf{x}_t - \sqrt{1 - \bar{\alpha}_t} \epsilon_t}{\sqrt{\bar{\alpha}}_t},
+\textbf{x}_t = \sqrt{\bar{\alpha}_t} \textbf{x}_0 + \sqrt{1 - \bar{\alpha}_t} \epsilon_t \Longleftrightarrow \textbf{x}_0 = \frac{\textbf{x}_t - \sqrt{1 - \bar{\alpha}_t} \epsilon_t}{\sqrt{\bar{\alpha}}_t}.
 $$
 
-so in fact we can have the network predict the noise, obtaining $\epsilon_\theta(\textbf{x}_t, t)$. Once we have an estimate of the noise, we essentially have an estimate of $\textbf{x}_0$ and in turn can evaluate $\textbf{x}_{t-1} | \textbf{x}_t, \textbf{x}_0$. The variance is usually fixed to some constant as predicting it introduces instability. The formula for the estimated mean is 
+Therefore we can have the network predict the noise, obtaining $\epsilon_\theta(\textbf{x}_t, t)$. Once we have an estimate of the noise, we essentially have an estimate of $\textbf{x}_0$ and in turn can evaluate $\textbf{x}_{t-1} | \textbf{x}_t, \textbf{x}_0$. The variance is usually fixed to some constant as predicting it introduces instability. The formula for the estimated mean is 
 
 $$
 \mu_{\theta}(\textbf{x}_{t-1} | \textbf{x}_t) = \frac{1}{\sqrt{\bar{\alpha}_t}} \big(\textbf{x}_t - \frac{1 - \alpha_t}{\sqrt{1 - \bar{\alpha}_t} \epsilon_t} \epsilon_{\theta}(\textbf{x}_t, t) \big).
