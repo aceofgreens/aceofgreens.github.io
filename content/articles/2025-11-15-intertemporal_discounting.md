@@ -70,7 +70,28 @@ $$
 This is, again, the Euler equation but in terms of utility and valid for any reasonable utility function, not only CRRA. Here $u'(c_t)$ is the derivative of $u$ with respect to $c$. Intuitively, if we increase consumption infinitesimally, marginal revenue falls infinitesimally. That's why the sign of $\rho - r(t)$ is flipped compared to the consumption version. Finally, consider the discrete-time Euler eqn:
 
 $$
-u'(c_t) = \rho (1+r) u(c_{t+1}), \text{ where } 0 < \rho < 1.
+u'(c_t) = \rho (1+r) u'(c_{t+1}), \text{ where } 0 < \rho < 1.
 $$
 
-If you fix your overall consumption schedule and only consider a small swap today for tomorrow, if you give up consumption today, the reduction will earn $(1+r)$ tomorrow, but will have to be discounted by $\rho$. The marginal cost is how much you give up today. The marginal revenue is how much you'll get in addition tomorrow. If you're optimal, these two should be the same.
+Hold the overall consumption path fixed except for a marginal reallocation of one unit from today to tomorrow. Reducing consumption today by a small amount raises marginal utility by $u'(c_t)$. Saving that amount yields $(1+r)$ in additional resources tomorrow, whose marginal utility is $u'(c_{t+1})$ but will require discounting by $\rho$. The left-hand side is the marginal cost of shifting one unit of consumption to the future; the right-hand side is the discounted marginal benefit of consuming the resulting resources tomorrow. Optimality requires these two margins to be equal.
+
+### Permanent Income Hypothesis
+
+Before we discuss the qualitative aspects of consumption, let's solve the household's optimization. From the Euler equation for consumption, by integrating and exponentiating we get
+$$
+c(t) = A \exp\left(\int_0^t \frac{r(\tau) - \rho}{\theta}d\tau\right).
+$$
+
+Here $A$ is a constant and the consumption path depends only on $r(t), \rho, \theta$. Whenever $r(t) > \rho$, consumption incrases, otherwise it decreases. When $r(t)$ is much greater than $\rho$, consumption increases faster. If "on average" $r(t)>\rho$, the consumption will increase exponentially to infinity. This is because it's better to reduce consumption now, save, profit from the high interest rate, and consume more later. So consumption later should be higher than now, hence rising. Similarly, if on average $r(t) < \rho$, in the far future consumption will tend to zero. A small $\theta$ prioritizes consumption sooner rather than later, while $\rho$ is the personal discount rate of household. 
+
+$$
+A = \frac{K_0 + \int_0^\infty e^{-R(t)}w(t) dt}{\int_0^\infty e^{-R(t)} \exp\left(\int_0^t \frac{r(\tau) - \rho}{\theta}d\tau\right)dt}
+$$
+
+The constant $A$ is determined easily from the budget constraint. This is the only place where $w(t)$ enters. Therefore, the lifetime income $w(t)$ determines the overall consumption level, while the actual path is determined by $r(t)$. Overall, $c(t)$ can be very complicated. It's interesting to plot it for different values of $\rho, \theta$, and different $w(t), r(t)$. Diverse behavior is possible.
+
+
+The Euler equation is used in *many* settings and its exact functional form often depends on the specific technical problem. Here we'll adopt a slightly higher view. Consider the [Permanent Income Hypothesis](https://en.wikipedia.org/wiki/Permanent_income_hypothesis) (PIH). It says that consumption patterns are formed by future expectations and consumption smoothing, effectively by following the reasoning from above.
+
+1. Household base their consumption not only on their current wealth, but their expected, *permanent*, lifetime wealth. It's coming from the sequence of expected wages $w(t)$.
+2. Transient income shocks affect consumption less than permanent ones. Consider the unrealistic income function $w(t) = t$. With it, $c(t)$ has a certain smooth shape. Now consider $w(t) = t + 50\exp\big(-(x-20)^2\big)$. Income now has a noticeable spike at $t=20$. Optimal consumption also has a spike at $t=20$, very localized, and is otherwise exactly similar to its form without the spike.
