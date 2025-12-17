@@ -6,7 +6,7 @@ slug: portfolio_optimization_and_capm
 status:
 ---
 
-Investing is important and it seems like almost everyone has an opinion on how to do it. I've decided to look at the problem setting a bit more formally, through the lens of portfolio optimization theory, to better understand its nuances.
+I've decided to look at the problem of portfolio optimization a bit more formally, to better understand its nuances. The end goal of this post is to explain the beta coefficient, observable in many finance websites. Along the way, we'll see how portfolio optimization serves as the microfoundations on equilibrium theories in the market of risky assets.
 
 **The market**. We model the return of an asset in a given period as a random variable $r$ with mean $m$ and variance $\sigma^2$. When there are $N$ such risky assets in the market, their means are a vector $\mathbf{m} \in \mathbb{R}^{N}$ and their covariance is a matrix $\mathbf{\Sigma} \in \mathbb{R}^{N, N}$. A portfolio, also called a fund, is a combination of assets such that its return is a linear combination of the returns of the assets held. If the vector $\mathbf{x}$ represents the percentage of each asset, then the portfolio's mean return is $\mathbf{x}^T \mathbf{m}$, and its variance is $\mathbf{x}^T \mathbf{\Sigma} \mathbf{x}$. In all that follows, we assume that $\mathbf{m}$ and $\mathbf{\Sigma}$ are known. This is, of course, far-fetched for the real world, but less so here.
 
@@ -20,13 +20,13 @@ $$
 
 It has the following properties. For any $w > 0$, since $u'(w) > 0$, this means that investors prefer more wealth to less, which is reasonable. Since $u''(w) < 0$, there are diminishing returns to having more wealth, which is also reasonable and realistic.
 
-Consider what happens if we take $w$ to be the future wealth and to be uncertain, as coming from a risky asset. The distribution over $w$ induces a distribution over $u(w)$. However, the curvature of $u(\cdot)$, controlled by the parameter $\gamma$, greatly affects the possible values of $u(w)$. Therefore, if an investor cares about *expected utility* over the distribution of $w$, $\mathbb{E}_w [ u(w)]$, this quantity depends on $\gamma$. One can calculate the sensitivity $\partial \mathbb{E}_w[u(w)] / \partial \gamma$ to see the dependence exactly.
+Consider what happens if we take $w$ to be the future wealth and to be uncertain, as coming from a risky asset. The distribution over $w$ induces a distribution over $u(w)$. However, the curvature of $u(\cdot)$, controlled by the parameter $\gamma$, greatly affects the possible values of $u(w)$. Therefore, if an investor cares about *expected utility* over the distribution of $w$, $\mathbb{E} [ u(w)]$, this quantity depends on $\gamma$. One can calculate the sensitivity $\partial \mathbb{E}[u(w)] / \partial \gamma$ to see the dependence exactly.
 
-To see this in another light, consider that if $u(\cdot)$ is concave, then due to [Jensen's inequality](https://en.wikipedia.org/wiki/Jensen%27s_inequality), $u(\mathbb{E}_w[w]) \ge \mathbb{E}_w [u(w)]$. This means that if the risky asset is very risky, then $w$ can take on many different values. The more concave $u(\cdot)$ is, the more the investor prefers the mean wealth, which gives $u(\mathbb{E}_w[w])$, over a random one, which gives on average $\mathbb{E}_w [u(w)]$.   
+To see this in another light, consider that if $u(\cdot)$ is concave, then due to [Jensen's inequality](https://en.wikipedia.org/wiki/Jensen%27s_inequality), $u(\mathbb{E}[w]) \ge \mathbb{E} [u(w)]$. This means that if the risky asset is very risky, then $w$ can take on many different values. The more concave $u(\cdot)$ is, the more the investor prefers the mean wealth, which gives $u(\mathbb{E}[w])$, over a random one, which gives on average $\mathbb{E} [u(w)]$.   
 
 Thus, the utility function carries with it an implicit risk-attitude. For CRRA, it is one where the investor is always risk-averse but his degree of risk-aversion stays constant at different levels of wealth. This is measured using the [Arrow–Pratt relative risk aversion formula](https://en.wikipedia.org/wiki/Risk_aversion#Relative_risk_aversion). If we calculate $-w u''(w) / u'(w)$, we get exactly $\gamma$, independent of $w$. It means that a 10% risk is evaluated the same whether you are poor or rich. А 1% increase in wealth reduces marginal utility always by $\gamma$%, irrespective of the wealth level.
 
-**Mean-variance preferences**. Now we'll derive a simpler utility function based on the return's moments. The return is $r$, a small random number around 0. First, write the future utility $u\big(w(1 + r)\big)$ as a second-order Taylor approximation around the initial wealth $w$:
+**Mean-variance preferences**. Now we'll derive a simpler utility function based on the return's moments. The return is $r$, a small random number around 0, with $\mathbb{E} := \mathbb{E}_r$. First, write the future utility $u\big(w(1 + r)\big)$ as a second-order Taylor approximation around the initial wealth $w$:
 
 $$
 u\big(w(1 + r)\big) \approx u(w) + u'(w)rw + \frac{1}{2}u''(w)(rw)^2.
@@ -36,8 +36,8 @@ Now, since $r$ is stochastic and we assume the investor cares about expected uti
 
 $$
 \begin{aligned}
-\mathbb{E}_w \left[u\big(w(1+r)\big)\right] & \approx u(w) + u'(w_0)\mathbb{E}_w[rw] + \frac{1}{2}u''(w)\mathbb{E}_w\left[(rw) ^2\right] \\
-& = u(w) + u'(w)\mathbb{E}_w[rw] + \frac{1}{2}u''(w) \big( \text{Var}(rw) + (\mathbb{E}_w[rw])^2 \big). \\
+\mathbb{E} \left[u\big(w(1+r)\big)\right] & \approx u(w) + u'(w)\mathbb{E}[rw] + \frac{1}{2}u''(w)\mathbb{E}\left[(rw) ^2\right] \\
+& = u(w) + u'(w)\mathbb{E}[rw] + \frac{1}{2}u''(w) \big( \text{Var}(rw) + (\mathbb{E}[rw])^2 \big). \\
 \end{aligned}
 $$
 
@@ -45,12 +45,12 @@ This already shows utility in terms of mean and variance of the underlying asset
 
 $$
 \begin{aligned}
-\mathbb{E}_w \left[u\big(w(1+r)\big)\right] & \approx w^{1 - \gamma} \left(\frac{1}{1 - \gamma} + \mu - \frac{\gamma}{2} (\sigma^2 + \mu^2) \right) \\
+\mathbb{E} \left[u\big(w(1+r)\big)\right] & \approx w^{1 - \gamma} \left(\frac{1}{1 - \gamma} + \mu - \frac{\gamma}{2} (\sigma^2 + \mu^2) \right) \\
 & \propto \text{const} + \mu - \frac{\gamma}{2}(\sigma^2 + \mu^2).
 \end{aligned}
 $$
 
-Now, this is an approximation and it holds when $r \approx 0$. In that case, $\mu^2 \rightarrow 0$ and we get that expected utility depends positively on the mean return of the asset and negatively on the variance, of course assuming that $\gamma > 0$, which corresponds to risk-aversity. This is an important result: whatever utility or return distribution, expected utility can be locally approximated as a quadratic. It is not a too bad of an assumption to say most investors have utilities shaped in this way.
+Now, this is an approximation and it holds when $r \approx 0$. In that case, $\mu^2$ is second-order and negligible relative to $\sigma^2$. Dropping it yields the standard mean–variance form $\mu - \frac{\gamma}{2} \sigma^2$, where expected utility depends positively on the mean return of the asset and negatively on the variance, of course assuming that $\gamma > 0$, which corresponds to risk-aversion. This is an important result: whatever utility or return distribution, expected utility can be locally approximated as a quadratic. It is not an unreasonable assumption to say most investors have utilities shaped in this way.
 
 **Optimization**. Now, consider the choice between a risk-free asset paying $r_f$ and a single risky asset with mean return $\mu$ and variance $\sigma^2$. The investor chooses the percentage of wealth allocated to the risky asset, call it $x$, that maximizes expected mean-variance utility $\mathbb{E}[r] - \frac{\gamma}{2} \text{Var}(r)$:
 
@@ -74,13 +74,15 @@ $$
 
 From the first-order condition $\mathbf{m} - r_f \mathbf{1} = \gamma \mathbf{\Sigma}\mathbf{x}$ we get $\mathbf{x}^\ast = \frac{1}{\gamma} \mathbf{\Sigma}^{-1}(\mathbf{m} - r_f \mathbf{1})$. This is similar to before, the optimal allocation in the risky assets is a multiple of the mean excess return divided by the variance. If $\gamma$ is high, the share allocated in any of the risky assets could be minimal. Apart from summing to one, the weights $\mathbf{x}^\ast$ are unconstrained. If an element is negative, it represents shorting the asset, if it's greater than $1$, it represents borrowing and buying more of it.
 
-**Best Sharpe ratio**. Consider another question: if we can invest only in risky assets, what portfolio has the highest excess mean return per unit of risk? This quantity, $(m_i - r_f)/\sigma_i$, is called the [Sharpe ratio](https://en.wikipedia.org/wiki/Sharpe_ratio#). Hence, we're seeking the portfolio with the highest Sharpe ratio:
+**Best Sharpe ratio**. Consider another question: if we can invest only in risky assets, what portfolio $P$ has the highest excess mean return per unit of risk? This quantity, $(\mathbb{E}[r_P] - r_f)/\sigma_P$, is called the [Sharpe ratio](https://en.wikipedia.org/wiki/Sharpe_ratio#). Hence, we're seeking the portfolio with the highest Sharpe ratio:
 
 $$
-\max_\mathbf{x} \ J(\mathbf{x}) = \frac{\mathbf{x}^T\mathbf{m} - r_f \mathbf{1}}{\sqrt{\mathbf{x}^T \mathbf{\Sigma} \mathbf{x}}} \ \text{ s. t. } \mathbf{x}^T \mathbf{1} = 1
+\max_\mathbf{x} \ J(\mathbf{x}) = \frac{\mathbf{x}^T(\mathbf{m} - r_f \mathbf{1})}{\sqrt{\mathbf{x}^T \mathbf{\Sigma} \mathbf{x}}} \ \text{ s. t. } \mathbf{x}^T \mathbf{1} = 1
 $$
 
-To solve this more easily, we square the objective function and maximize that instead. This is valid, because we assume that $\mathbf{m} > r_f$, so the numerator is positive, as is the denominator. For simplicity, denote the excess mean return $\mathbf{m} - r_f \mathbf{1}$ as $\mathbf{m}_+$. We solve the unnormalized setting first, where we pretend the constraint $\mathbf{x}^T \mathbf{1} = 1$ does not exist. The FOC gives
+To solve this more easily, we square the objective function and maximize that instead. This is valid, because we assume the optimal portfolio has positive excess returns, so the numerator is positive, as is the denominator. For simplicity, denote the excess mean return $\mathbf{m} - r_f \mathbf{1}$ as $\mathbf{m}_+$. 
+
+Observe that the Sharpe ratio is homogeneous of order zero, meaning that $J(c \mathbf{x}) = J(\mathbf{x}), c \in \mathbb{R}$. Hence, it's the direction of $\mathbf{x}$ that changes the Sharpe ratio, while the constraint $\mathbf{x}^T \mathbf{1} = 1$ only turns the optimizer into a portfolio by ensuring that all wealth is allocated. Hence, we solve without the constraint first, and then simply normalize it. The FOC gives
 
 $$
 (\mathbf{x}^T \mathbf{\Sigma} \mathbf{x}) \mathbf{m_+} = (\mathbf{x}^T \mathbf{m_+}) \mathbf{\Sigma}\mathbf{x} 
@@ -123,11 +125,11 @@ The investor finds the tangency portfolio and based on his risk-profile, decides
 
 The *market portfolio* $M$ is the portfolio of all risky assets available in the investment universe, weighted by their total market capitalization (price times the number of shares outstanding). It represents the aggregate supply of all risky assets. Its weights are $\mathbf{x}_M = (P_i Q_i) / \sum_{j} P_j Q_j$.
 
-Since investors demand different multiples of the same tangency portfolio, aggregate demand also has the same risky asset proportions in it as the tancency portfolio. At equilibrium, supply of risky assets must equal the demand for such. This means that at equilibrium the market portfolio is equal to the tangency portfolio, $\mathbf{x}_M = \mathbf{x}_T$.
+Since investors demand different multiples of the same tangency portfolio, aggregate demand also has the same risky asset proportions in it as the tangency portfolio. At equilibrium, supply of risky assets must equal the demand for such. This means that at equilibrium the market portfolio is equal to the tangency portfolio, $\mathbf{x}_M = \mathbf{x}_T$.
 
 That is the central and most powerful assertion of the [Capital Asset Pricing Model](https://en.wikipedia.org/wiki/Capital_asset_pricing_model) (CAPM). The identity between the tangency and market portfolios is the crucial bridge that allows the theory of individual optimal choice ([modern portfolio theory](https://en.wikipedia.org/wiki/Modern_portfolio_theory)) to become a theory of market prices (CAPM). The former serves as microfoundations to the latter. Pricing here refers to computing the fair expected return of an asset with a certain risk relative to the market.
 
-**Price adjustments**. As defined, $\mathbf{x}_M$ has all of its weights in $[0, 1]$, whereas in $\mathbf{x}_T$ some weights could be greater than one, or even negative. How do we deal with this? In reality, to reach equilibrium there are price-adjustment dynamics. If asset $i$ has negative weight in $\mathbf{x}_T$, then investors short it, which crashes its current price $P_i$. As it does so, the expected mean $m_i = {P_\text{i, future}} / P_i - 1$ increases (holding $P_\text{i, future}$ fixed). Upon recomputing the tangency portfolio asset $i$, instead of being shorted, is now weakly held. In this way, the tangency portfolio adjusts (as can the supply of risky assets). The bottomline is that portfolio optimization works with expected returns and at equilibrium, because of the price-adjustment dynamics, the tangency portfolio has weights in $[0, 1]$.
+**Price adjustments**. As defined, $\mathbf{x}_M$ has all of its weights in $[0, 1]$, whereas in $\mathbf{x}_T$ some weights could be greater than one, or even negative. How do we deal with this? CAPM is a static model. It claims that the two portfolios are equal, without much justification. But in reality, to reach equilibrium there are price-adjustment dynamics. As a heuristic, if investors short asset $i$, this brings its current price $P_i$ down. As it does so, the expected mean $m_i = {P_\text{i, future}} / P_i - 1$ increases (holding $P_\text{i, future}$ fixed). In this way, the tangency portfolio adjusts. The bottomline is that portfolio optimization works with expected returns and at equilibrium, because of the price-adjustment dynamics, the tangency portfolio has weights in $[0, 1]$. 
 
 We can ask the question *"What must $\mathbf{m}$ be given that $\mathbf{x}_T = \mathbf{x}_M$?"* To see, we plug in and solve:
 
@@ -142,15 +144,32 @@ This last equation shows that in order for markets to clear, the expected return
 $$
 \begin{aligned}
 & \mathbb{E}[r_C] = w \mathbb{E}[r_i] + (1 - w) \mathbb{E}[r_M] \\
-& \sigma^2_C = w^2 \sigma^2_i + (1 - w)^2 \sigma^2_M + 2 w(1 - w) \text{Cov}(i, M) \\
+& \sigma^2_C = w^2 \sigma^2_i + (1 - w)^2 \sigma^2_M + 2 w(1 - w) \text{Cov}(r_i, r_M) \\
 & \left[ \frac{\partial}{\partial w} \frac{\mathbb{E}[r_C] - r_f}{\sigma_C} \right]_{w = 0} = 0
 \end{aligned}
 $$
 
-The calculations are long and tedious, so we'll skip them. After computing the derivatives, substituting and simplifying one gets the so-called [Security Market Line](https://en.wikipedia.org/wiki/Security_market_line):
+The calculations are long and tedious, so we'll skip them. After computing the derivatives, substituting, and simplifying, one gets the so-called [Security Market Line](https://en.wikipedia.org/wiki/Security_market_line):
 
 $$
 \mathbb{E}[r_i] = r_f + \underbrace{\frac{\text{Cov}(r_i, r_M)}{\text{Var}(r_M)}}_{\beta_i} (\mathbb{E}[r_M] - r_f).
 $$
 
-It's a linear relationship between the mean return of asset $i$ and its covariance with the market portfolio. The slope is called the "beta" of asset $i$. If $\beta = 1$, the asset moves with the market. If $\beta > 1$, it's more volatile than the market. If $\beta < 0$, it moves opposite to the market. In general, $\beta$ measures what's called *systematic risk*. That's the unavoidable risk of participating in the market as a whole. It cannot be removed by diversification (holding different assets of varying correlations). And that's why CAPM compensates investors for it. Any risk that is endemic to an individual firm (e.g. a particular lawsuit, deal, event) could be diversified away by holding a bundle of assets, but not this kind of market-wide risk. 
+It's a linear relationship between the mean return of asset $i$ and its covariance with the market portfolio. The slope is called the "beta" of asset $i$. If $\beta > 1$, the asset has higher systematic exposure than the market and amplifies market movements. If $\beta < 0$, it moves opposite to the market. To understand it intuitively, we need to first understand *systematic* and *unsystematic* risk.
+
+**Unsystematic risk**. The return from a risky asset could be high or low because the issuing company has struck a major deal with a partner, or is facing a tough lawsuit. These are individual, idiosyncratic reasons related to the company itself. They are *diversifiable*: when this risky asset is mixed with others, the combined portfolio variance could be lower than that of its individual assets. 
+
+**Systematic risk**. Other risks, such as the risk of the entire market tanking or booming, cannot be avoided. If you participate in the market, you're open to such risk. Hence, it's called systematic. It cannot be diversified away. Common examples are inflation, interest rate risks, business cycles, quantitative easing/tightening, tax changes.
+
+The parameter $\beta$ measures systematic risk. Since this risk is unavoidable, CAPM compensates investors for it. If an asset contributes $\beta$ times as much systematic risk as the market portfolio, then it must offer $\beta$ times the market risk premium. Interestingly, if $\beta < 1$, the asset could still be more volatile than the market if most of its risk is idiosyncratic. CAPM is also a *single-factor* model because there's only one factor that is compensated, systematic risk. In contrast, there exist multiple factor models (e.g. [Fama-French three factor](https://en.wikipedia.org/wiki/Fama%E2%80%93French_three-factor_model)) which model the return as 
+$$
+r_i - r_f = \alpha_i + \sum_{k=1}^K \beta_{ik} F_k + \epsilon_i.
+$$
+
+Here there are $K$ factors, each with coefficient $\beta_{ik}$, along with an abnormal return term $\alpha_i$. CAPM predicts $\alpha_i = 0, \ \forall i$, but in reality some companies and assets could be estimated, for example due to model misspecification or omitted risk factors, to have $\alpha > 0$, i.e. returns above those that pricing models predict.  Hedge funds are meticulously seeking this alpha.
+
+An asset with statistics $(m_i, \sigma_i)$ is efficient, or undominated, if there is no other portfolio that offers the same return for a smaller risk, or that has the same risk but with a higher return. The CAL of portfolio $P$, as we saw above, contains all portfolios which are a combination of the risk-free asset and that particular portfolio $P$. If $P$ is some inefficient asset, its entire CAL will be dominated. The CAL of the tangency portfolio is called the Capital Market Line (CML). The CML is one particular CAL, and the only one which is non-dominated.
+
+The key difference between the SML and the CML is that SML uses systematic risk, instead of total risk, and in this way determines how much the return *should* be if supply equals demand. That's where the concept of equilibrium stems from. The SML can also price inefficient assets. For instance, an inefficient asset may have too high risk for its return. To price it, CAPM says: if this risk is mostly idiosyncratic, its return should be small. If it's mostly unavoidable systematic risk, then its return should be higher. To measure systematic risk, we use the asset’s covariance with the market.
+
+We've come a long way and have shown a complete derivation chain: `utility → mean–variance approximation → optimal portfolios → tangency → equilibrium → CAPM → SML pricing`. The strongest assumption was that all investors share their expectations over $\mathbf{m}$ and $\mathbf{\Sigma}$. Yet, without such homogeneous beliefs, the market portfolio need not be mean–variance efficient. This motivates further research beyond CAPM.
