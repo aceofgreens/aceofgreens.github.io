@@ -3,8 +3,10 @@ Title: ETF Engineering Magic
 Date: 2025-12-30 07:00:00 +0200
 Tags: 
 slug: miscellaneous_investing_thoughts
-status: draft
+status:
 ---
+
+ETFs have long been praised as a good way to invest passively. In this post we'll explore some basics around this topic: how are ETFs created, why does their price always stay close to their NAV, how do they track the underlying index. As again, I find the world of financial engineering fascinating, with all of its complexities, quirks, and nuances.
 
 ### TWR and MWR
 
@@ -40,10 +42,23 @@ $$
 Here $\text{CF}(\cdot)$ stands for any cashflow, could be deposit or withdrawal.  The cash flow at the current timestep is the value of the portfolio, $\text{CF}(t) = V(t)$, and should have the same sign as any withdrawal. For instance, if we have two deposits of 1000\$ at a year apart, and it's 6 months into the next year, and the portfolio is at 2500\$, that makes
 
 $$
--1000 - \frac{1000}{1 + \text{MRW}} + \frac{2500}{(1 + \text{MWR})^{1.5}} = 0 \ \Rightarrow \ \text{MWR} \approx 24\%.
+-1000 - \frac{1000}{1 + \text{MWR}} + \frac{2500}{(1 + \text{MWR})^{1.5}} = 0 \ \Rightarrow \ \text{MWR} \approx 24\%.
 $$
 
 The first investment of 1000\$ earns 38% in 1.5 years, while the second one earns 11.3% in 0.5 years. The interpretation is straightforward. The MWR is simply the internal rate of return of an asset with the same cashflows as those of the portfolio. It is money-weighted because it considers the amount deposited/withdrawn in each cashflow. Therefore, it can be used to gauge the performance of an individual investor's strategy, with timing and concrete amounts invested. It's also sensitive to deposit timings, as a larger deposit in an earlier favorable performance period will dominate the present value.
+
+### The Rational Investor
+
+Numerous books have been written on investing strategies and approaches. Millions of traders have put their minds to trying to find those assets and timing patterns that will yield a higher than average profit. Is there some hidden, undiscovered universal statistical regularity that can be exploited for near risk-free gain? Market prices change based on actions - people declaring their intentions to trade in the form of orders. Yet, actions are informed by future expectations. No one will trade unless they believe it's worthwhile to do so. We end up in a situation in which expectations create the wild price dynamics often observed.
+
+How is a rational investor supposed to act? It's all about the mindset. If you're presented with two risky assets, first you need to form realistic expectations about their returns and volatilities for the future. You may expect that asset $x$, for example an ETF for disruptive technologies, should have a higher return, but also higher volatility than fund $y$, staples. Assuming you have the life horizon and the nerves to endure the volatility over a long period, you decide that asset $x$ is better suited for you, so you invest there.
+
+At the end of the long period, suppose it just so happens that asset $x$ underperforms the less risk, less return asset $y$. This could be due to a recession or simply a bad year, precisely the one in which you want to cash out. Should you pull out your hairs in anger? The single most important answer is no, because you should not base your emotions on *realizations*, which are uncontrollable and random. You did the right thing at the right time. Given your expectations about the average expected return, you did the right thing investing in $x$. Beyond that, you have no control, and you should not allow yourself to swayed by emotions.
+
+Rationality is about taking what you believe to be the right action, and then *wiring* your brain to be happy about it. You only care for that which you control. If your investments underperform the market it doesn't mean you're a bad investor. It could be because of volatility. The fact is, if your expectations are correct on average, and you invest according to them, then *over a long period* and *on average* you will have outperformed the market. But since our investment horizons are limited, this is where risk aversion comes in.
+
+Thus, the reasoning goes as follows. You start reading articles, financial statements, researching ETFs, which helps in exploring the available assets and forming expectations about their return and volatility. Then, finding the best mix of assets typically includes one broad market-wide ETF and multiple satellite ETFs or individual stocks representing your best estimate of the industries/companies that will be dominant in the next 5-10 years. After you identify the mix, you select how much to invest in it, according to your risk profile. As you start to execute this strategy, periodically buying and selling according to your best rational expectations, what remains is to stay happy whatever happens, because you're doing the best you can, under the information you have.
+
 
 ### Exchange Traded Funds
 
@@ -57,76 +72,56 @@ Which companies are chosen, as well as how the weights are determined depends on
 
 The process is called *creation and redemption*. An ETF issuer, a firm like Blackrock or Vanguard, first selects the index to base the ETF off of. Then, they need to buy the right stocks in the right proportions. With ETFs obtaining the stocks is not done by bying them with cash. If they were bought with cash, whenever people want to leave, the ETF manager would have to sell stocks to get cash to pay them. That sale would trigger capital gains taxes. 
 
-This is where ETFs differ from mutual funds. In a mutual fund, you don’t own the underlying stocks. You own shares of a company (the fund) that owns the stocks. Whenever the fund sells some stocks at a profit, this profit is divided proportionally *across all shareholdes* in the fund. Again, none of them owns the actual stocks that were sold, so none of them can attribute the whole profit. So what happens with mutual funds is, one shareholder wants out and triggers a sale, suppose at a profit. The capital gains for this sale are paid by all shareholders in the mutual fund, those that remain. They pay that tax but also get proportional gain, usually reinvested as more shares, from the sale. The leaving sharehold pays tax on the profit they made from selling their own shares.
+This is where ETFs differ from mutual funds. In a mutual fund, you don’t own the underlying stocks. You own shares of a company (the fund) that owns the stocks. Whenever the fund sells some stocks at a profit, this profit is divided proportionally *across all shareholdes* in the fund. Again, none of them owns the actual stocks that were sold, so none of them can attribute the whole profit. With mutual funds, when one shareholder wants out, this could trigger a sale, suppose at a profit. The capital gains from this sale are paid by all shareholders that remain in the mutual fund. They pay that tax but also get proportional gain, usually reinvested as more shares, from the sale. The leaving shareholder pays tax on the profit they made from selling their own shares.
 
-ETFs avoid this whole tax situation. The ETF issuer enters into a legal agreement with what's called *Authorized Participants* (APs) - big banks and market makers like Goldman Sachs and JPMorgan. APs are the only entities allowed to create or destroy ETF shares. They bridge the stock market and the ETF issuer’s inventory. The ETF issuer prepares a Portfolio Composition File (PCF). It contains a list of how much shares (an integer number) need to be bought for each company in the index. Since it's mathematically impossible to buy stocks in a ratio that perfectly equals the index's share price down to the penny using only whole shares, the PCF includes a cash component. The PCF also includes the "lot size" (e.g. 50K ETF shares) and an initial share price (e.g. 50\$). Then, the "creation unit" is worth 2.5M\$. The cash component covers the difference between the stock basket value and this target value.
+ETFs avoid this whole tax situation. The ETF issuer enters into a legal agreement with what's called *Authorized Participants* (APs) - big banks and market makers like Goldman Sachs and JPMorgan. APs are the only entities allowed to create or destroy ETF shares. They bridge the stock market and the ETF issuer’s inventory. The ETF issuer prepares a Portfolio Composition File (PCF). It contains a list of how much shares (an integer number) need to be bought of each company in the index. Since it's mathematically impossible to buy stocks in a ratio that perfectly equals the index's share price down to the penny using only whole shares, the PCF includes a cash component. The PCF also includes the "lot size" (e.g. 50K ETF shares) and an initial share price (e.g. 50\$). Then, the "creation unit" is worth 2.5M\$. The cash component covers the difference between the stock basket value and this target value.
 
 Once the APs receive the PCF, they use high-frequency algorithms to buy the shares with their own cash. Then, they perform an *in-kind transfer* with the ETF issuer. It moves the assets directly from the account of the AP to that of the ETF issuer without converting them to cash, avoiding immediate taxes and fees. The issuer in turn gives out a block of "newly minted" ETF shares. The AP then lists those ETF shares on major exchanges where investors can buy them.
 
-On the exchange, the price of ETF shares are determined by supply and demand. Investors bid and ask different prices for shares while order books, along with trading engines, match buyers, list and execute orders. The market price of the ETF could, in principle, deviate from the ETF's *net asset value* (NAV), which is simply the spot price of the underlying stock basket. If the ETF is trading at a discount (spot price below NAV), the AP can intervene. It buys 50K ETF shares from the market and performs an in-kind transfer with the ETF issuer, obtaining the underlying stocks. Then, it sells them, at a profit in the market, thus bringing the ETF price to its NAV. This is called *redemption*.
+On the exchange, the price of ETF shares are determined by supply and demand. Investors bid and ask different prices for shares while order books, along with trading engines, match buyers to sellers, and execute orders. The market price of the ETF could, in principle, deviate from the ETF's *net asset value* (NAV), which is simply the spot price of the underlying stock basket. If the ETF is trading at a discount (spot price below NAV), the AP can intervene. It buys 50K ETF shares from the market and performs an in-kind transfer with the ETF issuer, obtaining the underlying stocks. Then, it sells them, at a profit in the market, thus bringing the ETF price to its NAV. This is called *redemption*.
 
 On the ETF issuer side, once the AP hands over 50K ETF shares, the issuer has to hand over the underlying stocks, but there could be many stocks for each firm, bought at different times, e.g. AAPL stock bought years ago at 50\$ and some bought last year at 150\$. The issuer chooses to hand over those stocks on which it would owe the largest capital gains tax, those at 50\$. The AP sells them immediately. That's how the issuer avoids paying taxes. The investors pay capital gains taxes years later when they sell their ETF shares.
 
 Based on all this, we understood that:
 
 - ETFs are created using tax-advantageous in-kind transfers. These do not constitute a cash-based sale and no gain is realized, only a transfer of ownership. Taxation happens on gain realization, not ownership changes.
-- ETF share prices are not allowed to deviate far from their stock basket's NAV. If they do, the APs arbitrage away the profit opportunities. Shares are created and destroyed based on demand, unlike for example stocks, where the number of shares are fixed and any hyped expectations can increase their price above their fundamentals.
+- Shares are created and destroyed based on demand, unlike for example stocks, whose share count changes only through corporate actions, not continuous arbitrage.
+- ETF share prices are not allowed to deviate far from their stock basket's NAV. If they do, the APs arbitrage away the profit opportunities. In reality, transaction fees make some small arbitrage opportunities not worth it.
 
-<!-- To cover:
-- replication types
-- accummulation vs distribution
-- NAV
-- rebalancing
-- intraday aspects -->
+### Further Details
 
-<!-- To say you know ETFs very well, you should understand them across structure, mechanics, costs, risks, and use cases. Mastery means you can evaluate any ETF and predict how it will behave in different market conditions.
+**Replication**. Mimicking the index by holding the underlying stocks in proportion as close as possible to that of the index is called *physical replication*. It is best for large, liquid indices like the S&P 500 or FTSE 100 where every stock is easy to buy and sell. However, in some cases, e.g. when there are too many stocks in the index, or some of them are illiquid and hard to trade, instead of full physical replication, a statistically representative sample is used.
 
-Below is a complete ETF mastery checklist, grouped by domain. -->
-<!-- 
-1. Structural Foundations (What an ETF is)
+**Sampling**. With *sampled physical replication*, the ETF issuer calculates a smaller sample of companies that when held, will produce the same returns as the index, up to very small tracking errors. This sample is calculated by optimization programs which take in the structural aspects of the index as constraints, e.g. 15% in small-cap, 25% in the US, etc., and output the optimized weights. Importantly, this kind of replication is only based on historical statistical patterns. There is no guarantee that the representative sample from the past will still behave as the index in the future. For these kinds of guarantees, one needs full physical replication.
 
-You should clearly understand:
-ETF vs mutual fund vs stock
-Intraday trading, transparency, tax treatment
-Open-ended structure
-Shares are created/destroyed based on demand
-Index-based design
-Most ETFs track an index rather than pick stocks
-Legal structure
-Investment company (’40 Act in the U.S.) or trust structure
-If you understand why an ETF’s price usually stays close to its NAV, you’re solid here. -->
+**Synthetic replication**. Another option for index tracking is *synthetic replication*. It works as follows:
 
-<!-- 2. Creation & Redemption Mechanism (Core ETF “engine”)
-This is essential knowledge.
-Authorized Participants (APs)
-Large institutions that create/redeem ETF shares
-Creation units
-Large blocks exchanged for baskets of securities
-In-kind transfers
-Why ETFs are tax-efficient
-Arbitrage process
-How price deviations from NAV are corrected
-You should be able to explain step-by-step what happens when an ETF trades at a premium or discount.
+1. The ETF issuer creates the ETF shares and exchanges them with the AP for cash.
+2. With the obtained cash, the ETF issue buys liquid, boring, safe assets, like US Blue Chip stocks. These act as a collateral basket. The AP lists the ETF shares on exchanges.
+3. The ETF issuer enters into a *swap* contract with a bank, could be that of the AP, agreeing to pay the return of the collateral basket, while the bank pays the return of the index.
+4. The bank, effectively with its institutional privileges, could now buy the underlying index stocks, so that if the index goes up and it has to pay more to the ETF issuer, also its own stocks from the index go up.
 
-3. Net Asset Value (NAV) & Pricing
-Key concepts:
-NAV calculation
-Based on underlying holdings
-Intraday market price vs NAV
-Premiums and discounts
-iNAV / IOPV
-Real-time estimated NAV
-You should know when NAV is less reliable (international markets, illiquid assets).
+Overall, synthetic replication provides zero tracking error, because it uses derivatives to track the index return, but is less transparent and involves counterparty risk.
 
-4. Index Construction & Tracking
-Knowing the index is knowing the ETF.
-Index methodology
-Market-cap weighted, equal-weighted, factor-based
-Rebalancing schedules
-Inclusion/exclusion rules
-Corporate actions handling
-Tracking difference vs tracking error
-You should be able to identify when an ETF’s underperformance is due to:
+**Rebalancing**. The companies included in the index could change from day to day. In S&P500 those companies that become smaller exit the index, while others enter. The ETF issuer can accommodate this by simply switching the companies in the PCF. However, it still has to do something about the shares of the removed company that it already owns. If it sells them in the market, it will trigger capital gains tax. Instead, something called *heartbeat* trades are performed.
+
+To dump the unneeded stock, the ETF issuer creates a new lot of ETF shares and exchanges them with the AP for cash. This creates a upward spike in the shares outstanding. Then, a day or two later, the AP *purposefully decides to redeem those ETF shares back*. The AP hands over the additional shares, while the ETF issuer hands over the unneeded stock - another in-kind transfer, after which the AP sells them on the market. The end effect is that the unneeded stock have been sold without triggering capital gains taxes.
+
+**Accummulation and distribution**. As the ETF issuer owns the underlying stocks and they pay dividends, the ETF issuer gradually receives cash flows from them. The dividend cash flows collect into a holding account and the ETF issuer can periodically distribute them to the brokerage accounts of the individual investors. When this happens there's a small dip in the ETF price. Alternatively, the ETF manager could reinvest the dividends into the ETF itself, accummulating more stocks. This is basically like buying the dip: whenever a stock releases dividends, its price falls, and immediately the ETF issuer uses the new cash to buy more of that stock. So the total amount of stocks held increase and the net asset value of the ETF rises faster.
+
+**Net asset value**. As explained above, the ETF share price hovers around its NAV. It's calculated as 
+
+$$
+\text{NAV} = \frac{\text{Total Assets} - \text{Total Liabilities}}{\text{Shares Outstanding}}
+$$
+
+For an ETF issuer, assets include the current value of all stocks owned, the cash, and any receivables. The liabilities include any payables or management fees. The difference, or the *equity* part of the balance sheet, is precisely the NAV available to the ETF shareholders. Note that normal companies value their assets at the [historical cost](https://en.wikipedia.org/wiki/Historical_cost), potentially minus depreciation, but here, ETF issuers use the current market value. This is called [Mark-to-Market accounting](https://en.wikipedia.org/wiki/Mark-to-market_accounting) (MTM). ETFs use MTM because their product is the current market value. If they used historical cost, new investors would be able to buy into the fund at old prices and immediately sell for current, higher prices, robbing the long-term holders. Mark-to-market prevents this theft.
+
+**Timing aspects**. The NAV is calculated once a day, after markets close and the closing prices for every stock can be obtained. This is easier said than done, because for ETFs holding stocks across different countries, at the time of calculating the NAV, in some countries the market could be closed, while in others not yet. To avoid stale pricing, the ETF managers may have to look at proxy instruments, like futures, to get a sense of what the current *fair value* of the stock in the closed market ought to be. They would then adjust the closing price from the closed market, which could be flat from many hours now, to estimate the current fair value. Even though the NAV is calculated once per day, there are approximations to it, like the iNAV, which are calculated throughout the day.
+
+
+
+<!-- You should be able to identify when an ETF’s underperformance is due to:
 Fees
 Index drag
 Sampling
@@ -153,34 +148,7 @@ You should be able to explain why a low-volume ETF can still be highly liquid.
 
 7. Taxation (Critical for Investors)
 
-Depends on jurisdiction, but conceptually:
-Why ETFs are tax-efficient
-Capital gains distributions
-Dividend taxation
-Withholding taxes (international ETFs)
-Tax treatment of bond ETFs
-ETFs vs mutual funds in taxable accounts
-If you can explain why ETFs usually distribute fewer capital gains than mutual funds, you know this well.
 
-8. Replication Methods
-Understand how the ETF holds exposure:
-Full physical replication
-Sampling
-Synthetic replication (swaps)
-Counterparty risk
-Collateralization
-You should know when synthetic ETFs may outperform physical ones—and why.
-
-9. Risk Dimensions (Beyond “Market Risk”)
-ETF-specific risks include:
-Tracking risk
-Liquidity risk
-Closure risk
-Counterparty risk
-Concentration risk
-Currency risk
-Regulatory risk
-You should know which ETF categories amplify these risks (e.g., leveraged, niche thematic, frontier markets).
 10. Special ETF Types (Advanced Knowledge)
 To claim deep understanding, you should know how these work mechanically:
 Bond ETFs
@@ -218,8 +186,4 @@ You “know ETFs very well” if you can:
 Predict ETF behavior during market stress
 Explain price/NAV deviations without guessing
 Compare two similar ETFs and justify one choice clearly
-Avoid common ETF traps that most retail investors fall into
-If you want, I can turn this into:
-A self-assessment quiz
-A one-page ETF mastery checklist
-A real ETF teardown (step-by-step analysis of a specific fund) -->
+Avoid common ETF traps that most retail investors fall into -->
