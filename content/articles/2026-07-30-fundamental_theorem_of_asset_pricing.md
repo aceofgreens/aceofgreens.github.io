@@ -85,11 +85,11 @@ $$
 
 With this exact combination of holding half a unit of stock and borrowing $38.095$, in the good state we get exactly $20$, and in the bad state exactly $0$, replicating the payoff of the call option. What is the cost of entering this replication strategy? Borrow $38.095$ and use $11.905$ of your own money to buy half a unit of the stock. At the end it's worth either $60$ or $40$, and after repaying $40$, you end up with either $20$ or $0$. The cost of this is $50 - 38.095 = 11.905$. Call this number $V$.
 
-Consider what happens if the call option is cheaper. If $C < V$, you'd want to buy the call and short the cash-stock combination. So you first borrow half a share, sell it for $50$ and lend out $38.095$. This leaves you with $V=11.905$. With these buy the call option. At the end of the period, you receive $40$ from the loan and $20$ or $0$ from the call option. This is enough to buy back the stock and return it to its original owner to complete the short. You just pocketed $V - C$ without incurring any risk.
+Consider what happens if the call option is cheaper. If $C < V$, you'd want to buy the call and short the cash-stock combination. So you first borrow half a share, sell it for $50$ and lend out $38.095$. This leaves you with $V=11.905$. With this, buy the call option. At the end of the period, you receive $40$ from the loan and $20$ or $0$ from the call option. This is enough to buy back the stock and return it to its original owner to complete the short. You just pocketed $V - C$ without incurring any risk.
 
 A similar arbitrage argument holds when $C > V$. The point is that one needs $C=V$ in order to avoid eternal riskless profit. So that's our valuation mechanism: **the value of the call has to be the cost of replication in terms of the underlying stock and a risk-free asset**.
 
-**Implications**. No-free-lunch describes the peculiar nature of the world we live in. A contradiction between prices is also an invitation. In that sense, market efficiency is a restless, decentralized process of error-correction (see also [Fama's efficient-markets formulation](https://doi.org/10.1111/j.1540-6261.1970.tb00518.x)). Its order depends on people willing and able to search for discrepancies, bear execution and funding risk, and enforce contracts. And this process is never perfect. If it was perfect, and prices already contained all available knowledge, nobody would pay to discover or verify facts in the first place. Hedge funds would not be profitable, whereas in the real world they are, presicely because they have a social utility in harvesting the arbitrage opportunities and keeping markets close to perfect efficiency. So a perfectly efficient market is [considered impossible](https://www.aeaweb.org/aer/top20/70.3.393-408.pdf). Errors may exist, but the errors large and accessible enough to finance their own correction tend not to survive.
+**Implications**. No-free-lunch describes the peculiar nature of the world we live in. A contradiction between prices is also an invitation. In that sense, market efficiency is a restless, decentralized process of error-correction (see also [Fama's efficient-markets formulation](https://doi.org/10.1111/j.1540-6261.1970.tb00518.x)). Its order depends on people willing and able to search for discrepancies, bear execution and funding risk, and enforce contracts. And this process is never perfect. If it was perfect, and prices already contained all available knowledge, nobody would pay to discover or verify facts in the first place. Hedge funds would not be profitable, whereas in the real world they are, precisely because they have a social utility in harvesting the arbitrage opportunities and keeping markets close to perfect efficiency. So a perfectly efficient market is [considered impossible](https://www.aeaweb.org/aer/top20/70.3.393-408.pdf). Errors may exist, but the errors large and accessible enough to finance their own correction tend not to survive.
 
 There is broader similarity to other systems here. The closest physical analogue is thermodynamic equilibrium, especially when expressed in terms of free-energy gradients or chemical potentials, and [detailed balance](https://en.wikipedia.org/wiki/Detailed_balance). A difference in an intensive quantity creates an opportunity for a flow; the flow exploits that difference and, in doing so, tends to destroy it. Of course, systems can remain in long-term disequilibrium when outside forces continually supply energy or impose constraints. A good example are states, which can distort prices and lead the system into *unnatural* behavior.
 
@@ -103,6 +103,8 @@ Hence, if the probability of the up-state were $0.625$, then the stock would be 
 
 Let's unpack. $q$ is chosen so the stock earns the risk-free rate *in expectation*. Then, for the option, discounting its expected payoff under $q$ yields the same price enforced by no-arbitrage. The distribution $(\text{up} \mapsto q, \ \ \text{down} \mapsto 1-q)$ is called *risk-neutral* because, under it, investors behave as though they require no extra expected return for bearing risk. Note that real investors are not indifferent to risk. And $q$ does not forecast what will happen! It is only a set-up of mathematical probabilities at which current prices are *consistent*. This means that no one can earn above the risk-free rate on average.
 
+**Implied volatility**. If we assume there's close to no arbitrage in the market, then the observed market price would equal the true valuation $V_0$. In turn, this implies a distribution $q$. In that sense, one can say "the market prices a 62.5% chance of the up-state". For a more realistic setting, consider the [Black-Scholes](https://en.wikipedia.org/wiki/Black%E2%80%93Scholes_model) model with observed market price $11.905$ and $K=100$, $S=100$, $r=5\%$. In that case the volatility which produces the observed price, called *implied volatility*, is $\sigma_{\mathrm{imp}} \approx 24\%$. Obviously, Black-Scholes is wrong as a literal model of prices: returns jump, volatility moves, and their distribution has skew and fat tails. So the implied volatility is not the market's forecast of the actual variance. Yet, it is still useful precisely because it is a common coordinate: mapping every option price into the model's variance rate lets us compare the variances that prices imply, without mistaking the coordinate system for reality.
+
 **Incompleteness**. Let's consider also the case with three states: up $S_u = 120$, middle $S_m = 100$ and down $S_d = 80$. As before, we have $S=100$, risk-free rate $r=5%$, strike price $K=100$, which implies $C_u = 20$, $C_m = 0$ and $C_d = 0$. In this case the risk-neutral probability measure is a triple $(q_u, \ \ q_m, \ \ q_d)$. Upon trying to solve 
 
 $$
@@ -114,6 +116,21 @@ $$
 
 one obtains infinitely many risk-neutral measures, parameterized for example as $(0.625-q_m/2, \ \ q_m, \ \ 0.375 - q_m/2)$ with the domain $q_m \in [0, 0.75]$. As a consequence, the call option price can range anywhere from $4.76$ to $11.905$. This quickly shows that in an *incomplete* market (one in which there are fewer tradeable assets than number of possible future states), the no-arbitrage condition no longer selects a unique price for every payable claim: it only identifies a range consistent with the traded assets, while it is preferences, supply, and demand that determine where within that range the option trades.
 
+**FTAP**. What we've observed numerically is the [Fundamental Theorem of Asset Pricing](https://en.wikipedia.org/wiki/Fundamental_theorem_of_asset_pricing) (FTAP). Suppose one can trade a collection of assets today and receive their uncertain payoffs, governed by $\mathbb{P}$ in the future. The FTAP says that this market contains no arbitrage if and only if there is a *suitable* risk-neutral probability measure $\mathbb{Q}$, under which the discounted price of every traded asset equals its expected future payoff. Further, every contingent claim has one and only one price implied by the traded assets if and only if the measure $\mathbb{Q}$ is unique. Equivalently, **every claim can be replicated by a portfolio of the available assets. Existence of the measure rules out a free lunch, while its uniqueness tells us whether no-arbitrage alone pins down a price.**
+
+For a claim with payoff $X_T$ at a future date $T$, the general pricing formula at any earlier time $t$ is
+
+$$
+V_t = B_t\,\mathbb{E}_{\mathbb{Q}}\!\left[\left.{B^{-1}_T} X_T \,\right|\mathcal{F}_t\right].
+$$
+
+Here $B_t$ is the value of the risk-free money-market account and $\mathcal{F}_t$ is a [filtration](https://en.wikipedia.org/wiki/Filtration_(probability_theory)) that represents the information available at time $t$. Thus the price is the conditional expectation, under the risk-neutral measure $\mathbb{Q}$, not $\mathbb{P}$, of the payoff discounted back to time $t$. If the risk-free rate is constant at $r$, then $B_T/B_t = e^{r(T-t)}$, so the formula becomes $V_t = e^{-r(T-t)}\mathbb{E}_{\mathbb{Q}}[X_T \mid \mathcal{F}_t]$. More precisely, it is the *discounted price process* $B_t^{-1}V_t$ that is a [martingale](https://en.wikipedia.org/wiki/Martingale_(probability_theory)) under $\mathbb{Q}$: for $t \leq T$,
+
+$$
+\mathbb{E}_{\mathbb{Q}}\!\left[\left.\frac{V_T}{B_T}\,\right|\mathcal{F}_t\right] = \frac{V_t}{B_t}.
+$$
+
+Since $V_T = X_T$, this is exactly the pricing formula above. The undiscounted price process need not be a martingale, because the risk-free account grows over time; risk-neutral valuation makes discounted prices fair, not raw prices trendless.
 
 **Stochastic discount factors**. We have so far deliberately avoided the real-world probability $p$. To see where risk preferences enter, imagine an investor who consumes $c_0$ today and will consume either $c_u$ or $c_d$ next year. Their expected utility $\mathbb{E}_p[u(c)]$ is
 
@@ -126,7 +143,7 @@ where $u$ captures the diminishing usefulness of additional consumption and $\be
 $$
 \begin{aligned}
 \mathbb{E}_p[u(c + \epsilon X)] &= u(c_0 - \epsilon X_0) + \beta\big[p\,u(c_u + \epsilon X_u) + (1 - p)\,u(c_d + \epsilon X_d)\big], \\
-\Rightarrow \ \ \frac{\partial \mathbb{E}_p[c + \epsilon X]}{\partial \epsilon} &= -X_0 u'(c_0 - \epsilon X_0) + \beta \big[p\,u'(c_u + \epsilon X_u)X_u + (1-p)\,u(c_d + \epsilon X_d)X_d \big] \\ 
+\Rightarrow \ \ \frac{\partial \mathbb{E}_p[u(c + \epsilon X)]}{\partial \epsilon} &= -X_0 u'(c_0 - \epsilon X_0) + \beta \big[p\,u'(c_u + \epsilon X_u)X_u + (1-p)\,u'(c_d + \epsilon X_d)X_d \big] \\
 \Rightarrow \ \ 0 &= -u'(c_0)X_0 + \beta\big[p\,u'(c_u)X_u + (1-p)\,u'(c_d)X_d\big] \text{ as } \epsilon \rightarrow 0.
 \end{aligned}
 $$
@@ -147,14 +164,48 @@ $$
 
 So $q$ is the real-world distribution $p$, tilted toward states in which money matters more. This is why $q$ is not a forecast: it is what remains after risk preferences have been folded into the probabilities. Claims that pay in bad states are valuable insurance and therefore expensive; claims that pay chiefly in good states must offer a higher average return under $p$ to persuade people to hold them. Replication reaches the same prices without ever estimating $p$, $u$, or $m$ because it exploits only the price consistency that those underlying forces produce.
 
+**Relationship with CAPM**. The famous CAPM is a quick consequence. For any asset with gross return $R_i$, the SDF equation gives $1 = \mathbb{E}_p[mR_i]$; for the risk-free asset, $1 = \mathbb{E}_p[m]R_f$. Therefore
+
+$$
+\mathbb{E}_p[R_i] - R_f = -\frac{\operatorname{Cov}_p(m,R_i)}{\mathbb{E}_p[m]}.
+$$
+
+If the SDF is linear in the market return, $m=a-bR_M$ with $b>0$, one gets:
+
+$$
+\mathbb{E}_p[R_i] - R_f
+= -\frac{\operatorname{Cov}_p(a-bR_M,R_i)}{\mathbb{E}_p[m]} 
+= \frac{b}{\mathbb{E}_p[m]}\operatorname{Cov}_p(R_i,R_M).
+$$
+
+The unknown factor $b/\mathbb{E}_p[m]$ is the same for every asset. Set $i=M$ in the preceding equation to determine it from the market itself:
+
+$$
+\mathbb{E}_p[R_M]-R_f
+= \frac{b}{\mathbb{E}_p[m]}\operatorname{Var}_p(R_M)
+\quad\Rightarrow\quad
+\frac{b}{\mathbb{E}_p[m]}
+= \frac{\mathbb{E}_p[R_M]-R_f}{\operatorname{Var}_p(R_M)}.
+$$
+
+Putting that expression back into the return equation gives
+
+$$
+\mathbb{E}_p[R_i] - R_f
+= \underbrace{\frac{\operatorname{Cov}_p(R_i,R_M)}{\operatorname{Var}_p(R_M)}}_{\beta_i}
+  \bigl(\mathbb{E}_p[R_M]-R_f\bigr).
+$$
+
+Only the part of a return that moves with the market earns a premium. That is, only systematic risk is what should get compensated. That is the CAPM's familiar $\beta$. In this way, we see how the need for risk premiums automatically arises out of the individual's risk preferences.
+
 **Conclusion**. What should a claim with an uncertain future payoff cost today? In an arbitrage-free market, its price is constrained by the prices of other traded payoffs. Risk preferences still matter, because a dollar received in a bad state is worth more than a dollar received in a good one; the stochastic discount factor records that difference. Risk-neutral probabilities package those state-dependent values into a convenient pricing rule, rather than describing anyone's literal forecast of the future.
 
 
 <!-- ### More technical version of the article -->
 
-<!-- Where, then, did actual people and their risk profiles go? Their beliefs, wealth, and dislike of risk determine how much stock, bonds, and claims they wish to hold at each price: their demand curves. Together with supply, those demands determine the observed prices of the stock and bond in the first place. But once those prices are observed in this complete two-state market, competition and arbitrage pin down the call price without asking whose utility function is correct. The risk-neutral probabilities are simply the physical probabilities tilted by the price people put on wealth in each state: if the real up probability is $p$, then $q_{u}/p = (1.05)m_{u}$ and $q_{d}/(1-p) = (1.05)m_{d}$, where $m$ is the stochastic discount factor. Thus $\mathbb{Q}$ is not a rival account of people's beliefs. It is a compact way of carrying their aggregate valuation of risk into prices. -->
+<!-- Where, then, did actual people and their risk profiles go? Their beliefs, wealth, and dislike of risk determine how much stock, bonds, and claims they wish to hold at each price: their demand curves. Together with supply, those demands determine the observed prices of the stock and bond in the first place. But once those prices are observed in this complete two-state market, competition and arbitrage pin down the call price without asking whose utility function is correct. The risk-neutral probabilities are simply the physical probabilities tilted by the price people put on wealth in each state: if the real up probability is $p$, then $q_{u}/p = (1.05)m_{u}$ and $q_{d}/(1-p) = (1.05)m_{d}$, where $m$ is the stochastic discount factor. Thus $\mathbb{Q}$ is not a rival account of people's beliefs. It is a compact way of carrying their aggregate valuation of risk into prices.
 
-<!-- ### The One-Period Market
+### The One-Period Market
 
 We start with the simplest possible model, which already contains the whole theorem. Time has two dates, $0$ (today) and $1$ (tomorrow). Uncertainty is described by a finite set of states $\Omega = \{\omega_1, \dots, \omega_K\}$, exactly one of which will be realized. The real-world, or *physical*, probabilities are $p_k = \mathbb{P}(\omega_k) > 0$; we assume every state has positive probability, otherwise we should have deleted it from $\Omega$.
 
