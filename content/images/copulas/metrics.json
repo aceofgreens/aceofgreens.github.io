@@ -1,0 +1,57 @@
+{
+  "seed": 20261010,
+  "scenarios_per_model": 1000000,
+  "rho": 0.5,
+  "copula_df": 4,
+  "clayton_theta": 1.0,
+  "student_tail_limit": 0.25316999510032273,
+  "portfolio": {
+    "Independent": {
+      "kendall_tau_sample": 0.0016153203064061285,
+      "return_pearson_sample": -0.00039484382369423156,
+      "var99": 0.017794113499151058,
+      "es99": 0.022612363200160888,
+      "joint_1pct": 0.0001,
+      "conditional_1pct": 0.01
+    },
+    "Gaussian": {
+      "kendall_tau_sample": 0.3317540510810217,
+      "return_pearson_sample": 0.4877926252673073,
+      "var99": 0.022168621704278687,
+      "es99": 0.0285379212661772,
+      "joint_1pct": 0.0012939244182646567,
+      "conditional_1pct": 0.12939244182646567
+    },
+    "Student t": {
+      "kendall_tau_sample": 0.3336566523330467,
+      "return_pearson_sample": 0.5031257005100227,
+      "var99": 0.022858062702345347,
+      "es99": 0.03035447870734962,
+      "joint_1pct": 0.002876784348510217,
+      "conditional_1pct": 0.2876784348510217
+    },
+    "Clayton": {
+      "kendall_tau_sample": 0.32998618532370655,
+      "return_pearson_sample": 0.4971595381018056,
+      "var99": 0.024561974717390498,
+      "es99": 0.0327043377148635,
+      "joint_1pct": 0.005025125628140704,
+      "conditional_1pct": 0.5025125628140703
+    }
+  },
+  "credit": {
+    "Independent": {
+      "mean_defaults": 1.999048,
+      "p_20plus": 0.0,
+      "p_20plus_exact": 1.2100752001101145e-14
+    },
+    "Gaussian": {
+      "mean_defaults": 1.99673,
+      "p_20plus": 0.021334
+    },
+    "Student t": {
+      "mean_defaults": 1.987321,
+      "p_20plus": 0.030135
+    }
+  }
+}
