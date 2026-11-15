@@ -52,6 +52,11 @@ $$
 \hat{\mathbf{f}}_t = (\mathbf{B}_t^\top \mathbf{W} \mathbf{B}_t)^{-1} \mathbf{B}_t^\top \mathbf{W} \mathbf{r}_t, \qquad \hat{\mathbf{\epsilon}}_t = \mathbf{r}_t - \mathbf{B}_t \hat{\mathbf{f}}_t.
 $$
 
+<figure>
+<img class="theme-swap" src="/images/factor_models/wls_regression_light.svg" data-light="/images/factor_models/wls_regression_light.svg" data-dark="/images/factor_models/wls_regression_dark.svg" alt="Post-market cross-sectional WLS regression across 40 stocks showing factor slope and idiosyncratic residuals">
+<figcaption>Fig. 1. Cross-sectional WLS regression along the <code>Value</code> factor across $N = 40$ simulated stocks on Day 1 (bubble area $\propto \sqrt{\text{Market Cap}}$). The slope of the fitted line gives the daily factor return ($\hat{f}_{\text{Val}} = +0.77\%$), while vertical dashed segments show individual idiosyncratic residuals $\hat{\epsilon}_i$.</figcaption>
+</figure>
+
 That's how the factor returns are calculated. Relatively simple. Now look closely at the matrix multiplying $\mathbf{r}_t$. If we reshuffle it a bit and rename it, we can get:
 
 $$
@@ -67,6 +72,11 @@ $$
 $$
 
 Thus, each FMP is *completely pure*: the `Value` FMP has an exposure of exactly $1.0$ to `Value` and $0.0$ to `Market`, `Size`, and `Momentum`. If you want to hold only Value stocks, an initial strategy might be to hold the top 10 Value stocks and short the bottom 10, but this almost always carries accidental Size and Momentum tilts. Instead, one should compute $\mathbf{V}$ and hold the corresponding allocation from there.
+
+<figure>
+<img class="theme-swap" src="/images/factor_models/fmp_purity_light.svg" data-light="/images/factor_models/fmp_purity_light.svg" data-dark="/images/factor_models/fmp_purity_dark.svg" alt="Stock weights across 40 names comparing a naive Value sort with the pure Value Factor-Mimicking Portfolio and unintended factor spill">
+<figcaption>Fig. 2. Stock weights across $N = 40$ names sorted by <code>Value</code>: isolating pure <code>Value</code> exposure ($1$ with $0$ spill onto <code>Size</code>, <code>Momentum</code>, and <code>Market</code>) requires tailored weights from $\mathbf{V}$ across every stock, whereas a flat Top-10 minus Bottom-10 sort leaks $+0.29$ <code>Size</code> and $-0.25$ <code>Momentum</code> tilts.</figcaption>
+</figure>
 
 #### Daily Loop: Obtaining a Risk Model
 
@@ -107,6 +117,11 @@ Neutralizing with $\mathbf{V} \mathbf{b}_p$ drives every factor exposure to $0$ 
 
 Note that with hedging, if you hold a portfolio that is exposed only to idio risks and returns, it's possible to construct trading strategies with very good Sharpe ratios. Better research and forecasting can help with this endeavor. The total volatility $\sigma_\text{hedged}$ will be smaller than that of the long-only portfolio. However, this is where leverage comes in. Using leverage doesn't change the Sharpe ratio, so it's very common to apply *regearing* as a final step: scaling up the leverage so that the total portfolio volatility (or mean return) reaches a desired target level.
 
+<figure>
+<img class="theme-swap big_img" src="/images/factor_models/hedging_regearing_light.svg" data-light="/images/factor_models/hedging_regearing_light.svg" data-dark="/images/factor_models/hedging_regearing_dark.svg" alt="Risk decomposition before and after factor hedging and regearing alongside 252-day simulated cumulative returns">
+<figcaption>Fig. 3. Left: hedging an $8$-stock Value basket with $\mathbf{w} - \mathbf{V}\mathbf{b}_p$ strips out the factor block, dropping annualized volatility from $26.3\%$ ($10\%$ idio variance) to $5.1\%$ ($100\%$ idio); $2.9\times$ leverage restores volatility to a $15.0\%$ target. Right: over a $252$-day simulation with zero-mean factor noise, hedging raises Sharpe from $1.29$ to $1.88$, and regearing scales up that smoother idiosyncratic return stream without factor drawdowns.</figcaption>
+</figure>
+
 
 #### Factor Models Today
 
@@ -121,3 +136,19 @@ Across institutional equities and hedge funds, this framework remains the indust
 * **How the Frontier Has Evolved:** Quant teams keep the fundamental model as an interpretable core and layer upgrades on top: multi-horizon fast-decaying covariances, covariance shrinkage (such as [Ledoit–Wolf](https://scikit-learn.org/stable/modules/generated/sklearn.covariance.LedoitWolf.html)), hybrid fundamental + PCA / machine-learning overlays, custom thematic factors, and real-time factor crowding monitors to flag synchronized unwinds early.
 
 Ultimately, fundamental multi-factor models endure not because they predict tomorrow's winning factor or assume a stationary world, but because they give investors a transparent, disciplined way to measure the bets they are taking.
+
+<script>
+(function () {
+  const sheet = document.getElementById('theme-stylesheet');
+  if (!sheet) return;
+  const apply = () => {
+    const dark = /\/dark\.css(\?|$)/.test(sheet.href);
+    document.querySelectorAll('img.theme-swap').forEach(img => {
+      const next = dark ? img.dataset.dark : img.dataset.light;
+      if (img.getAttribute('src') !== next) img.setAttribute('src', next);
+    });
+  };
+  apply();
+  new MutationObserver(apply).observe(sheet, { attributes: true, attributeFilter: ['href'] });
+})();
+</script>
