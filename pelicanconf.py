@@ -2,7 +2,7 @@ SITENAME = "The Critical Section"
 SITE_DESCRIPTION = "A personal blog for artificial intelligence and similar topics."
 LINKEDIN_USERNAME = None
 
-# SITEURL = ''
+SITEURL = 'https://aceofgreens.github.io'
 
 PATH = 'content'
 OUTPUT_PATH = 'docs'
@@ -24,8 +24,9 @@ ARCHIVES_SAVE_AS = ''
 TIMEZONE = 'Europe/Sofia'
 DEFAULT_LANG = 'en'
 
-# Feed generation is usually not desired when developing
-FEED_ALL_ATOM = None
+# Feed generation
+FEED_DOMAIN = SITEURL
+FEED_ALL_ATOM = 'feeds/all.atom.xml'
 CATEGORY_FEED_ATOM = None
 TRANSLATION_FEED_ATOM = None
 AUTHOR_FEED_ATOM = None
@@ -46,19 +47,14 @@ DEFAULT_PAGINATION = False
 # Uncomment following line if you want document-relative URLs when developing
 #RELATIVE_URLS = True
 
-PLUGINS = ['plugins.summary', 'plugins.render_math']
+PLUGINS = ['plugins.summary', 'plugins.render_math', 'plugins.sitemap']
 
 SUMMARY_USE_FIRST_PARAGRAPH = True
 
 THEME = 'themes/minima'
-STATIC_PATHS = ['images', 'assets']
+STATIC_PATHS = ['images', 'assets', 'extra/robots.txt']
 EXTRA_PATH_METADATA = {
-    # 'extra/custom.css': {'path': 'custom.css'},
-    # 'extra/robots.txt': {'path': 'robots.txt'},
-    # 'assets/favicon.ico': {'path': 'favicon.ico'},
-    # 'extra/CNAME': {'path': 'CNAME'},
-    # 'extra/LICENSE': {'path': 'LICENSE'},
-    # 'extra/README': {'path': 'README'},
+    'extra/robots.txt': {'path': 'robots.txt'},
 }
 
 def sort_tags(tags):
@@ -74,8 +70,53 @@ def sort_tags(tags):
     # Sort in custom order
     return sorted(tags, key=lambda x: custom_order.index(x[0]) if x[0] in custom_order else len(custom_order))
 
+import re
+from bs4 import BeautifulSoup
+
+def meta_description(html, fallback=SITE_DESCRIPTION, max_len=160):
+    """
+    Build a clean, plain-text meta description from HTML (stripping <script>/<style>
+    content such as injected MathJax scripts) and truncate cleanly at a word boundary.
+    """
+    if not html:
+        return fallback
+    soup = BeautifulSoup(str(html), 'html.parser')
+    for tag in soup(['script', 'style']):
+        tag.decompose()
+    text = re.sub(r'\s+', ' ', soup.get_text(' ')).strip()
+    if not text:
+        return fallback
+    if len(text) <= max_len:
+        return text
+    truncated = text[:max_len - 1].rsplit(' ', 1)[0].rstrip(' ,;:-')
+    return f"{truncated}…"
+
+def first_image(html, siteurl=SITEURL):
+    """
+    Extract the first raster image URL from HTML for Open Graph / Twitter previews.
+    """
+    if not html:
+        return None
+    soup = BeautifulSoup(str(html), 'html.parser')
+    raster_exts = ('.png', '.jpg', '.jpeg', '.webp', '.gif')
+    for img in soup.find_all('img'):
+        src = (img.get('src') or '').strip()
+        if not src:
+            continue
+        clean = src.split('?', 1)[0].split('#', 1)[0].lower()
+        if not clean.endswith(raster_exts):
+            continue
+        if src.startswith(('http://', 'https://')):
+            return src
+        return f"{siteurl.rstrip('/')}/{src.lstrip('/')}"
+    return None
+
 # Overwrite some of the Jinja commands using custom Python functions
-JINJA_FILTERS = {'sort_tags': sort_tags}
+JINJA_FILTERS = {
+    'sort_tags': sort_tags,
+    'meta_description': meta_description,
+    'first_image': first_image,
+}
 
 TYPOGRIFY = False
 SMART_QUOTES = False

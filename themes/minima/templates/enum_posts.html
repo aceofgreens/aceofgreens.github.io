@@ -1,4 +1,25 @@
 {% extends "base.html" %}
+
+{% block title %}{{ page.title|striptags|e }} | {{ SITENAME|striptags|e }}{% endblock %}
+
+{% block canonical %}
+    <link rel="canonical" href="{{ SITEURL }}/{{ page.url }}" />
+{% endblock canonical %}
+
+{% block seo_meta %}
+  {% set meta_desc = "All posts on " ~ (SITENAME|striptags) ~ " — articles on artificial intelligence, computer science, reinforcement learning, and economics." %}
+  {% set page_url = SITEURL ~ '/' ~ page.url %}
+  <meta name="description" content="{{ meta_desc|e }}" />
+  <meta property="og:site_name" content="{{ SITENAME|striptags|e }}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="{{ page.title|striptags|e }} | {{ SITENAME|striptags|e }}" />
+  <meta property="og:description" content="{{ meta_desc|e }}" />
+  <meta property="og:url" content="{{ page_url|e }}" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="{{ page.title|striptags|e }} | {{ SITENAME|striptags|e }}" />
+  <meta name="twitter:description" content="{{ meta_desc|e }}" />
+{% endblock seo_meta %}
+
 {% block content %}
 {% block content_title %}
 {% endblock %}

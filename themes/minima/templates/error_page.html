@@ -1,9 +1,16 @@
 {% extends "base.html" %}
+
+{% block title %}Page Not Found | {{ SITENAME|striptags|e }}{% endblock %}
+
+{% block seo_meta %}
+    <meta name="robots" content="noindex, nofollow" />
+{% endblock seo_meta %}
+
 {% block content %}
 {% block content_title %}
 {% endblock %}
 
-<article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+<article class="post h-entry">
 
   <div class="post-content e-content content" itemprop="articleBody">
     {{ page.content }}

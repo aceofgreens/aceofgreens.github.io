@@ -1,4 +1,33 @@
 {% extends "base.html" %}
+
+{% block canonical %}
+    <link rel="canonical" href="{{ SITEURL }}/" />
+{% endblock canonical %}
+
+{% block seo_meta %}
+    <meta name="description" content="{{ SITE_DESCRIPTION|e }}" />
+    <meta property="og:site_name" content="{{ SITENAME|striptags|e }}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="{{ SITENAME|striptags|e }}" />
+    <meta property="og:description" content="{{ SITE_DESCRIPTION|e }}" />
+    <meta property="og:url" content="{{ SITEURL }}/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="{{ SITENAME|striptags|e }}" />
+    <meta name="twitter:description" content="{{ SITE_DESCRIPTION|e }}" />
+{% endblock seo_meta %}
+
+{% block structured_data %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": {{ SITENAME|striptags|tojson }},
+      "url": {{ (SITEURL ~ '/')|tojson }},
+      "description": {{ SITE_DESCRIPTION|tojson }}
+    }
+    </script>
+{% endblock structured_data %}
+
 {% block content %}
 {% block content_title %}
 {% endblock %}
