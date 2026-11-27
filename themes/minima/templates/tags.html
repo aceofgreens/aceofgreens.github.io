@@ -1,4 +1,24 @@
 {% extends "base.html" %}
+
+{% block title %}Tags | {{ SITENAME|striptags|e }}{% endblock %}
+
+{% block canonical %}
+    <link rel="canonical" href="{{ SITEURL }}/tags.html" />
+{% endblock canonical %}
+
+{% block seo_meta %}
+  {% set meta_desc = "Browse posts on " ~ (SITENAME|striptags) ~ " by topic: computer science, economics, AI, reinforcement learning, and more." %}
+  <meta name="description" content="{{ meta_desc|e }}" />
+  <meta property="og:site_name" content="{{ SITENAME|striptags|e }}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Tags | {{ SITENAME|striptags|e }}" />
+  <meta property="og:description" content="{{ meta_desc|e }}" />
+  <meta property="og:url" content="{{ SITEURL }}/tags.html" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Tags | {{ SITENAME|striptags|e }}" />
+  <meta name="twitter:description" content="{{ meta_desc|e }}" />
+{% endblock seo_meta %}
+
 {% block content %}
 {% block content_title %}
 {% endblock %}

@@ -22,7 +22,22 @@
     <!-- <link id="theme-stylesheet" rel="stylesheet" href="/assets/light.css" /> -->
 
     <link rel="icon" href="/assets/favicon.png" />
+    {% if FEED_ALL_ATOM %}
+    <link rel="alternate" type="application/atom+xml" title="{{ SITENAME|striptags|e }} Atom Feed" href="{{ SITEURL }}/{{ FEED_ALL_ATOM }}" />
+    {% endif %}
     <link href="https://fonts.googleapis.com/css?family=Roboto|Oswald|Open+Sans" rel="stylesheet">
+    {% block canonical %}{% endblock canonical %}
+    {% block seo_meta %}
+    <meta name="description" content="{{ SITE_DESCRIPTION|e }}" />
+    <meta property="og:site_name" content="{{ SITENAME|striptags|e }}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="{{ SITENAME|striptags|e }}" />
+    <meta property="og:description" content="{{ SITE_DESCRIPTION|e }}" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="{{ SITENAME|striptags|e }}" />
+    <meta name="twitter:description" content="{{ SITE_DESCRIPTION|e }}" />
+    {% endblock seo_meta %}
+    {% block structured_data %}{% endblock structured_data %}
   {% endblock head %}
 </head>
 

@@ -1,18 +1,80 @@
 {% extends "base.html" %}
 
-{% block title %}{{ article.title|striptags }} | {{ SITENAME|striptags }}{% endblock %}
+{% block title %}{{ article.title|striptags|e }} | {{ SITENAME|striptags|e }}{% endblock %}
 
-{% block head %}{{ super() }}
-
-  {% if article.summary %}
-    <meta name="description" content="{{article.summary|striptags}}" />
+{% block canonical %}
+  {% if article.status != 'draft' %}
+    <link rel="canonical" href="{{ SITEURL }}/{{ article.url }}" />
   {% endif %}
+{% endblock canonical %}
 
+{% block seo_meta %}
+  {% set meta_desc = article.summary|meta_description %}
+  {% set og_image = article.content|first_image %}
+  {% set article_url = SITEURL ~ '/' ~ article.url %}
+  {% if article.status == 'draft' %}
+    <meta name="robots" content="noindex, nofollow" />
+  {% endif %}
+  <meta name="description" content="{{ meta_desc|e }}" />
   {% for tag in article.tags %}
-    <meta name="tags" content="{{tag}}" />
+    <meta name="tags" content="{{ tag.name|e }}" />
   {% endfor %}
+  <meta property="og:site_name" content="{{ SITENAME|striptags|e }}" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="{{ article.title|striptags|e }}" />
+  <meta property="og:description" content="{{ meta_desc|e }}" />
+  <meta property="og:url" content="{{ article_url|e }}" />
+  <meta property="article:published_time" content="{{ article.date.isoformat() }}" />
+  {% if article.modified %}
+    <meta property="article:modified_time" content="{{ article.modified.isoformat() }}" />
+  {% endif %}
+  {% for tag in article.tags %}
+    <meta property="article:tag" content="{{ tag.name|e }}" />
+  {% endfor %}
+  {% if og_image %}
+    <meta property="og:image" content="{{ og_image|e }}" />
+  {% endif %}
+  <meta name="twitter:card" content="{{ 'summary_large_image' if og_image else 'summary' }}" />
+  <meta name="twitter:title" content="{{ article.title|striptags|e }}" />
+  <meta name="twitter:description" content="{{ meta_desc|e }}" />
+  {% if og_image %}
+    <meta name="twitter:image" content="{{ og_image|e }}" />
+  {% endif %}
+{% endblock seo_meta %}
 
-{% endblock head %}
+{% block structured_data %}
+  {% if article.status != 'draft' %}
+  {% set meta_desc = article.summary|meta_description %}
+  {% set og_image = article.content|first_image %}
+  {% set article_url = SITEURL ~ '/' ~ article.url %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": {{ article.title|striptags|tojson }},
+    "description": {{ meta_desc|tojson }},
+    "datePublished": {{ article.date.isoformat()|tojson }},
+    {% if article.modified %}"dateModified": {{ article.modified.isoformat()|tojson }},{% endif %}
+    "url": {{ article_url|tojson }},
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": {{ article_url|tojson }}
+    },
+    "author": {
+      "@type": "Person",
+      "name": "aceofgreens",
+      "url": "https://github.com/aceofgreens"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": {{ SITENAME|striptags|tojson }}
+    }{% if og_image %},
+    "image": {{ og_image|tojson }}{% endif %}{% if article.tags %},
+    "keywords": {{ article.tags|map(attribute='name')|list|tojson }}{% endif %}
+  }
+  </script>
+  {% endif %}
+{% endblock structured_data %}
 
 {% block content %}
 {# <article>
